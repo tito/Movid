@@ -1,27 +1,31 @@
 #include <cstdio>
 
-#include "otCamera.h"
+#include "cv.h"
 #include "highgui.h"
+#include "otCameraDataStream.h"
+#include "otImageDisplayModule.h"
+
 
 int main(int argc, char **argv)
 {
 	int key;
 
-	otCamera* cam	= new otCamera(0);
+	otCameraDataStream* cam  = new otCameraDataStream(0);
+	otImageDisplayModule* display = new otImageDisplayModule("OpenTracker");
+	otImageDisplayModule* display2 = new otImageDisplayModule("Window 2");
+	display->setInput(cam);
+	display2->setInput(display->getOutput());
 	
-	cvNamedWindow("OpenTracker", CV_WINDOW_AUTOSIZE);
-	cvMoveWindow("OpenTracker", 50, 50);
-
 	while ( true )
 	{
-		cvShowImage("Capture", cam->getFrame());
+		cam->update();
 
-		key = cvWaitKey(10);
+		key = cvWaitKey(5);
 		if ( key==0x1b )
 			break;
 	}
 
-	cvDestroyWindow("Capture");
+	cvDestroyWindow("OpenTracker");
 
 	return 0;
 }

@@ -1,18 +1,21 @@
 OUTPUT = tracker
-OBJ = otCamera.o
+OBJ = otDataStream.o otImageDataStream.o otCameraDataStream.o otModule.o otImageDisplayModule.o
 
-OPENCV_CFLAGS   ?= `pkg-config --cflags opencv`
-OPENCV_LIBS     ?= `pkg-config --libs opencv`
+CFLAGS ?= -g -Wall
+LIBS   ?=
 
-CFLAGS = ${OPENCV_CFLAGS}
-LIBS   = ${OPENCV_LIBS}   
+OPENCV_CFLAGS ?= `pkg-config --cflags opencv`
+OPENCV_LIBS   ?= `pkg-config --libs opencv`
+
+ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS}
+ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}   
 
 
 all: ${OBJ}
-	${CXX} ${LIBS} ${CFLAGS} -o ${OUTPUT} tracker.cpp ${OBJ} 	
+	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${OUTPUT} tracker.cpp ${OBJ} 	
 	
 %.o : %.cpp
-	${CXX} ${LIBS} ${CFLAGS} -c $<
+	${CXX} ${ALL_CFLAGS} -c $<
 	
 clean:
-	rm ${OBJ} ${OUTPUT}
+	rm -r ${OUTPUT} *.o *.dSYM
