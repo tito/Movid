@@ -3,8 +3,6 @@
 
 class otDataStream;
 
-
-
 class otModule {
 	
 public:	

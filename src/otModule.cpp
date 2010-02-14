@@ -1,4 +1,3 @@
-
 #include "otModule.h"
 #include "otDataStream.h"
 

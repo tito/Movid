@@ -5,7 +5,6 @@
 #include "otModule.h"
 #include "otImageDataStream.h"
 
-
 class otImageDisplayModule : public otModule {
 	
 public:	
@@ -19,7 +18,6 @@ public:
 private:
 	otImageDataStream* input;
 	std::string* window_name;
-	
 };
 
 #endif

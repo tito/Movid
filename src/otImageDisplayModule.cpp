@@ -3,7 +3,6 @@
 #include "highgui.h"
 #include "otImageDataStream.h"
 
-
 otImageDisplayModule::otImageDisplayModule(char* name){
 	this->window_name = new std::string(name);
 	cvNamedWindow(this->window_name->c_str(), CV_WINDOW_AUTOSIZE);
@@ -20,12 +19,10 @@ void otImageDisplayModule::update(){
 	cvShowImage(this->window_name->c_str(), this->input->getImageData());
 }
 
-
 void otImageDisplayModule::setInput( otDataStream* in, int n){
 	this->input = (otImageDataStream*)in;
 	this->input->addObserver(this);
 }
-
 
 otDataStream* otImageDisplayModule::getOutput( int n){
 	return this->input; //pass through

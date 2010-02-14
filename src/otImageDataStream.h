@@ -12,7 +12,6 @@ public:
 	
 protected:
 	IplImage* image;
-	
 };
 
 #endif

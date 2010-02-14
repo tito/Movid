@@ -5,7 +5,6 @@
 
 class otModule;
 
-
 class otDataStream {
 	
 public:
@@ -14,7 +13,6 @@ public:
 	
 	virtual void update();
 	void addObserver(otModule*);
-	
 	
 protected:
 	std::vector<otModule*> observers;

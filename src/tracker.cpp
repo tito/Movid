@@ -1,31 +1,26 @@
-#include <cstdio>
-
-#include "cv.h"
 #include "highgui.h"
 #include "otCameraDataStream.h"
 #include "otImageDisplayModule.h"
 
-
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
 	int key;
 
+	//Camera input stream, when its updated, it automatically updates anything its connected to
 	otCameraDataStream* cam  = new otCameraDataStream(0);
-	otImageDisplayModule* display = new otImageDisplayModule("OpenTracker");
-	otImageDisplayModule* display2 = new otImageDisplayModule("Window 2");
-	display->setInput(cam);
-	display2->setInput(display->getOutput());
 	
-	while ( true )
-	{
+	//otImageDisplayModule opens a window and displays an Image in it
+	otImageDisplayModule* display = new otImageDisplayModule("OpenTracker");
+	display->setInput(cam);
+	
+	//simple pass through to test input/output pipes
+	otImageDisplayModule* display2 = new otImageDisplayModule("Window 2");
+	display2->setInput(display->getOutput()); 
+	
+	//keep updating teh camera until ESC key is pressed
+	while ( key != 0x1b ){
 		cam->update();
-
 		key = cvWaitKey(5);
-		if ( key==0x1b )
-			break;
 	}
-
-	cvDestroyWindow("OpenTracker");
 
 	return 0;
 }

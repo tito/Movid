@@ -1,6 +1,4 @@
-
 #include "otImageDataStream.h"
-
 
 void otImageDataStream::setImageData(IplImage* data){
 	this->image = data;
