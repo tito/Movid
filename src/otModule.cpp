@@ -1,6 +1,9 @@
 #include "otModule.h"
 #include "otDataStream.h"
 
-otModule::~otModule(){}
+otModule::~otModule() {
+	this->parent = NULL;
+}
 
-void otModule::update(){}
+void otModule::update() {
+}

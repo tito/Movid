@@ -12,6 +12,8 @@ public:
 	virtual void setInput( otDataStream* , int n=0) = 0;	
 	virtual otDataStream* getOutput( int ) = 0;
 	
+	// FIXME protect it
+	otModule *parent;
 };
 
 #endif

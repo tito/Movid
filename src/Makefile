@@ -1,5 +1,5 @@
 OUTPUT = tracker
-OBJ = otDataStream.o otImageDataStream.o otCameraDataStream.o otModule.o otImageDisplayModule.o
+OBJ = otDataStream.o otImageDataStream.o otCameraDataStream.o otModule.o otImageDisplayModule.o otGroup.o otParser.o
 
 CFLAGS ?= -g -Wall
 LIBS   ?=
