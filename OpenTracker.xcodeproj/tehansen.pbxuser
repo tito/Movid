@@ -1,0 +1,159 @@
+// !$*UTF8*$!
+{
+	08FB7793FE84155DC02AAC07 /* Project object */ = {
+		activeBuildConfigurationName = Debug;
+		activeExecutable = 121ECCED1129C00200EA143B /* tracker */;
+		activeTarget = D28A88AD04BDD90700651E21 /* OpenTracker */;
+		addToTargets = (
+			D28A88AD04BDD90700651E21 /* OpenTracker */,
+		);
+		codeSenseManager = 121ECCD11129BEC700EA143B /* Code sense */;
+		executables = (
+			121ECCED1129C00200EA143B /* tracker */,
+		);
+		perUserDictionary = {
+			PBXConfiguration.PBXFileTableDataSource3.PBXExecutablesDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXExecutablesDataSource_NameID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					22,
+					300,
+					881,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXExecutablesDataSource_ActiveFlagID,
+					PBXExecutablesDataSource_NameID,
+					PBXExecutablesDataSource_CommentsID,
+				);
+			};
+			PBXConfiguration.PBXFileTableDataSource3.PBXFileTableDataSource = {
+				PBXFileTableDataSourceColumnSortingDirectionKey = "-1";
+				PBXFileTableDataSourceColumnSortingKey = PBXFileDataSource_Filename_ColumnID;
+				PBXFileTableDataSourceColumnWidthsKey = (
+					20,
+					993,
+					20,
+					48,
+					43,
+					43,
+					20,
+				);
+				PBXFileTableDataSourceColumnsKey = (
+					PBXFileDataSource_FiletypeID,
+					PBXFileDataSource_Filename_ColumnID,
+					PBXFileDataSource_Built_ColumnID,
+					PBXFileDataSource_ObjectSize_ColumnID,
+					PBXFileDataSource_Errors_ColumnID,
+					PBXFileDataSource_Warnings_ColumnID,
+					PBXFileDataSource_Target_ColumnID,
+				);
+			};
+			PBXPerProjectTemplateStateSaveDate = 287948479;
+			PBXWorkspaceStateSaveDate = 287948479;
+		};
+		sourceControlManager = 121ECCD01129BEC700EA143B /* Source Control */;
+		userBuildSettings = {
+		};
+	};
+	121ECCD01129BEC700EA143B /* Source Control */ = {
+		isa = PBXSourceControlManager;
+		fallbackIsa = XCSourceControlManager;
+		isSCMEnabled = 0;
+		scmConfiguration = {
+			repositoryNamesForRoots = {
+				"" = "";
+			};
+		};
+	};
+	121ECCD11129BEC700EA143B /* Code sense */ = {
+		isa = PBXCodeSenseManager;
+		indexTemplatePath = "";
+	};
+	121ECCD41129BED600EA143B /* otCamera.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1203, 643}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 916}";
+		};
+	};
+	121ECCD51129BED600EA143B /* otCamera.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1203, 643}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 344}";
+			sepNavWindowFrame = "{{107, 18}, {1262, 771}}";
+		};
+	};
+	121ECCD81129BED600EA143B /* otParser.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1203, 2392}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{3223, 864}";
+			sepNavWindowFrame = "{{84, 39}, {1262, 771}}";
+		};
+	};
+	121ECCD91129BED600EA143B /* otParser.h */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1203, 643}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 142}";
+			sepNavWindowFrame = "{{61, 60}, {1262, 771}}";
+		};
+	};
+	121ECCDA1129BED600EA143B /* tester.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1203, 643}}";
+			sepNavSelRange = "{0, 0}";
+			sepNavVisRange = "{0, 252}";
+			sepNavWindowFrame = "{{178, 77}, {1262, 771}}";
+		};
+	};
+	121ECCED1129C00200EA143B /* tracker */ = {
+		isa = PBXExecutable;
+		activeArgIndices = (
+		);
+		argumentStrings = (
+		);
+		autoAttachOnCrash = 1;
+		breakpointsEnabled = 0;
+		configStateDict = {
+		};
+		customDataFormattersEnabled = 1;
+		dataTipCustomDataFormattersEnabled = 1;
+		dataTipShowTypeColumn = 1;
+		dataTipSortType = 0;
+		debuggerPlugin = GDBDebugging;
+		disassemblyDisplayState = 0;
+		dylibVariantSuffix = "";
+		enableDebugStr = 1;
+		environmentEntries = (
+		);
+		executableSystemSymbolLevel = 0;
+		executableUserSymbolLevel = 0;
+		launchableReference = 121ECCEE1129C00200EA143B /* tracker */;
+		libgmallocEnabled = 0;
+		name = tracker;
+		showTypeColumn = 0;
+		sourceDirectories = (
+		);
+		startupPath = "<<ProjectDirectory>>";
+	};
+	121ECCEE1129C00200EA143B /* tracker */ = {
+		isa = PBXFileReference;
+		lastKnownFileType = "compiled.mach-o.executable";
+		name = tracker;
+		path = src/tracker;
+		sourceTree = "<group>";
+	};
+	12F85BCD11274A9900C13390 /* tracker.cpp */ = {
+		uiCtxt = {
+			sepNavIntBoundsRect = "{{0, 0}, {1203, 643}}";
+			sepNavSelRange = "{347, 0}";
+			sepNavVisRange = "{0, 902}";
+			sepNavWindowFrame = "{{176, 99}, {1262, 771}}";
+		};
+	};
+	D28A88AD04BDD90700651E21 /* OpenTracker */ = {
+		activeExec = 0;
+	};
+}

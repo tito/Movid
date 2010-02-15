@@ -12,6 +12,8 @@ int main(int argc, char **argv){
 	otCamera* cam  = new otCamera();
 	std::cout << "Camera instance with format <" << \
 		cam->getOutput()->getFormat() << ">" << std::endl;
+	
+	cam->start();
 
 
 	// otImageDisplayModule opens a window and displays an Image in it
