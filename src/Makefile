@@ -4,6 +4,7 @@ TESTER_BIN = tester
 OBJ = otDataStream.o otModule.o otCameraModule.o otImageDisplayModule.o \
 	  otGroup.o otParser.o otFactory.o otDaemon.o otGaussianBlurModule.o \
 	  otLog.o
+	  #otProperty.o
 
 CFLAGS ?= -O0 -g -Wall
 LIBS   ?=
@@ -23,4 +24,4 @@ all: ${OBJ}
 	${CXX} ${ALL_CFLAGS} -c $<
 	
 clean:
-	rm -r ${OUTPUT} *.o *.dSYM   #-r becasue .dSYM are directories made by XCode
+	rm -r ${OUTPUT} *.o *.dSYM 2>/dev/null &>/dev/null
