@@ -2,7 +2,7 @@
 
 #include "otFactory.h"
 
-#include "otCamera.h"
+#include "otCameraModule.h"
 #include "otGaussianBlurModule.h"
 #include "otImageDisplayModule.h"
 
@@ -13,12 +13,14 @@ otModule *otFactory::create(const char *name) {
 	// for easier creation, remove the ot at start
 	if ( sname.substr(0, 2) == "ot" )
 		sname =	sname.substr(2, sname.length() - 2);
+	if ( sname.substr(sname.length() - 6, 6) == "Module" )
+		sname = sname.substr(0, sname.length() - 6);
 
 	if ( sname == "Camera" )
 		return new otCamera();
-	else if ( sname == "ImageDisplayModule" )
+	else if ( sname == "ImageDisplay" )
 		return new otImageDisplayModule();
-	else if ( sname == "GaussianBlurModule" )
+	else if ( sname == "GaussianBlur" )
 		return new otGaussianBlurModule();
 
 	return NULL;

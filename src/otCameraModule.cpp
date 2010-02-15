@@ -1,7 +1,7 @@
 #include <assert.h>
 #include "otModule.h"
 #include "otDataStream.h"
-#include "otCamera.h"
+#include "otCameraModule.h"
 #include "highgui.h"
 
 otCamera::otCamera() : otModule(OT_MODULE_OUTPUT, 0, 1) {

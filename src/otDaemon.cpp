@@ -1,8 +1,8 @@
+#include <iostream>
+
 #include "otDaemon.h"
 
 #include "otFactory.h"
-#include "otCamera.h"
-#include "otImageDisplayModule.h"
 
 static otDaemon *instance = NULL;
 
