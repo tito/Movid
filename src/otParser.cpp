@@ -20,6 +20,7 @@
 #include <iostream>
 #include <cstdio>
 #include <string.h>
+#include <assert.h>
 
 #include "otParser.h"
 #include "otModule.h"
@@ -32,40 +33,41 @@
 
 
 // Return true if the char is a space/tabs/lines
-static inline bool isSpace(char p) {
+static bool isSpace(char p) {
 	return (p == ' ' || p == '\t' || p == '\r' || p == '\n') ? true : false;
 }
 
 // Skip all spaces/tabs/lines availables
-static inline bool parserSkipSpaces(char **p, char *end) {
+static bool parserSkipSpaces(char **p, char *end) {
 	while ( *p < end && isSpace(**p) )
-		*p++;
+		(*p)++;
 
 	return *p < end ? true : false;
 }
 
 // Ensure that a char is the one wanted, if yes, eat it.
-static inline bool parserCheckChar(char **p, char wanted, bool eat) {
+static bool parserCheckChar(char **p, char wanted) {
 	if ( **p == wanted ) {
-		if ( eat == true )
-			*p++;
+		(*p)++;
 		return true;
 	}
 	return false;
 }
 
-static inline otModule *parseObject(char **p, char *end) {
+static otModule *parseObject(char **p, char *end) {
 	otModule *object;
 
 	// FIXME: create the real object
 	object = new otGroup();
 
+	assert("unimplemented" && 0);
+
 	return object;
 }
 
 // Parse a pipeline content (an object and maybe -> + recurse)
-static inline otGroup *parsePipeline(char **p, char *end);
-static inline bool parsePipelineContent(char **p, char *end, otGroup* pipeline) {
+static otGroup *parsePipeline(char **p, char *end);
+static bool parsePipelineContent(char **p, char *end, otGroup* pipeline) {
 	otModule *object = NULL;
 
 	if ( !parserSkipSpaces(p, end) )
@@ -80,9 +82,9 @@ static inline bool parsePipelineContent(char **p, char *end, otGroup* pipeline) 
 
 	// Start of the ->, recurse if possible !
 	if ( **p == '-' ) {
-		if ( !parserCheckChar(p, '-', true) )
+		if ( !parserCheckChar(p, '-') )
 			INVALID_SYNTAX("'-' expected");
-		if ( !parserCheckChar(p, '>', true) )
+		if ( !parserCheckChar(p, '>') )
 			INVALID_SYNTAX("'>' expected");
 
 		return parsePipelineContent(p, end, pipeline);
@@ -99,7 +101,7 @@ parse_error:;
 }
 
 // Parse a pipeline (object -> object -> object)
-static inline otGroup *parsePipeline(char **p, char *end) {
+static otGroup *parsePipeline(char **p, char *end) {
 	otGroup *pipeline;
 
 	// FIXME: Replace with real pipeline
@@ -115,8 +117,8 @@ static inline otGroup *parsePipeline(char **p, char *end) {
 }
 
 // Parse the content of a group
-static inline otGroup *parseGroup(char **p, char *end);
-static inline bool parseGroupContent(char **p, char *end, otGroup* group) {
+static otGroup *parseGroup(char **p, char *end);
+static bool parseGroupContent(char **p, char *end, otGroup* group) {
 	otGroup *child;
 
 	// Check if it's a new group, or a pipeline
@@ -131,20 +133,20 @@ static inline bool parseGroupContent(char **p, char *end, otGroup* group) {
 		return false;
 
 	// Recursive if we got a ,
-	if ( !parserCheckChar(p, ',', true) )
+	if ( !parserCheckChar(p, ',') )
 		return parseGroupContent(p, end, group);
 
 	return true;
 }
 
 // Parse a group { ... }
-static inline otGroup *parseGroup(char **p, char *end) {
+static otGroup *parseGroup(char **p, char *end) {
 	otGroup *group = NULL;
 
 	if ( !parserSkipSpaces(p, end) )
 		return NULL;
 
-	if ( !parserCheckChar(p, '{', true) )
+	if ( !parserCheckChar(p, '{') )
 		INVALID_SYNTAX("'{' expected");
 
 	group = new otGroup();
@@ -158,7 +160,7 @@ static inline otGroup *parseGroup(char **p, char *end) {
 	if ( !parserSkipSpaces(p, end) )
 		goto parse_error;
 
-	if ( !parserCheckChar(p, '}', true) )
+	if ( !parserCheckChar(p, '}') )
 		INVALID_SYNTAX("'}' expected");
 
 	return group;
