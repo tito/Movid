@@ -3,13 +3,15 @@
 
 void usage(void) {
 	std::cout << "Usage: tester \"... pipeline ...\"" << std::endl;
-	exit(1);
 }
 
 int main(int argc, char **argv) {
 
 	if ( argc != 2 )
+	{
 		usage();
+		return 1;
+	}
 
 	otParser::parseString(argv[1]);
 
