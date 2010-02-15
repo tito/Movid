@@ -8,7 +8,7 @@ OPENCV_CFLAGS ?= `pkg-config --cflags opencv`
 OPENCV_LIBS   ?= `pkg-config --libs opencv`
 
 ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS}
-ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}   
+ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}
 
 
 all: ${OBJ}
@@ -18,4 +18,4 @@ all: ${OBJ}
 	${CXX} ${ALL_CFLAGS} -c $<
 	
 clean:
-	rm -r ${OUTPUT} *.o *.dSYM
+	rm ${OUTPUT} *.o *.dSYM &>/dev/null
