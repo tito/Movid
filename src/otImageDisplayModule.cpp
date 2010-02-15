@@ -6,15 +6,17 @@
 #include "otDataStream.h"
 
 otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
-	// FIXME move to property !
-	this->window_name = "Default";
 
+	// declare inputs
 	this->input_names[0] = std::string("image");
 	this->input_types[0] = std::string("IplImage");
+
+	// declare properties
+	this->properties["name"] = new otProperty("OpenTracker");
 }
 
 otImageDisplayModule::~otImageDisplayModule(){
-	cvDestroyWindow((char *)this->window_name.c_str());
+	cvDestroyWindow(this->property("name").asString().c_str());
 }
 
 void otImageDisplayModule::notifyData(otDataStream *input) {
@@ -25,7 +27,7 @@ void otImageDisplayModule::notifyData(otDataStream *input) {
 
 	// out input have been updated !
 	this->input->lock();
-	cvShowImage(this->window_name.c_str(), this->input->getData());
+	cvShowImage(this->property("name").asString().c_str(), this->input->getData());
 	this->input->unlock();
 }
 

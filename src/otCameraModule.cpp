@@ -15,8 +15,12 @@ otCameraModule::otCameraModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 	this->camera = NULL;
 	this->stream = new otDataStream("IplImage");
 
+	// declare outputs
 	this->output_names[0] = std::string("camera");
 	this->output_types[0] = std::string("IplImage");
+
+	// declare properties
+	this->properties["index"] = new otProperty(0);
 }
 
 otCameraModule::~otCameraModule() {
@@ -30,7 +34,7 @@ void otCameraModule::start() {
 
 	// FIXME instead of use 0, use a property !
 	LOG(INFO) << "Camera capture started";
-	this->camera = cvCaptureFromCAM(0);
+	this->camera = cvCaptureFromCAM(this->property("index").asInteger());
 }
 
 void otCameraModule::stop() {

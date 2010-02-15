@@ -10,16 +10,6 @@
 int main(int argc, char **argv){
 	int key = 0x0;
 
-
-	// ------ Test properties
-	otProperty p1 = otProperty("integer", 5),
-			   p2 = otProperty("string", "plop"),
-			   p3 = otProperty("boolean", false),
-			   p4 = otProperty("double", 98.654);
-
-	std::cout << p1 << "," << p2 << "," << p3 << "," << p4 << std::endl;
-	// ------ End test
-
 	// Camera input stream
 	otModule* cam  = otFactory::create("Camera");
 
@@ -28,6 +18,8 @@ int main(int argc, char **argv){
 
 	otModule* gauss = otFactory::create("GaussianBlur");
 	gauss->setInput(cam->getOutput(0));
+	gauss->property("width").set(31);
+	gauss->property("height").set(31);
 
 	// otImageDisplayModule opens a window and displays an Image in it
 	otModule* display = otFactory::create("ImageDisplay");

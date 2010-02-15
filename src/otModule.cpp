@@ -83,3 +83,13 @@ std::string otModule::getOutputType(int n) {
 		return "unamed";
 	return it->second;
 }
+
+otProperty &otModule::property(std::string str) {
+	static otProperty invalid(0);
+	std::map<std::string, otProperty*>::iterator it;
+	it = this->properties.find(str);
+	if ( it == this->properties.end() )
+		return invalid;
+	return *it->second;
+}
+

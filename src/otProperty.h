@@ -5,6 +5,7 @@
 #include <string>
 
 typedef enum _otPropertyType {
+	OT_PROPERTY_NONE,
 	OT_PROPERTY_BOOL, 
 	OT_PROPERTY_STRING, 
 	OT_PROPERTY_INTEGER,
@@ -13,11 +14,11 @@ typedef enum _otPropertyType {
 
 class otProperty {
 public:
-	otProperty(std::string name, bool value);
-	otProperty(std::string name, const char* value);
-	otProperty(std::string name, std::string value);
-	otProperty(std::string name, int value);
-	otProperty(std::string name, double value);
+	otProperty(bool value);
+	otProperty(const char* value);
+	otProperty(std::string value);
+	otProperty(int value);
+	otProperty(double value);
 	~otProperty();
 	
 	otPropertyType getType();
@@ -27,10 +28,17 @@ public:
 	double asDouble();
 	int asInteger();
 
+	void set(bool value);
+	void set(const char* value);
+	void set(std::string value);
+	void set(int value);
+	void set(double value);
+	
 	friend std::ostream& operator<< (std::ostream& o, const otProperty& f);
 	
 private:
-	std::string name;
+	otProperty();
+	otProperty(const otProperty& property);
 	otPropertyType type;
 	void* val;
 	

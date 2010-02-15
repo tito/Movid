@@ -9,16 +9,18 @@ LOG_DECLARE("GaussianBlur");
 otGaussianBlurModule::otGaussianBlurModule() :
 	otModule(OT_MODULE_OUTPUT|OT_MODULE_INPUT, 1, 1)
 {
-	//FIXME make tehse properties (not ehave to be uneven number)
-	this->width = 21;
-	this->height = 21;
 	this->output = new otDataStream("IplImage");
 	this->smoothed = NULL;
 
+	// declare input/output
 	this->input_names[0] = std::string("image");
 	this->input_types[0] = std::string("IplImage");
 	this->output_names[0] = std::string("image");
 	this->output_types[0] = std::string("IplImage");
+
+	// declare properties
+	this->properties["width"] = new otProperty(5.);
+	this->properties["height"] = new otProperty(5.);
 }
 
 otGaussianBlurModule::~otGaussianBlurModule(){
@@ -50,10 +52,17 @@ void otGaussianBlurModule::notifyData(otDataStream *input) {
 		this->smoothed = cvCreateImage(
 			cvGetSize((IplImage*)(this->input->getData())),
 			IPL_DEPTH_8U, 3);
+
+		LOG(INFO) << "Gaussian created with width=" <<
+			this->property("width").asDouble() << ", height=" <<
+			this->property("height").asDouble();
 	}
 
 	// FIXME prefer to do it in update, notifyData can be called inside a thread
-	cvSmooth((IplImage*)this->input->getData(), this->smoothed, CV_GAUSSIAN, this->width, this->height);
+	cvSmooth((IplImage*)this->input->getData(),
+			this->smoothed, CV_GAUSSIAN,
+			this->property("width").asDouble(),
+			this->property("height").asDouble());
 
 	this->input->unlock();
 

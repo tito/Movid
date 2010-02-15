@@ -1,35 +1,66 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "otProperty.h"
 
 #define CASTEDGET(x) x value = *(static_cast<x*>(this->val));
 
-otProperty::otProperty(std::string name, bool value) {
-	this->name = name;
+otProperty::otProperty() {
+	this->val = NULL;
+	this->type = OT_PROPERTY_NONE;
+}
+
+otProperty::otProperty(bool value) {
+	otProperty();
+	this->set(value);
+}
+
+otProperty::otProperty(const char* value) {
+	otProperty();
+	this->set(value);
+}
+
+otProperty::otProperty(std::string value) {
+	otProperty();
+	this->set(value);
+}
+
+otProperty::otProperty(int value) {
+	otProperty();
+	this->set(value);
+}
+
+otProperty::otProperty(double value) {
+	otProperty();
+	this->set(value);
+}
+
+void otProperty::set(bool value) {
+	this->free();
 	this->type = OT_PROPERTY_BOOL;
 	this->val = new bool(value);
 }
 
-otProperty::otProperty(std::string name, const char* value) {
-	this->name = name;
+void otProperty::set(const char* value) {
+	this->free();
 	this->type = OT_PROPERTY_STRING;
 	this->val = new std::string(value);
 }
 
-otProperty::otProperty(std::string name, std::string value) {
-	this->name = name;
+void otProperty::set(std::string value) {
+	this->free();
 	this->type = OT_PROPERTY_STRING;
 	this->val = new std::string(value);
 }
 
-otProperty::otProperty(std::string name, int value) {
-	this->name = name;
+void otProperty::set(int value) {
+	this->free();
 	this->type = OT_PROPERTY_INTEGER;
 	this->val = new int(value);
 }
 
-otProperty::otProperty(std::string name, double value) {
-	this->name = name;
+void otProperty::set(double value) {
+	this->free();
 	this->type = OT_PROPERTY_DOUBLE;
 	this->val = new double(value);
 }
@@ -65,6 +96,8 @@ bool otProperty::asBool() {
 			CASTEDGET(double);
 			return value == 0 ? false : true;
 		}
+
+		default:;
 	}
 	return false;
 }
@@ -94,6 +127,8 @@ std::string otProperty::asString() {
 			snprintf(buffer, sizeof(buffer), "%f", value);
 			return buffer;
 		}
+
+		default:;
 	}
 
 	return "";
@@ -120,6 +155,8 @@ double otProperty::asDouble() {
 			CASTEDGET(double);
 			return value;
 		}
+
+		default:;
 	}
 
 	return 0.0;
@@ -146,6 +183,8 @@ int otProperty::asInteger() {
 			CASTEDGET(double);
 			return (int)value;
 		}
+
+		default:;
 	}
 
 	return 0;
@@ -168,6 +207,7 @@ void otProperty::free() {
 		case OT_PROPERTY_DOUBLE:
 			delete static_cast<double *>(this->val);
 			break;
+		default:;
 	}
 
 	this->val = NULL;
@@ -183,6 +223,7 @@ std::ostream& operator<< (std::ostream& o, const otProperty& p) {
 		case OT_PROPERTY_BOOL:		return o << f->asBool();
 		case OT_PROPERTY_INTEGER:	return o << f->asInteger();
 		case OT_PROPERTY_DOUBLE:	return o << f->asDouble();
+		default:;
 	}
 
 	return o;

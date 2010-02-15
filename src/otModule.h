@@ -4,6 +4,8 @@
 #include <string>
 #include <map>
 
+#include "otProperty.h"
+
 class otDataStream;
 
 enum {
@@ -36,6 +38,8 @@ public:
 	virtual void lock();
 	virtual void unlock();
 
+	otProperty &property(std::string name);
+
 	unsigned int getCapabilities();
 	
 	// FIXME protect it
@@ -52,6 +56,7 @@ protected:
 	std::map<int, std::string> input_names;
 	std::map<int, std::string> output_types;
 	std::map<int, std::string> output_names;
+	std::map<std::string, otProperty*> properties;
 };
 
 #endif
