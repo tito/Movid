@@ -5,8 +5,9 @@
 #include "otImageDisplayModule.h"
 #include "otDataStream.h"
 
-otImageDisplayModule::otImageDisplayModule(const char* name) : otModule(OT_MODULE_INPUT, 1, 0) {
-	this->window_name = std::string(name);
+otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
+	// FIXME move to property !
+	this->window_name = "Default";
 }
 
 otImageDisplayModule::~otImageDisplayModule(){
