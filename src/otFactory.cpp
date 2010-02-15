@@ -3,6 +3,7 @@
 #include "otFactory.h"
 
 #include "otCamera.h"
+#include "otGaussianBlurModule.h"
 #include "otImageDisplayModule.h"
 
 otModule *otFactory::create(const char *name) {
@@ -17,5 +18,9 @@ otModule *otFactory::create(const char *name) {
 		return new otCamera();
 	else if ( sname == "otImageDisplayModule" )
 		return new otImageDisplayModule();
+	else if ( sname == "otGaussianBlurModule" )
+		return new otGaussianBlurModule();
+
+	return NULL;
 }
 
