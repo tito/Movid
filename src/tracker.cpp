@@ -22,7 +22,7 @@ int main(int argc, char **argv){
 
 	
 	// otImageDisplayModule opens a window and displays an Image in it
-	otImageDisplayModule* display = new otImageDisplayModule("OpenTracker");
+	otImageDisplayModule* display = new otImageDisplayModule();
 	display->setInput(gauss->getOutput(0));
 	
 
