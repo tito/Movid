@@ -1,6 +1,8 @@
 #ifndef OT_MODULE_H
 #define OT_MODULE_H
 
+#include <string>
+
 class otDataStream;
 
 enum {
@@ -18,6 +20,11 @@ public:
 	virtual otDataStream* getOutput(int n=0) = 0;
 	int getInputCount();
 	int getOutputCount();
+
+	virtual std::string getInputName(int n=0);
+	virtual std::string getOutputName(int n=0);
+	virtual std::string getInputType(int n=0);
+	virtual std::string getOutputType(int n=0);
 
 	virtual void notifyData(otDataStream *source);
 	virtual void update();

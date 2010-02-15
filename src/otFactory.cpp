@@ -17,7 +17,7 @@ otModule *otFactory::create(const char *name) {
 		sname = sname.substr(0, sname.length() - 6);
 
 	if ( sname == "Camera" )
-		return new otCamera();
+		return new otCameraModule();
 	else if ( sname == "ImageDisplay" )
 		return new otImageDisplayModule();
 	else if ( sname == "GaussianBlur" )

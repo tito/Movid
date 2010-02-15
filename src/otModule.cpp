@@ -52,3 +52,18 @@ bool otModule::isStarted() {
 	return this->is_started;
 }
 
+std::string otModule::getInputName(int n) {
+	return "unamed";
+}
+
+std::string otModule::getOutputName(int n) {
+	return "unamed";
+}
+
+std::string otModule::getInputType(int n) {
+	return "unknown";
+}
+
+std::string otModule::getOutputType(int n) {
+	return "unknown";
+}

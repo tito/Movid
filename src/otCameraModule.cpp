@@ -4,16 +4,16 @@
 #include "otCameraModule.h"
 #include "highgui.h"
 
-otCamera::otCamera() : otModule(OT_MODULE_OUTPUT, 0, 1) {
+otCameraModule::otCameraModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 	this->camera = NULL;
 	this->stream = new otDataStream("IplImage");
 }
 
-otCamera::~otCamera() {
+otCameraModule::~otCameraModule() {
 	this->stop();
 }
 
-void otCamera::start() {
+void otCameraModule::start() {
 	otModule::start();
 
 	assert( this->camera == NULL );
@@ -22,24 +22,33 @@ void otCamera::start() {
 	this->camera = cvCaptureFromCAM(0);
 }
 
-void otCamera::stop() {
+void otCameraModule::stop() {
 	if ( this->camera != NULL ) {
 		cvReleaseCapture((CvCapture **)&this->camera);
 		this->camera = NULL;
 	}
 }
 
-void otCamera::update() {
+void otCameraModule::update() {
 	// push a new image on the stream
 	this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->camera)));
 }
 
-void otCamera::setInput(otDataStream* input, int n) {
-	assert( "no input supported on otCamera()" && 0 );
+void otCameraModule::setInput(otDataStream* input, int n) {
+	assert( "no input supported on otCameraModule()" && 0 );
 }
 
-otDataStream* otCamera::getOutput(int n) {
+otDataStream* otCameraModule::getOutput(int n) {
 	assert( n == 0 );
 	return this->stream;
 }
 
+std::string otCameraModule::getOutputName(int n) {
+	assert( n == 0 );
+	return "camera";
+}
+
+std::string otCameraModule::getOutputType(int n) {
+	assert( n == 0 );
+	return "IplImage";
+}

@@ -5,13 +5,16 @@
 
 class otDataStream;
 
-class otCamera : public otModule {
+class otCameraModule : public otModule {
 public:
-	otCamera(); 
-	~otCamera();
+	otCameraModule(); 
+	~otCameraModule();
 
 	void setInput(otDataStream *input, int n=0);
 	otDataStream* getOutput(int n=0);
+
+	std::string getOutputName(int n=0);
+	std::string getOutputType(int n=0);
 
 	void start();
 	void stop();
