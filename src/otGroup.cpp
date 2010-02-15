@@ -1,7 +1,7 @@
 #include <assert.h>
 #include "otGroup.h"
 
-otGroup::otGroup() {
+otGroup::otGroup() : otModule(OT_MODULE_NONE, 0, 0) {
 }
 
 otGroup::~otGroup() {
@@ -25,5 +25,6 @@ void otGroup::setInput(otDataStream*, int n=0) {
 otDataStream* otGroup::getOutput(int n=0) {
 	// TODO take children
 	assert(0);
+	return NULL;
 }
 

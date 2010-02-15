@@ -42,7 +42,7 @@ void otDataStream::removeObserver(otModule *module) {
 void otDataStream::notifyObservers() {
 	std::vector<otModule *>::iterator it;
 	for (it = this->observers.begin(); it != this->observers.end(); it++ )
-		(*it)->update(this);
+		(*it)->notifyData(this);
 }
 
 void *otDataStream::getData() {

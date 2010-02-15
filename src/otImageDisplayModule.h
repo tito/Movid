@@ -10,7 +10,10 @@ public:
 	otImageDisplayModule(const char *name);
 	virtual ~otImageDisplayModule();
 
-	void update(otDataStream *input);
+	void notifyData(otDataStream *stream);
+
+	void setInput(otDataStream *input, int n=0);
+	otDataStream* getOutput(int n=0);
 
 private:
 	otDataStream *input;

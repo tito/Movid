@@ -4,7 +4,7 @@
 #include "otCamera.h"
 #include "highgui.h"
 
-otCamera::otCamera() {
+otCamera::otCamera() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 	this->camera = NULL;
 	this->stream = new otDataStream("IplImage");
 }
@@ -33,3 +33,13 @@ void otCamera::update() {
 	// push a new image on the stream
 	this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->camera)));
 }
+
+void otCamera::setInput(otDataStream* input, int n) {
+	assert( "no input supported on otCamera()" && 0 );
+}
+
+otDataStream* otCamera::getOutput(int n) {
+	assert( n == 0 );
+	return this->stream;
+}
+

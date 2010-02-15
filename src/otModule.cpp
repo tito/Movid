@@ -3,13 +3,33 @@
 #include "otModule.h"
 #include "otDataStream.h"
 
-otModule::~otModule() {
-	this->owner = NULL;
-	this->is_started = false;
-	this->input = NULL;
+otModule::otModule(unsigned int capabilities, int input_count, int output_count) {
+	this->capabilities	= capabilities;
+	this->input_count	= input_count;
+	this->output_count	= output_count;
+	this->is_started	= false;
+	this->owner			= NULL;
 }
 
-void otModule::update(otDataStream *source) {
+otModule::~otModule() {
+}
+
+unsigned int otModule::getCapabilities() {
+	return this->capabilities;
+}
+
+int otModule::getInputCount() {
+	return this->input_count;
+}
+
+int otModule::getOutputCount() {
+	return this->output_count;
+}
+
+void otModule::update() {
+}
+
+void otModule::notifyData(otDataStream *source) {
 }
 
 void otModule::start() {
@@ -30,18 +50,5 @@ void otModule::unlock() {
 
 bool otModule::isStarted() {
 	return this->is_started;
-}
-
-void otModule::setInput(otDataStream* input, int n) {
-	assert( input != NULL );
-	assert( n == 0);
-
-	this->input = input;
-	this->input->addObserver(this);
-}
-
-otDataStream* otModule::getOutput(int n) {
-	assert( n == 0 );
-	return this->input;
 }
 
