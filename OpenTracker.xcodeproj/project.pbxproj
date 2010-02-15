@@ -7,17 +7,20 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		121ECCD41129BED600EA143B /* otCamera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otCamera.cpp; sourceTree = "<group>"; };
+		121ECCD51129BED600EA143B /* otCamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otCamera.h; sourceTree = "<group>"; };
+		121ECCD61129BED600EA143B /* otGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otGroup.cpp; sourceTree = "<group>"; };
+		121ECCD71129BED600EA143B /* otGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otGroup.h; sourceTree = "<group>"; };
+		121ECCD81129BED600EA143B /* otParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otParser.cpp; sourceTree = "<group>"; };
+		121ECCD91129BED600EA143B /* otParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otParser.h; sourceTree = "<group>"; };
+		121ECCDA1129BED600EA143B /* tester.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tester.cpp; sourceTree = "<group>"; };
 		122C5D271127887A0033A7DE /* otModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otModule.h; sourceTree = "<group>"; };
 		122C5D281127887A0033A7DE /* otModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otModule.cpp; sourceTree = "<group>"; };
 		122C5D29112788CB0033A7DE /* otDataStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otDataStream.h; sourceTree = "<group>"; };
 		122C5D2A112788CB0033A7DE /* otDataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDataStream.cpp; sourceTree = "<group>"; };
-		122C5D2B11278F770033A7DE /* otImageDataStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageDataStream.h; sourceTree = "<group>"; };
-		122C5D2C11278F770033A7DE /* otImageDataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageDataStream.cpp; sourceTree = "<group>"; };
 		123586A21127B3FB00D540BD /* otImageDisplayModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageDisplayModule.h; sourceTree = "<group>"; };
 		123586A31127B3FB00D540BD /* otImageDisplayModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageDisplayModule.cpp; sourceTree = "<group>"; };
 		12F85BC811274A9900C13390 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		12F85BCA11274A9900C13390 /* otCameraDataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otCameraDataStream.cpp; sourceTree = "<group>"; };
-		12F85BCB11274A9900C13390 /* otCameraDataStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otCameraDataStream.h; sourceTree = "<group>"; };
 		12F85BCD11274A9900C13390 /* tracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tracker.cpp; sourceTree = "<group>"; };
 		12F85C1711275B8B00C13390 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		12F85C5A1127646100C13390 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -37,16 +40,19 @@
 		12F85BC911274A9900C13390 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				121ECCD41129BED600EA143B /* otCamera.cpp */,
+				121ECCD51129BED600EA143B /* otCamera.h */,
+				121ECCD61129BED600EA143B /* otGroup.cpp */,
+				121ECCD71129BED600EA143B /* otGroup.h */,
+				121ECCD81129BED600EA143B /* otParser.cpp */,
+				121ECCD91129BED600EA143B /* otParser.h */,
+				121ECCDA1129BED600EA143B /* tester.cpp */,
 				12F85C5A1127646100C13390 /* Makefile */,
-				12F85BCA11274A9900C13390 /* otCameraDataStream.cpp */,
-				12F85BCB11274A9900C13390 /* otCameraDataStream.h */,
 				12F85BCD11274A9900C13390 /* tracker.cpp */,
 				122C5D271127887A0033A7DE /* otModule.h */,
 				122C5D281127887A0033A7DE /* otModule.cpp */,
 				122C5D29112788CB0033A7DE /* otDataStream.h */,
 				122C5D2A112788CB0033A7DE /* otDataStream.cpp */,
-				122C5D2B11278F770033A7DE /* otImageDataStream.h */,
-				122C5D2C11278F770033A7DE /* otImageDataStream.cpp */,
 				123586A21127B3FB00D540BD /* otImageDisplayModule.h */,
 				123586A31127B3FB00D540BD /* otImageDisplayModule.cpp */,
 			);

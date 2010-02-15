@@ -21,4 +21,4 @@ all: ${OBJ}
 	${CXX} ${ALL_CFLAGS} -c $<
 	
 clean:
-	rm ${OUTPUT} *.o *.dSYM &>/dev/null
+	rm -r ${OUTPUT} *.o *.dSYM   #-r becasue .dSYM are directories made by XCode

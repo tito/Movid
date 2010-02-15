@@ -10,6 +10,9 @@ int main(int argc, char **argv){
 	// Camera input stream
 	otModule* cam  = otFactory::create("otCamera");
 
+	// FIXME, should be done by a pipeline
+	cam->start();
+
 	// otImageDisplayModule opens a window and displays an Image in it
 	otModule* display = otFactory::create("otImageDisplayModule");
 	display->setInput(cam->getOutput(0));
