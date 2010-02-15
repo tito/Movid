@@ -4,6 +4,8 @@
 #include "otCamera.h"
 #include "otDataStream.h"
 #include "otImageDisplayModule.h"
+#include "otGaussianBlurModule.h"
+
 
 int main(int argc, char **argv){
 	int key;
@@ -16,16 +18,14 @@ int main(int argc, char **argv){
 	cam->start();
 
 
+	otGaussianBlurModule* gauss = new otGaussianBlurModule();
+	gauss->setInput(cam->getOutput(0));
+
+	
 	// otImageDisplayModule opens a window and displays an Image in it
 	otImageDisplayModule* display = new otImageDisplayModule("OpenTracker");
-	display->setInput(cam->getOutput(0));
-
-	// simple pass through to test input/output pipes
-#if 0 // not avilable by just an display output module yet.
-	otImageDisplayModule* display2 = new otImageDisplayModule("Window 2");
-	display2->setInput(display->getOutput());
-#endif
-
+	display->setInput(gauss->getOutput(0));
+	
 	// keep updating teh camera until ESC key is pressed
 	while ( key != 0x1b ) {
 		cam->update();
