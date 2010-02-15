@@ -20,6 +20,12 @@
 		122C5D2A112788CB0033A7DE /* otDataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDataStream.cpp; sourceTree = "<group>"; };
 		123586A21127B3FB00D540BD /* otImageDisplayModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageDisplayModule.h; sourceTree = "<group>"; };
 		123586A31127B3FB00D540BD /* otImageDisplayModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageDisplayModule.cpp; sourceTree = "<group>"; };
+		12EFF7761129D06B0027DFA2 /* otDaemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDaemon.cpp; sourceTree = "<group>"; };
+		12EFF7771129D06B0027DFA2 /* otDaemon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otDaemon.h; sourceTree = "<group>"; };
+		12EFF7781129D06B0027DFA2 /* otFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otFactory.cpp; sourceTree = "<group>"; };
+		12EFF7791129D06B0027DFA2 /* otFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otFactory.h; sourceTree = "<group>"; };
+		12EFF77A1129D06B0027DFA2 /* otGaussianBlurModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otGaussianBlurModule.cpp; sourceTree = "<group>"; };
+		12EFF77B1129D06B0027DFA2 /* otGaussianBlurModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otGaussianBlurModule.h; sourceTree = "<group>"; };
 		12F85BC811274A9900C13390 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		12F85BCD11274A9900C13390 /* tracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tracker.cpp; sourceTree = "<group>"; };
 		12F85C1711275B8B00C13390 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -40,6 +46,12 @@
 		12F85BC911274A9900C13390 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				12EFF7761129D06B0027DFA2 /* otDaemon.cpp */,
+				12EFF7771129D06B0027DFA2 /* otDaemon.h */,
+				12EFF7781129D06B0027DFA2 /* otFactory.cpp */,
+				12EFF7791129D06B0027DFA2 /* otFactory.h */,
+				12EFF77A1129D06B0027DFA2 /* otGaussianBlurModule.cpp */,
+				12EFF77B1129D06B0027DFA2 /* otGaussianBlurModule.h */,
 				121ECCD41129BED600EA143B /* otCamera.cpp */,
 				121ECCD51129BED600EA143B /* otCamera.h */,
 				121ECCD61129BED600EA143B /* otGroup.cpp */,
