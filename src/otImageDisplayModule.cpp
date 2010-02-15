@@ -8,6 +8,9 @@
 otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
 	// FIXME move to property !
 	this->window_name = "Default";
+
+	this->input_names[0] = std::string("image");
+	this->input_types[0] = std::string("IplImage");
 }
 
 otImageDisplayModule::~otImageDisplayModule(){

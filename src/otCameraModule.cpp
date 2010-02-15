@@ -7,6 +7,9 @@
 otCameraModule::otCameraModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 	this->camera = NULL;
 	this->stream = new otDataStream("IplImage");
+
+	this->output_names[0] = std::string("camera");
+	this->output_types[0] = std::string("IplImage");
 }
 
 otCameraModule::~otCameraModule() {
@@ -43,12 +46,3 @@ otDataStream* otCameraModule::getOutput(int n) {
 	return this->stream;
 }
 
-std::string otCameraModule::getOutputName(int n) {
-	assert( n == 0 );
-	return "camera";
-}
-
-std::string otCameraModule::getOutputType(int n) {
-	assert( n == 0 );
-	return "IplImage";
-}

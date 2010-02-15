@@ -2,6 +2,7 @@
 #define OT_MODULE_H
 
 #include <string>
+#include <map>
 
 class otDataStream;
 
@@ -23,8 +24,8 @@ public:
 
 	virtual std::string getInputName(int n=0);
 	virtual std::string getOutputName(int n=0);
-	virtual std::string getInputType(int n=0);
-	virtual std::string getOutputType(int n=0);
+	std::string getInputType(int n=0);
+	std::string getOutputType(int n=0);
 
 	virtual void notifyData(otDataStream *source);
 	virtual void update();
@@ -45,6 +46,12 @@ private:
 	int	input_count;
 	int	output_count;
 	bool is_started;
+
+protected:
+	std::map<int, std::string> input_types;
+	std::map<int, std::string> input_names;
+	std::map<int, std::string> output_types;
+	std::map<int, std::string> output_names;
 };
 
 #endif

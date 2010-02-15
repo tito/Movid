@@ -53,17 +53,33 @@ bool otModule::isStarted() {
 }
 
 std::string otModule::getInputName(int n) {
-	return "unamed";
+	std::map<int, std::string>::iterator it;
+	it = this->input_names.find(n);
+	if ( it == this->input_names.end() )
+		return "unamed";
+	return it->second;
 }
 
 std::string otModule::getOutputName(int n) {
-	return "unamed";
+	std::map<int, std::string>::iterator it;
+	it = this->output_names.find(n);
+	if ( it == this->output_names.end() )
+		return "unamed";
+	return it->second;
 }
 
 std::string otModule::getInputType(int n) {
-	return "unknown";
+	std::map<int, std::string>::iterator it;
+	it = this->input_types.find(n);
+	if ( it == this->input_types.end() )
+		return "unamed";
+	return it->second;
 }
 
 std::string otModule::getOutputType(int n) {
-	return "unknown";
+	std::map<int, std::string>::iterator it;
+	it = this->output_types.find(n);
+	if ( it == this->output_types.end() )
+		return "unamed";
+	return it->second;
 }

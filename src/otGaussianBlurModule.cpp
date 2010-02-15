@@ -12,6 +12,11 @@ otGaussianBlurModule::otGaussianBlurModule() :
 	this->height = 21;
 	this->output = new otDataStream("IplImage");
 	this->smoothed = NULL;
+
+	this->input_names[0] = std::string("image");
+	this->input_types[0] = std::string("IplImage");
+	this->output_names[0] = std::string("image");
+	this->output_types[0] = std::string("IplImage");
 }
 
 otGaussianBlurModule::~otGaussianBlurModule(){
