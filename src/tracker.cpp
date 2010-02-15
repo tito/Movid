@@ -19,7 +19,7 @@ int main(int argc, char **argv){
 	gauss->setInput(cam->getOutput(0));
 
 	// otImageDisplayModule opens a window and displays an Image in it
-	otModule* display = otFactory::create("DisplayImage");
+	otModule* display = otFactory::create("ImageDisplay");
 	display->setInput(gauss->getOutput(0));
 
 	// keep updating teh camera until ESC key is pressed
