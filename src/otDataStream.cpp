@@ -1,27 +1,50 @@
+#include <assert.h>
+
 #include "otDataStream.h"
 #include "otModule.h"
 
-//I have to define these, even purely virtual doesnt work for destructor?  
-//if not decalred and defined, child class compilation causes 'undefined' 
-//error message when looking for base class de/con-structor?! 
-otDataStream::otDataStream(){}
-otDataStream::~otDataStream(){}
-
-
-void otDataStream::update(){
+otDataStream::otDataStream(std::string format) {
+	this->format = format;
+	this->data	 = NULL;
 }
 
-void otDataStream::addObserver(otModule* module){
+otDataStream::~otDataStream() {
+}
+
+std::string otDataStream::getFormat() {
+	return this->format;
+}
+
+void otDataStream::lock() {
+	// FIXME
+}
+
+void otDataStream::unlock() {
+	// FIXME
+}
+
+void otDataStream::push(void *data) {
+	this->lock();
+	this->data = data;
+	this->unlock();
+
+	this->notifyObservers();
+}
+
+void otDataStream::addObserver(otModule *module) {
 	this->observers.push_back(module);
 }
 
-void otDataStream::notifyObservers(){
-	for(int i=0; i < this->observers.size(); i++){
-		this->observers[i]->update();
-	}
+void otDataStream::removeObserver(otModule *module) {
+	assert("unimplemented" && 0);
 }
 
+void otDataStream::notifyObservers() {
+	std::vector<otModule *>::iterator it;
+	for (it = this->observers.begin(); it != this->observers.end(); it++ )
+		(*it)->update(this);
+}
 
-
-
-	
+void *otDataStream::getData() {
+	return this->data;
+}

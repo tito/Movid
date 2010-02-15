@@ -8,7 +8,7 @@ otGroup::~otGroup() {
 }
 
 void otGroup::addElement(otModule *module) {
-	module->parent = this;
+	module->owner = this;
 	this->modules.push_front(module);
 }
 
@@ -26,3 +26,4 @@ otDataStream* otGroup::getOutput(int n=0) {
 	// TODO take children
 	assert(0);
 }
+

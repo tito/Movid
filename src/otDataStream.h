@@ -1,6 +1,7 @@
 #ifndef OT_DATA_STREAM_H
 #define OT_DATA_STREAM_H
 
+#include <string>
 #include <vector>
 
 class otModule;
@@ -8,17 +9,27 @@ class otModule;
 class otDataStream {
 	
 public:
-	otDataStream(); 
+	otDataStream(std::string format); 
 	virtual ~otDataStream();
 	
-	virtual void update();
-	void addObserver(otModule*);
+	void addObserver(otModule *module);
+	void removeObserver(otModule *module);
+
+	void push(void *data);
+	void *getData();
+
+	void lock();
+	void unlock();
+
+	std::string getFormat();
 	
 protected:
+	std::string format;
+	void *data;
 	std::vector<otModule*> observers;
 
 	void notifyObservers();
-	
 };
 
 #endif
+

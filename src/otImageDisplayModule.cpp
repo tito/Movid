@@ -1,31 +1,27 @@
-#include "otImageDisplayModule.h"
+#include <assert.h>
 
 #include "highgui.h"
-#include "otImageDataStream.h"
 
-otImageDisplayModule::otImageDisplayModule(char* name){
-	this->window_name = new std::string(name);
-	cvNamedWindow(this->window_name->c_str(), CV_WINDOW_AUTOSIZE);
-	cvMoveWindow(this->window_name->c_str(), 50, 50);
+#include "otImageDisplayModule.h"
+#include "otDataStream.h"
+
+otImageDisplayModule::otImageDisplayModule(const char* name) {
+	this->window_name = std::string(name);
 }
 
 otImageDisplayModule::~otImageDisplayModule(){
-	cvDestroyWindow(this->window_name->c_str());
-	delete this->window_name;
+	cvDestroyWindow((char *)this->window_name.c_str());
 }
 
+void otImageDisplayModule::update(otDataStream *input) {
+	// ensure that input data is IfiImage
+	assert( input != NULL );
+	assert( input == this->input );
+	assert( input->getFormat() == "IfiImage" );
 
-void otImageDisplayModule::update(){
-	cvShowImage(this->window_name->c_str(), this->input->getImageData());
+	// out input have been updated !
+	this->input->lock();
+	cvShowImage(this->window_name.c_str(), this->input->getData());
+	this->input->unlock();
 }
-
-void otImageDisplayModule::setInput( otDataStream* in, int n){
-	this->input = (otImageDataStream*)in;
-	this->input->addObserver(this);
-}
-
-otDataStream* otImageDisplayModule::getOutput( int n){
-	return this->input; //pass through
-}
-	
 

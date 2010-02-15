@@ -1,7 +1,7 @@
 TRACKER_BIN = tracker
 TESTER_BIN = tester
 
-OBJ = otDataStream.o otImageDataStream.o otCameraDataStream.o otModule.o otImageDisplayModule.o otGroup.o otParser.o
+OBJ = otDataStream.o otCamera.o otModule.o otImageDisplayModule.o otGroup.o otParser.o
 
 CFLAGS ?= -O0 -g -Wall
 LIBS   ?=
