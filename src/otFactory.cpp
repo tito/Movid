@@ -11,14 +11,14 @@ otModule *otFactory::create(const char *name) {
 	std::string sname = std::string(name);
 
 	// for easier creation, remove the ot at start
-	//if ( sname.substr(0, 2) == "ot" )
-	//	sname =	sname.substr(2, sname.length() - 2);
+	if ( sname.substr(0, 2) == "ot" )
+		sname =	sname.substr(2, sname.length() - 2);
 
-	if ( sname == "otCamera" )
+	if ( sname == "Camera" )
 		return new otCamera();
-	else if ( sname == "otImageDisplayModule" )
+	else if ( sname == "ImageDisplayModule" )
 		return new otImageDisplayModule();
-	else if ( sname == "otGaussianBlurModule" )
+	else if ( sname == "GaussianBlurModule" )
 		return new otGaussianBlurModule();
 
 	return NULL;
