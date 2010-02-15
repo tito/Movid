@@ -5,9 +5,20 @@
 #include "otModule.h"
 #include "otDataStream.h"
 #include "otFactory.h"
+#include "otProperty.h"
 
 int main(int argc, char **argv){
 	int key = 0x0;
+
+
+	// ------ Test properties
+	otProperty p1 = otProperty("integer", 5),
+			   p2 = otProperty("string", "plop"),
+			   p3 = otProperty("boolean", false),
+			   p4 = otProperty("double", 98.654);
+
+	std::cout << p1 << "," << p2 << "," << p3 << "," << p4 << std::endl;
+	// ------ End test
 
 	// Camera input stream
 	otModule* cam  = otFactory::create("Camera");

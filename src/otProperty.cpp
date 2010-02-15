@@ -1,65 +1,190 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "otProperty.h"
 
-otProperty::otProperty(){
+#define CASTEDGET(x) x value = *(static_cast<x*>(this->val));
+
+otProperty::otProperty(std::string name, bool value) {
+	this->name = name;
 	this->type = OT_PROPERTY_BOOL;
-	this->val = new bool(val);
+	this->val = new bool(value);
 }
 
-otProperty::~otProperty(){
-	this->free_value();
-}
-
-otPropertyType otProperty::getType(){
-	return	this->type;
-}
-
-bool otProperty::getBoolValue(){
-	//TODO convert from str or float to bool
-	if (this->type == OT_PROPERTY_BOOL)
-		return *(bool*)(this->val);
-}
-
-const char* otProperty::getStringValue(){
-	if (this->type == OT_PROPERTY_STRING)
-		return (const char*)this->val;
-	if (this->type == OT_PROPERTY_BOOL)
-		return *(float*)(this->val) ? "True" : "False";
-}
-
-float otProperty::getFloatValue(){
-	//TODO covert from str to float
-	if (this->type == OT_PROPERTY_FLOAT)
-		return *(float*)(this->val);
-	if (this->type == OT_PROPERTY_BOOL)
-		return *(bool*)(this->val) ? 1.0 : 0.0;
-	if (this->type == OT_PROPERTY_STRING)
-		return atof((const char*)(this->val));
-	
-}
-
-void otProperty::setValue(bool val){
-	this->free_value();
-	this->type = OT_PROPERTY_BOOL;
-	this->val = new bool(val);
-}
-
-void otProperty::setValue(const char* val){
-	this->free_value();
+otProperty::otProperty(std::string name, const char* value) {
+	this->name = name;
 	this->type = OT_PROPERTY_STRING;
-	this->val = (void*)val;
+	this->val = new std::string(value);
 }
 
-void otProperty::setValue(float val){
-	this->free_value();
-	this->type = OT_PROPERTY_FLOAT;
-	this->val = new float(val);
+otProperty::otProperty(std::string name, std::string value) {
+	this->name = name;
+	this->type = OT_PROPERTY_STRING;
+	this->val = new std::string(value);
 }
 
+otProperty::otProperty(std::string name, int value) {
+	this->name = name;
+	this->type = OT_PROPERTY_INTEGER;
+	this->val = new int(value);
+}
 
-void otProperty::free_value(){
-	if (this->type != OT_PROPERTY_BOOL)
-		delete (bool*)this->val;
-	if (this->type != OT_PROPERTY_FLOAT)
-		delete (float*)this->val;
+otProperty::otProperty(std::string name, double value) {
+	this->name = name;
+	this->type = OT_PROPERTY_DOUBLE;
+	this->val = new double(value);
+}
+
+otProperty::~otProperty() {
+	this->free();
+}
+
+otPropertyType otProperty::getType() {
+	return this->type;
+}
+
+bool otProperty::asBool() {
+	switch ( this->type ) {
+		case OT_PROPERTY_BOOL: {
+			CASTEDGET(bool);
+			return value;
+		}
+
+		case OT_PROPERTY_STRING: {
+			CASTEDGET(std::string);
+			if ( value == "True" || value == "true" || value == "TRUE" )
+				return true;
+			return false;
+		}
+
+		case OT_PROPERTY_INTEGER: {
+			CASTEDGET(int);
+			return value == 0 ? false : true;
+		}
+
+		case OT_PROPERTY_DOUBLE: {
+			CASTEDGET(double);
+			return value == 0 ? false : true;
+		}
+	}
+	return false;
+}
+
+std::string otProperty::asString() {
+	switch ( this->type ) {
+		case OT_PROPERTY_STRING: {
+			CASTEDGET(std::string);
+			return value;
+		}
+
+		case OT_PROPERTY_BOOL: {
+			CASTEDGET(bool);
+			return value ? "true" : "false";
+		}
+
+		case OT_PROPERTY_INTEGER: {
+			char buffer[64];
+			CASTEDGET(int);
+			snprintf(buffer, sizeof(buffer), "%d", value);
+			return buffer;
+		}
+
+		case OT_PROPERTY_DOUBLE: {
+			char buffer[64];
+			CASTEDGET(double);
+			snprintf(buffer, sizeof(buffer), "%f", value);
+			return buffer;
+		}
+	}
+
+	return "";
+}
+
+double otProperty::asDouble() {
+	switch ( this->type ) {
+		case OT_PROPERTY_STRING: {
+			CASTEDGET(std::string);
+			return atof(value.c_str());
+		}
+
+		case OT_PROPERTY_BOOL: {
+			CASTEDGET(bool);
+			return value ? 1.0 : 0.0;
+		}
+
+		case OT_PROPERTY_INTEGER: {
+			CASTEDGET(int);
+			return (double)value;
+		}
+
+		case OT_PROPERTY_DOUBLE: {
+			CASTEDGET(double);
+			return value;
+		}
+	}
+
+	return 0.0;
+}
+
+int otProperty::asInteger() {
+	switch ( this->type ) {
+		case OT_PROPERTY_STRING: {
+			CASTEDGET(std::string);
+			return atoi(value.c_str());
+		}
+
+		case OT_PROPERTY_BOOL: {
+			CASTEDGET(bool);
+			return value ? 1 : 0;
+		}
+
+		case OT_PROPERTY_INTEGER: {
+			CASTEDGET(int);
+			return value;
+		}
+
+		case OT_PROPERTY_DOUBLE: {
+			CASTEDGET(double);
+			return (int)value;
+		}
+	}
+
+	return 0;
+}
+
+void otProperty::free() {
+	if ( this->val == NULL )
+		return;
+
+	switch ( this->type ) {
+		case OT_PROPERTY_STRING:
+			delete (std::string *)(this->val);
+			break;
+		case OT_PROPERTY_BOOL:
+			delete static_cast<bool *>(this->val);
+			break;
+		case OT_PROPERTY_INTEGER:
+			delete static_cast<int *>(this->val);
+			break;
+		case OT_PROPERTY_DOUBLE:
+			delete static_cast<double *>(this->val);
+			break;
+	}
+
+	this->val = NULL;
+}
+
+std::ostream& operator<< (std::ostream& o, const otProperty& p) {
+
+	// Bad bad ... :'(
+	otProperty *f = (otProperty *)&p;
+
+	switch ( f->getType() ) {
+		case OT_PROPERTY_STRING:	return o << f->asString();
+		case OT_PROPERTY_BOOL:		return o << f->asBool();
+		case OT_PROPERTY_INTEGER:	return o << f->asInteger();
+		case OT_PROPERTY_DOUBLE:	return o << f->asDouble();
+	}
+
+	return o;
 }
 
