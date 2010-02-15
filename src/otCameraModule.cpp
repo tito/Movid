@@ -1,10 +1,17 @@
 #include <assert.h>
+
+#include "otLog.h"
 #include "otModule.h"
 #include "otDataStream.h"
 #include "otCameraModule.h"
 #include "highgui.h"
 
+LOG_DECLARE("Camera");
+
 otCameraModule::otCameraModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
+
+	LOG(DEBUG) << "Create otCameraModule";
+
 	this->camera = NULL;
 	this->stream = new otDataStream("IplImage");
 
@@ -17,16 +24,18 @@ otCameraModule::~otCameraModule() {
 }
 
 void otCameraModule::start() {
-	otModule::start();
-
 	assert( this->camera == NULL );
 
+	otModule::start();
+
 	// FIXME instead of use 0, use a property !
+	LOG(INFO) << "Camera capture started";
 	this->camera = cvCaptureFromCAM(0);
 }
 
 void otCameraModule::stop() {
 	if ( this->camera != NULL ) {
+		LOG(DEBUG) << "Release camera capture";
 		cvReleaseCapture((CvCapture **)&this->camera);
 		this->camera = NULL;
 	}
@@ -34,6 +43,7 @@ void otCameraModule::stop() {
 
 void otCameraModule::update() {
 	// push a new image on the stream
+	LOG(DEBUG) << "Push a new image on the stream";
 	this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->camera)));
 }
 

@@ -1,8 +1,10 @@
 #include <assert.h>
 
+#include "otLog.h"
 #include "otGaussianBlurModule.h"
 #include "otDataStream.h"
 
+LOG_DECLARE("GaussianBlur");
 
 otGaussianBlurModule::otGaussianBlurModule() :
 	otModule(OT_MODULE_OUTPUT|OT_MODULE_INPUT, 1, 1)
@@ -44,6 +46,7 @@ void otGaussianBlurModule::notifyData(otDataStream *input) {
 	this->input->lock();
 
 	if (this->smoothed == NULL) {
+		LOG(DEBUG) << "First time, create the image for smooth";
 		this->smoothed = cvCreateImage(
 			cvGetSize((IplImage*)(this->input->getData())),
 			IPL_DEPTH_8U, 3);

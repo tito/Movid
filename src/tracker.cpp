@@ -7,7 +7,7 @@
 #include "otFactory.h"
 
 int main(int argc, char **argv){
-	int key;
+	int key = 0x0;
 
 	// Camera input stream
 	otModule* cam  = otFactory::create("Camera");
