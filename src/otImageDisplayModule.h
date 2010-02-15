@@ -1,13 +1,14 @@
 #ifndef OT_IMAGE_DISPLAY_MODULE_H
 #define OT_IMAGE_DISPLAY_MODULE_H
 
+#include <string>
 #include "otModule.h"
 
 class otDataStream;
 
 class otImageDisplayModule : public otModule {
 public:
-	otImageDisplayModule(const char *name);
+	otImageDisplayModule();
 	virtual ~otImageDisplayModule();
 
 	void notifyData(otDataStream *stream);
