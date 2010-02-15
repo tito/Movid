@@ -1,0 +1,4 @@
+*.o
+*.swp
+src/tracker
+src/tester
