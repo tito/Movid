@@ -5,6 +5,8 @@
 #include "otImageDisplayModule.h"
 #include "../otDataStream.h"
 
+MODULE_DECLARE(ImageDisplay, "native", "Display image on a window");
+
 otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
 
 	// declare inputs

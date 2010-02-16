@@ -6,6 +6,23 @@
 
 #include "otProperty.h"
 
+#define MODULE_DECLARE(name, author, description) \
+	MODULE_DECLARE_EX(name, Module, author, description);
+
+#define MODULE_DECLARE_EX(name, module, author, description) \
+	static std::string module_name = #name; \
+	static std::string module_author = author; \
+	static std::string module_description = description; \
+	std::string ot##name##module::getName() { return module_name; } \
+	std::string ot##name##module::getDescription() { return module_description; } \
+	std::string ot##name##module::getAuthor() { return module_author; }
+
+#define MODULE_INTERNALS() 					\
+	public:									\
+	virtual std::string getName(); 			\
+	virtual std::string getDescription(); 	\
+	virtual std::string getAuthor(); 		\
+
 class otDataStream;
 
 enum {
@@ -41,6 +58,12 @@ public:
 	otProperty &property(std::string name);
 
 	unsigned int getCapabilities();
+
+	virtual std::string getName() = 0;
+	virtual std::string getDescription() = 0;
+	virtual std::string getAuthor() = 0;
+
+	void describe();
 	
 	// FIXME protect it
 	otModule *owner;

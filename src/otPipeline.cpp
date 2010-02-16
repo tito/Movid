@@ -10,6 +10,8 @@
 
 LOG_DECLARE("Group");
 
+MODULE_DECLARE_EX(Pipeline,, "native", "Handle object list");
+
 otPipeline::otPipeline() : otModule(OT_MODULE_NONE, 0, 0) {
 }
 
