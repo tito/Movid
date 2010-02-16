@@ -35,6 +35,8 @@ public:
 	void set(double value);
 	
 	friend std::ostream& operator<< (std::ostream& o, const otProperty& f);
+
+	static std::string getPropertyTypeName(otPropertyType type);
 	
 private:
 	otProperty(const otProperty& property);

@@ -103,6 +103,19 @@ void otModule::describe() {
 		std::cout << "output,";
 	std::cout << std::endl;
 
+	if ( this->properties.size() > 0 ) {
+		std::cout << std::endl;
+		std::cout << "Properties: " << std::endl;
+
+		std::map<std::string, otProperty*>::iterator it;
+		for ( it = this->properties.begin(); it != this->properties.end(); it++ ) {
+			std::cout << " " << (*it).first << ": " \
+				<< "type=" << otProperty::getPropertyTypeName((*it).second->getType()) << ", "\
+				<< "default=" << (*it).second->asString() \
+				<< std::endl;
+		}
+	}
+
 	if ( this->getCapabilities() & OT_MODULE_INPUT ) {
 		std::cout << std::endl;
 		std::cout << "Input :" << std::endl;
