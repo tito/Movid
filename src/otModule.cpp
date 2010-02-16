@@ -5,6 +5,8 @@
 #include "otModule.h"
 #include "otDataStream.h"
 
+LOG_DECLARE("Module");
+
 static unsigned int idcount = 0;
 
 otModule::otModule(unsigned int capabilities, int input_count, int output_count) {
@@ -50,12 +52,12 @@ void otModule::notifyData(otDataStream *source) {
 
 void otModule::start() {
 	this->is_started = true;
-	LOGX(DEBUG) << "start <" << this->property("id").asString() << ">";
+	LOG(DEBUG) << "start <" << this->property("id").asString() << ">";
 }
 
 void otModule::stop() {
 	this->is_started = false;
-	LOGX(DEBUG) << "stop <" << this->property("id").asString() << ">";
+	LOG(DEBUG) << "stop <" << this->property("id").asString() << ">";
 }
 
 void otModule::lock() {
