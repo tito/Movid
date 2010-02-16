@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		0156A990112AAA8B00E6063F /* describe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = describe.cpp; sourceTree = "<group>"; };
 		121ECCD81129BED600EA143B /* otParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otParser.cpp; sourceTree = "<group>"; };
 		121ECCD91129BED600EA143B /* otParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otParser.h; sourceTree = "<group>"; };
 		121ECCDA1129BED600EA143B /* tester.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tester.cpp; sourceTree = "<group>"; };
@@ -72,6 +73,7 @@
 		12F85BC911274A9900C13390 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				0156A990112AAA8B00E6063F /* describe.cpp */,
 				12F85BCD11274A9900C13390 /* tracker.cpp */,
 				121ECCDA1129BED600EA143B /* tester.cpp */,
 				128297C3112A61DE0078B03F /* modules */,
