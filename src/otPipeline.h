@@ -26,6 +26,10 @@ public:
 	virtual void start();
 	virtual void stop();
 	virtual void update();
+
+	otModule *firstModule();
+	otModule *lastModule();
+
 private:
 	std::vector<otModule *> modules;
 };

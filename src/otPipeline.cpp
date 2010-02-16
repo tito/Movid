@@ -16,6 +16,16 @@ otPipeline::otPipeline() : otModule(OT_MODULE_NONE, 0, 0) {
 otPipeline::~otPipeline() {
 }
 
+otModule *otPipeline::firstModule() {
+	assert( this->modules.size() > 0 );
+	return this->modules[0];
+}
+
+otModule *otPipeline::lastModule() {
+	assert( this->modules.size() > 0 );
+	return this->modules[this->modules.size() - 1];
+}
+
 void otPipeline::addElement(otModule *module) {
 	assert( module != NULL );
 	module->owner = this;
@@ -33,43 +43,35 @@ void otPipeline::removeElement(otModule *module) {
 }
 
 void otPipeline::setInput(otDataStream* stream, int n=0) {
-	assert( this->modules.size() > 0 );
-	this->modules[0]->setInput(stream, n);
+	this->firstModule()->setInput(stream, n);
 }
 
 otDataStream* otPipeline::getOutput(int n=0) {
-	assert( this->modules.size() > 0 );
-	return this->modules[this->modules.size() - 1]->getOutput(n);
+	return this->lastModule()->getOutput(n);
 }
 
 int otPipeline::getInputCount() {
-	assert( this->modules.size() > 0 );
-	return this->modules[0]->getInputCount();
+	return this->firstModule()->getInputCount();
 }
 
 int otPipeline::getOutputCount() {
-	assert( this->modules.size() > 0 );
-	return this->modules[this->modules.size() - 1]->getOutputCount();
+	return this->lastModule()->getOutputCount();
 }
 
 std::string otPipeline::getInputName(int n) {
-	assert( this->modules.size() > 0 );
-	return this->modules[0]->getInputName(n);
+	return this->firstModule()->getInputName(n);
 }
 
 std::string otPipeline::getOutputName(int n) {
-	assert( this->modules.size() > 0 );
-	return this->modules[this->modules.size() - 1]->getOutputName(n);
+	return this->lastModule()->getOutputName(n);
 }
 
 std::string otPipeline::getInputType(int n) {
-	assert( this->modules.size() > 0 );
-	return this->modules[0]->getInputType(n);
+	return this->firstModule()->getInputType(n);
 }
 
 std::string otPipeline::getOutputType(int n) {
-	assert( this->modules.size() > 0 );
-	return this->modules[this->modules.size() - 1]->getOutputType(n);
+	return this->lastModule()->getOutputType(n);
 }
 
 void otPipeline::start() {

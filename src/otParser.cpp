@@ -21,10 +21,13 @@
 #include <cstdio>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "otParser.h"
 #include "otModule.h"
 #include "otPipeline.h"
+#include "otFactory.h"
+#include "otLog.h"
 
 #define INVALID_SYNTAX(error) do { \
 		std::cerr << "otParser: invalid syntax: " << error << std::endl; \
@@ -32,82 +35,107 @@
 	} while (0);
 
 
-// Return true if the char is a space/tabs/lines
-static bool isSpace(char p) {
-	return (p == ' ' || p == '\t' || p == '\r' || p == '\n') ? true : false;
-}
+LOG_DECLARE("Parser");
 
 // Skip all spaces/tabs/lines availables
-static bool parserSkipSpaces(char **p, char *end) {
-	while ( *p < end && isSpace(**p) )
-		(*p)++;
+static bool parserSkipSpaces(std::string &str) {
+	while ( str.size() && isspace(str[0]) )
+		str.erase(str.begin());
 
-	return *p < end ? true : false;
+	return str.size() ? true : false;
 }
 
 // Ensure that a char is the one wanted, if yes, eat it.
-static bool parserCheckChar(char **p, char wanted) {
-	if ( **p == wanted ) {
-		(*p)++;
+static bool parserCheckChar(std::string &str, char wanted) {
+	if ( str[0] == wanted ) {
+		str.erase(str.begin());
 		return true;
 	}
+
 	return false;
 }
 
-static otModule *parseObject(char **p, char *end) {
-	otModule *object;
+static otModule *parseObject(std::string &str) {
+	otModule *object = NULL;
+	unsigned int index = 0;
 
-	// FIXME: create the real object
-	object = new otPipeline();
+	while ( index < str.size() && isalpha(str[index]) ) {
+		index++;
+	}
 
-	assert("unimplemented" && 0);
+	if ( index >= str.size() ) {
+		LOG(CRITICAL) << "invalid syntax, eof in object name";
+		return NULL;
+	}
+
+	LOG(INFO) << "Create object <" << str.substr(0, index) << ">";
+
+	object = otFactory::create(str.substr(0, index).c_str());
+	if ( object == NULL )
+	{
+		LOG(CRITICAL) << "Object <" << str.substr(0, index) << "> don't exist";
+		return NULL;
+	}
+
+	str.erase(0, index);
 
 	return object;
 }
 
 // Parse a pipeline content (an object and maybe -> + recurse)
-static otPipeline *parsePipeline(char **p, char *end);
-static bool parsePipelineContent(char **p, char *end, otPipeline* pipeline) {
-	otModule *object = NULL;
+static otPipeline *parsePipeline(std::string &str);
+static otModule *parsePipelineContent(std::string &str, otPipeline* pipeline) {
+	otModule *object = NULL,
+			 *next;
 
-	if ( !parserSkipSpaces(p, end) )
-		return false;
+	if ( !parserSkipSpaces(str) )
+		return NULL;
 
 	// Parse a object
-	object = parseObject(p, end);
+	object = parseObject(str);
 	pipeline->addElement(object);
 
-	if ( !parserSkipSpaces(p, end) )
+	if ( !parserSkipSpaces(str) )
 		goto parse_error;
 
 	// Start of the ->, recurse if possible !
-	if ( **p == '-' ) {
-		if ( !parserCheckChar(p, '-') )
+	if ( str[0] == '-' ) {
+		if ( !parserCheckChar(str, '-') )
 			INVALID_SYNTAX("'-' expected");
-		if ( !parserCheckChar(p, '>') )
+		if ( !parserCheckChar(str, '>') )
 			INVALID_SYNTAX("'>' expected");
 
-		return parsePipelineContent(p, end, pipeline);
+		next = parsePipelineContent(str, pipeline);
+
+		// connect object together
+		if ( next->getInputCount() != object->getOutputCount() ) {
+			LOG(CRITICAL) << "Input / output don't have the same number of entries";
+			goto parse_error;
+		}
+
+		for ( int i = 0; i < next->getInputCount(); i++ )
+			next->setInput(object->getOutput(i), i);
+
+		return object;
 	}
 
-	return true;
+	return object;
 
 parse_error:;
-	if ( object != NULL )
+	if ( object != NULL ) {
+		pipeline->removeElement(object);
 		delete object;
-	if ( pipeline != NULL )
-		delete pipeline;
-	return false;
+	}
+	return NULL;
 }
 
 // Parse a pipeline (object -> object -> object)
-static otPipeline *parsePipeline(char **p, char *end) {
+static otPipeline *parsePipeline(std::string &str) {
 	otPipeline *pipeline;
 
-	// FIXME: Replace with real pipeline
 	pipeline = new otPipeline();
 
-	if ( !parsePipelineContent(p, end, pipeline) )
+	if ( parsePipelineContent(str, pipeline) == NULL )
 	{
 		delete pipeline;
 		return NULL;
@@ -117,50 +145,50 @@ static otPipeline *parsePipeline(char **p, char *end) {
 }
 
 // Parse the content of a group
-static otPipeline *parseGroup(char **p, char *end);
-static bool parseGroupContent(char **p, char *end, otPipeline* group) {
+static otPipeline *parseGroup(std::string &str);
+static bool parseGroupContent(std::string &str, otPipeline* group) {
 	otPipeline *child;
 
 	// Check if it's a new group, or a pipeline
-	if ( **p == '{' )
-		child = parseGroup(p, end);
+	if ( str[0] == '{' )
+		child = parseGroup(str);
 	else
-		child = parsePipeline(p, end);
+		child = parsePipeline(str);
 
 	group->addElement(child);
 
-	if ( !parserSkipSpaces(p, end) )
+	if ( !parserSkipSpaces(str) )
 		return false;
 
 	// Recursive if we got a ,
-	if ( !parserCheckChar(p, ',') )
-		return parseGroupContent(p, end, group);
+	if ( parserCheckChar(str, ',') )
+		return parseGroupContent(str, group);
 
 	return true;
 }
 
 // Parse a group { ... }
-static otPipeline *parseGroup(char **p, char *end) {
+static otPipeline *parseGroup(std::string &str) {
 	otPipeline *group = NULL;
 
-	if ( !parserSkipSpaces(p, end) )
+	if ( !parserSkipSpaces(str) )
 		return NULL;
 
-	if ( !parserCheckChar(p, '{') )
+	if ( !parserCheckChar(str, '{') )
 		INVALID_SYNTAX("'{' expected");
 
 	group = new otPipeline();
 
-	if ( !parserSkipSpaces(p, end) )
+	if ( !parserSkipSpaces(str) )
 		goto parse_error;
 
-	if ( !parseGroupContent(p, end, group) )
+	if ( !parseGroupContent(str, group) )
 		goto parse_error;
 
-	if ( !parserSkipSpaces(p, end) )
+	if ( !parserSkipSpaces(str) )
 		goto parse_error;
 
-	if ( !parserCheckChar(p, '}') )
+	if ( !parserCheckChar(str, '}') )
 		INVALID_SYNTAX("'}' expected");
 
 	return group;
@@ -176,8 +204,6 @@ parse_error:;
 // Public functions
 //
 
-otModule* otParser::parseString(const char* str) {
-	char *p = (char *)str,
-		 *end = (char *)(str + strlen(str));
-	return parseGroup(&p, end);
+otPipeline* otParser::parseString(std::string str) {
+	return parseGroup(str);
 }

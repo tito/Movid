@@ -1,11 +1,13 @@
 #ifndef OT_PARSER_H
 #define OT_PARSER_H
 
-class otModule;
+#include <string.h>
+
+class otPipeline;
 
 class otParser {
 public:
-	static otModule *parseString(const char* str);
+	static otPipeline *parseString(std::string str);
 };
 
 #endif
