@@ -73,6 +73,7 @@ public:
 	virtual std::string getAuthor() = 0;
 
 	void describe();
+	virtual bool isPipeline();
 	
 	// FIXME protect it
 	otModule *owner;

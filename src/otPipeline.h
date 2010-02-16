@@ -29,9 +29,16 @@ public:
 
 	otModule *firstModule();
 	otModule *lastModule();
+	otModule *getModule(unsigned int index);
+	unsigned int size();
+
+	virtual void setGroup(bool group=true);
+	virtual bool isGroup();
+	virtual bool isPipeline();
 
 private:
 	std::vector<otModule *> modules;
+	bool is_group;
 
 	MODULE_INTERNALS();
 };

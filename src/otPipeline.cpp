@@ -8,7 +8,7 @@
 #include "otPipeline.h"
 #include "otLog.h"
 
-LOG_DECLARE("Group");
+LOG_DECLARE("Pipeline");
 
 MODULE_DECLARE_EX(Pipeline,, "native", "Handle object list");
 
@@ -31,12 +31,16 @@ otModule *otPipeline::lastModule() {
 
 void otPipeline::addElement(otModule *module) {
 	assert( module != NULL );
+	LOG(TRACE) << "add <" << module->property("id").asString() << "> to <" \
+		<< this->property("id").asString() << ">";
 	module->owner = this;
 	this->modules.push_back(module);
 }
 
 void otPipeline::removeElement(otModule *module) {
 	std::vector<otModule *>::iterator it;
+	LOG(TRACE) << "remove <" << module->property("id").asString() << "> from <" \
+		<< this->property("id").asString() << ">";
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
 		if ( *it == module ) {
 			this->modules.erase(it);
@@ -106,3 +110,27 @@ void otPipeline::update() {
 		(*it)->update();
 	}
 }
+
+unsigned int otPipeline::size() {
+	return this->modules.size();
+}
+
+otModule *otPipeline::getModule(unsigned int index) {
+	assert( index >= 0 );
+	assert( index < this->size() );
+
+	return this->modules[index];
+}
+
+void otPipeline::setGroup(bool group) {
+	this->is_group = group;
+}
+
+bool otPipeline::isGroup() {
+	return this->is_group;
+}
+
+bool otPipeline::isPipeline() {
+	return true;
+}
+

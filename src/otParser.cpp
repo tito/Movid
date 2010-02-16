@@ -35,8 +35,13 @@
 		goto parse_error; \
 	} while (0);
 
+#define PARSER_TRACE(x) LOG(TRACE) << #x << "() str=<" << str << ">";
+
 
 LOG_DECLARE("Parser");
+
+static otPipeline *parsePipeline(std::string &str, otPipeline *pipeline);
+static otPipeline *parseGroupOrPipeline(std::string &str, otPipeline *pipeline);
 
 //used to convert string to other type.  example :
 // bool b; string value = "true";
@@ -73,6 +78,8 @@ static bool parseNumericToken(std::string &str, std::string &token, bool strip_s
 	unsigned int index = 0;
 	bool have_dot = false;
 
+	PARSER_TRACE(parseNumericToken);
+
 	if ( strip_space && !parserSkipSpaces(str) )
 		return false;
 
@@ -99,6 +106,8 @@ static bool parseStringToken(std::string &str, std::string &token, bool strip_sp
 	unsigned int index = 0;
 	bool have_quote = false;
 	char quote = '\0';
+
+	PARSER_TRACE(parseStringToken);
 
 	if ( strip_space && !parserSkipSpaces(str) )
 		return false;
@@ -149,6 +158,7 @@ static bool parseObjectProperty(std::string &str, otModule* object) {
 	std::string value;
 	int i; bool b; double d;
 
+	PARSER_TRACE(parseObjectProperty);
 
 	if ( !parseStringToken(str, name) ) {
 		LOG(CRITICAL) << "invalid syntax, eof in property name";
@@ -206,6 +216,9 @@ parse_error:;
 }
 
 static bool parseObjectPropertyList(std::string &str, otModule* object) {
+
+	PARSER_TRACE(parseObjectPropertyList);
+
 	if ( !parserSkipSpaces(str) )
 		return false;
 
@@ -233,6 +246,8 @@ static otModule *parseObject(std::string &str) {
 	otModule *object = NULL;
 	std::string obj_name;
 
+	PARSER_TRACE(parseObject);
+
 	if (!parseStringToken(str, obj_name)) {
 		LOG(CRITICAL) << "invalid syntax, eof in object name";
 		return false;
@@ -253,17 +268,26 @@ static otModule *parseObject(std::string &str) {
 }
 
 // Parse a pipeline content (an object and maybe -> + recurse)
-static otPipeline *parsePipeline(std::string &str);
-static otModule *parsePipelineContent(std::string &str, otPipeline* pipeline) {
+static otPipeline *parsePipeline(std::string &str, otPipeline *pipeline) {
 	otModule *object = NULL,
-			 *next;
+			 *next = NULL,
+			 *subobject = NULL;
+	otPipeline *ret = pipeline;
+	unsigned int nextindex = 0;
+
+	PARSER_TRACE(parsePipeline);
 
 	if ( !parserSkipSpaces(str) )
 		return NULL;
 
+	if ( pipeline == NULL )
+		ret = pipeline = new otPipeline();
+
 	// Parse a object
 	object = parseObject(str);
 	pipeline->addElement(object);
+
+	nextindex = pipeline->size();
 
 	if ( !parserSkipSpaces(str) )
 		INVALID_SYNTAX("premature end of pipeline description while parsing pipeline");
@@ -275,71 +299,100 @@ static otModule *parsePipelineContent(std::string &str, otPipeline* pipeline) {
 		if ( !parserCheckChar(str, '>') )
 			INVALID_SYNTAX("'>' expected");
 
-		next = parsePipelineContent(str, pipeline);
+		ret = parseGroupOrPipeline(str, pipeline);
 
-		// connect object together
-		if ( next->getInputCount() != object->getOutputCount() ) {
-			LOG(CRITICAL) << "input / output don't have the same number of entries";
-			goto parse_error;
+		// we got a , !
+		if ( ret != pipeline ) {
+
+			// group ? connect all object to output of object
+			if ( ret->isPipeline() ) {
+
+				// convert to pipeline
+				otPipeline *pipe = (otPipeline *)ret;
+				LOG(INFO) << "nextindex=" << nextindex;
+				for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
+					LOG(INFO) << "CURRENT:" << i << "=" << pipeline->getModule(i)->property("id").asString();
+				}
+				for ( unsigned int i = 0; i < pipe->size(); i++ ) {
+					LOG(INFO) << "PIPE:" << i << "=" << pipe->getModule(i)->property("id").asString();
+				}
+
+				assert( pipe->isGroup() == true );
+
+				for ( unsigned int i = 0; i < pipe->size(); i++ ) {
+					subobject = pipe->getModule(i);
+					assert( subobject != NULL );
+
+					// connect object together
+					if ( subobject->getInputCount() != object->getOutputCount() ) {
+						LOG(CRITICAL) << "<" << subobject->property("id").asString() << "> input / " \
+							<< "<" << object->property("id").asString() << "> output don't have the same number of entries";
+						goto parse_error;
+					}
+
+					for ( int i = 0; i < subobject->getInputCount(); i++ ) {
+						LOG(TRACE) << "connect <" << subobject->property("id").asString() << ">.input[" << i << "] to " \
+							<< "<" << object->property("id").asString() << ">.output[" << i << "]";
+						subobject->setInput(object->getOutput(i), i);
+					}
+				}
+			} else {
+				assert(0);
+			}
+
+		// act normally
+		} else {
+
+			next = pipeline->getModule(nextindex);
+
+			// connect object together
+			if ( next->getInputCount() != object->getOutputCount() ) {
+				LOG(CRITICAL) << "<" << next->property("id").asString() << "> input / " \
+					<< "<" << object->property("id").asString() << "> output don't have the same number of entries";
+				goto parse_error;
+			}
+
+			for ( int i = 0; i < next->getInputCount(); i++ ) {
+				LOG(TRACE) << "connect <" << next->property("id").asString() << ">.input[" << i << "] to " \
+					<< "<" << object->property("id").asString() << ">.output[" << i << "]";
+				next->setInput(object->getOutput(i), i);
+			}
 		}
 
-		for ( int i = 0; i < next->getInputCount(); i++ )
-			next->setInput(object->getOutput(i), i);
+	// It's a group separation ,
+	} else if ( str[0] == ',' ) {
+		if ( !parserCheckChar(str, ',') )
+			INVALID_SYNTAX("',' excepted");
 
-		return object;
-	}
+		next = parseGroupOrPipeline(str, NULL);
+		if ( next == NULL )
+			goto parse_error;
 
-	return object;
-
-parse_error:;
-	if ( object != NULL ) {
-		pipeline->removeElement(object);
-		delete object;
-	}
-	return NULL;
-}
-
-// Parse a pipeline (object -> object -> object)
-static otPipeline *parsePipeline(std::string &str) {
-	otPipeline *pipeline;
-
-	pipeline = new otPipeline();
-
-	if ( parsePipelineContent(str, pipeline) == NULL )
-	{
-		delete pipeline;
-		return NULL;
+		// Pipeline splitted, create a group with 2 pipeline
+		LOG(TRACE) << "split current pipeline to a group with previous and current pipeline";
+		ret = new otPipeline();
+		ret->setGroup(true);
+		ret->addElement(pipeline);
+		ret->addElement(next);
+		pipeline = ret;
 	}
 
 	return pipeline;
-}
 
-// Parse the content of a group
-static otPipeline *parseGroup(std::string &str);
-static bool parseGroupContent(std::string &str, otPipeline* group) {
-	otPipeline *child;
-
-	// Check if it's a new group, or a pipeline
-	if ( str[0] == '{' )
-		child = parseGroup(str);
-	else
-		child = parsePipeline(str);
-
-	group->addElement(child);
-
-	if ( !parserSkipSpaces(str) )
-		return false;
-
-	// Recursive if we got a ,
-	if ( parserCheckChar(str, ',') )
-		return parseGroupContent(str, group);
-
-	return true;
+parse_error:;
+	if ( object != NULL ) {
+		if ( pipeline != NULL )
+			pipeline->removeElement(object);
+		delete object;
+	}
+	return pipeline;
 }
 
 // Parse a group { ... }
-static otPipeline *parseGroup(std::string &str) {
+static otPipeline *parseGroup(std::string &str, otPipeline *pipeline) {
 	otPipeline *group = NULL;
+
+	PARSER_TRACE(parseGroup);
 
 	if ( !parserSkipSpaces(str) )
 		return NULL;
@@ -347,13 +400,14 @@ static otPipeline *parseGroup(std::string &str) {
 	if ( !parserCheckChar(str, '{') )
 		INVALID_SYNTAX("'{' expected");
 
-	group = new otPipeline();
-
 	if ( !parserSkipSpaces(str) )
 		INVALID_SYNTAX("premature end of pipeline description while parsing group");
 
-	if ( !parseGroupContent(str, group) )
+	group = parseGroupOrPipeline(str, pipeline);
+	if ( group == NULL )
 		goto parse_error;
+
+	group->setGroup(true);
 
 	if ( !parserSkipSpaces(str) )
 		INVALID_SYNTAX("premature end of pipeline description while parsing group");
@@ -369,11 +423,20 @@ parse_error:;
 	return NULL;
 }
 
+static otPipeline *parseGroupOrPipeline(std::string &str, otPipeline *pipeline) {
+	PARSER_TRACE(parseGroupOrPipeline);
+	if ( !parserSkipSpaces(str) )
+		return NULL;
+	if ( str[0] == '{' )
+		return parseGroup(str, NULL);
+	return parsePipeline(str, pipeline);
+}
+
 
 //
 // Public functions
 //
 
 otPipeline* otParser::parseString(std::string str) {
-	return parseGroup(str);
+	return parseGroupOrPipeline(str, NULL);
 }

@@ -161,3 +161,7 @@ void otModule::describe() {
 	std::cout << std::endl;
 }
 
+bool otModule::isPipeline() {
+	return false;
+}
+
