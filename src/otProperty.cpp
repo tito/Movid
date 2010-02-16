@@ -213,6 +213,17 @@ void otProperty::free() {
 	this->val = NULL;
 }
 
+std::string otProperty::getPropertyTypeName(otPropertyType type) {
+	switch ( type ) {
+		case OT_PROPERTY_DOUBLE: return "double";
+		case OT_PROPERTY_INTEGER: return "integer";
+		case OT_PROPERTY_STRING: return "string";
+		case OT_PROPERTY_BOOL: return "bool";
+	}
+
+	return "unknown";
+}
+
 std::ostream& operator<< (std::ostream& o, const otProperty& p) {
 
 	// Bad bad ... :'(
