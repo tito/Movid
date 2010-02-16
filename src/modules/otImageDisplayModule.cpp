@@ -1,3 +1,4 @@
+#include <sstream>
 #include <assert.h>
 
 #include "highgui.h"
@@ -6,6 +7,8 @@
 #include "../otDataStream.h"
 
 MODULE_DECLARE(ImageDisplay, "native", "Display image on a window");
+
+static unsigned int count = 0;
 
 otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
 
@@ -16,7 +19,9 @@ otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
 	this->input_types[0] = std::string("IplImage");
 
 	// declare properties
-	this->properties["name"] = new otProperty("OpenTracker");
+	std::ostringstream oss;
+	oss << "OpenTracker" << (count++);
+	this->properties["name"] = new otProperty(oss.str());
 }
 
 otImageDisplayModule::~otImageDisplayModule(){
