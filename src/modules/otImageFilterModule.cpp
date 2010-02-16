@@ -41,16 +41,21 @@ void otImageFilterModule::notifyData(otDataStream *input) {
 	assert( input == this->input );
 	assert( input->getFormat() == "IplImage" );
 
-	//if not yet allocated, allocate output_buffer, cant do before becasue we dont know input size
-	if ( this->output_buffer == NULL ) {
-		LOG(DEBUG) << "First time, allocating output buffer for image filter";
-		this->output_buffer = cvCreateImage(
-			cvGetSize((IplImage*)(this->input->getData())),
-			IPL_DEPTH_8U, 3);
-	}
+	//FIXME  also do if size, nChannles or depth has changed
+	if ( this->output_buffer == NULL )
+		this->allocateBuffers();
 
 	this->need_update = true;
 }
+
+
+void otImageFilterModule::allocateBuffers(){
+	LOG(DEBUG) << "First time, allocating output buffer for image filter";
+	IplImage* src = (IplImage*)(this->input->getData());
+	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
+}
+
+
 
 void otImageFilterModule::update() {
 	if ( this->need_update ) {

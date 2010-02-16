@@ -3,10 +3,11 @@
 #include "otFactory.h"
 
 #include "modules/otCameraModule.h"
+#include "modules/otVideoModule.h"
 #include "modules/otSmoothModule.h"
 #include "modules/otImageDisplayModule.h"
 #include "modules/otInvertModule.h"
-#include "modules/otVideoModule.h"
+#include "modules/otBackgroundSubtractModule.h"
 
 
 otModule *otFactory::create(const char *name) {
@@ -21,14 +22,17 @@ otModule *otFactory::create(const char *name) {
 
 	if ( sname == "Camera" )
 		return new otCameraModule();
+	else if ( sname == "Video" )
+		return new otVideoModule();
 	else if ( sname == "ImageDisplay" )
 		return new otImageDisplayModule();
 	else if ( sname == "Smooth" )
 		return new otSmoothModule();
 	else if ( sname == "Invert" )
 		return new otInvertModule();
-	else if ( sname == "Video" )
-		return new otVideoModule();
+	else if ( sname == "BackgroundSubtract" )
+		return new otBackgroundSubtractModule();
+
 
 	return NULL;
 }

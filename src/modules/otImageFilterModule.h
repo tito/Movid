@@ -23,6 +23,7 @@ protected:
 	IplImage* output_buffer;
 	
 	virtual void applyFilter()=0;
+	virtual void allocateBuffers();
 	
 private:
 	bool need_update;

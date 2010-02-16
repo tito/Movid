@@ -40,6 +40,8 @@
 		12F85BC811274A9900C13390 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		12F85BCD11274A9900C13390 /* tracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tracker.cpp; sourceTree = "<group>"; };
 		12F85C1711275B8B00C13390 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		12F8EB0E112B1724003568C3 /* otBackgroundSubtractModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otBackgroundSubtractModule.h; sourceTree = "<group>"; };
+		12F8EB0F112B1724003568C3 /* otBackgroundSubtractModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otBackgroundSubtractModule.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -66,6 +68,8 @@
 				12829894112A8BAE0078B03F /* otInvertModule.cpp */,
 				12829895112A8C620078B03F /* otImageFilterModule.h */,
 				12829896112A8C620078B03F /* otImageFilterModule.cpp */,
+				12F8EB0E112B1724003568C3 /* otBackgroundSubtractModule.h */,
+				12F8EB0F112B1724003568C3 /* otBackgroundSubtractModule.cpp */,
 			);
 			path = modules;
 			sourceTree = "<group>";
