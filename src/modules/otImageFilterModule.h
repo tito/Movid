@@ -1,10 +1,10 @@
 #ifndef OT_IMAGE_FILTER_MODULE_H
 #define OT_IMAGE_FILTER_MODULE_H
+
 #include <string>
 #include "cv.h"
 #include "../otModule.h"
 #include "../otDataStream.h"
-
 
 class otImageFilterModule : public otModule{
 	

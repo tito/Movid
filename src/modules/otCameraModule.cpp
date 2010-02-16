@@ -34,7 +34,6 @@ void otCameraModule::start() {
 
 	otModule::start();
 
-	// FIXME instead of use 0, use a property !
 	LOG(INFO) << "Camera capture started";
 	this->camera = cvCaptureFromCAM(this->property("index").asInteger());
 }
