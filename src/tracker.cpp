@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 	gauss->setInput(cam->getOutput(0));
 	gauss->property("width").set(11);
 	gauss->property("height").set(11);
-	gauss->property("filter").set("OT_MEDIAN");
+	gauss->property("filter").set("blur");
 
 	// otImageDisplayModule opens a window and displays an Image in it
 	otModule* display = otFactory::create("ImageDisplay");

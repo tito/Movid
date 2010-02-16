@@ -9,7 +9,7 @@ otSmoothModule::otSmoothModule() : otImageFilterModule(){
 	// declare properties
 	this->properties["width"] = new otProperty(5.);
 	this->properties["height"] = new otProperty(5.);
-	this->properties["filter"] = new otProperty("OT_GAUSSIAN");
+	this->properties["filter"] = new otProperty("gaussian");
 }
 
 
@@ -17,11 +17,11 @@ void otSmoothModule::applyFilter(){
 	std::string filter = this->property("filter").asString();
 	int _filter = -1;
 
-	if (filter == "OT_MEDIAN") { _filter = CV_MEDIAN; }
-	if (filter == "OT_GAUSSIAN") { _filter = CV_GAUSSIAN; }
-	if (filter == "OT_BLUR") { _filter = CV_BLUR; }
-	if (filter == "OT_BLUR_NO_SCALE") { _filter = CV_BLUR_NO_SCALE; }
-	if (filter == "OT_BILATERAL") { /* Not yet supported */ }
+	if (filter == "median") { _filter = CV_MEDIAN; }
+	if (filter == "gaussian") { _filter = CV_GAUSSIAN; }
+	if (filter == "blur") { _filter = CV_BLUR; }
+	if (filter == "blur_no_scale") { _filter = CV_BLUR_NO_SCALE; }
+	if (filter == "bilateral") { /* Not yet supported */ }
 	if (_filter == -1) { assert(0); }
 		
 	cvSmooth(
