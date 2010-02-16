@@ -42,6 +42,12 @@
 		12F85C1711275B8B00C13390 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		12F8EB0E112B1724003568C3 /* otBackgroundSubtractModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otBackgroundSubtractModule.h; sourceTree = "<group>"; };
 		12F8EB0F112B1724003568C3 /* otBackgroundSubtractModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otBackgroundSubtractModule.cpp; sourceTree = "<group>"; };
+		12F8EB51112B2386003568C3 /* otImageFormatModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageFormatModule.h; sourceTree = "<group>"; };
+		12F8EB52112B2386003568C3 /* otImageFormatModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageFormatModule.cpp; sourceTree = "<group>"; };
+		12F8EB73112B50B1003568C3 /* otThresholdModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otThresholdModule.h; sourceTree = "<group>"; };
+		12F8EB74112B50B1003568C3 /* otThresholdModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otThresholdModule.cpp; sourceTree = "<group>"; };
+		12F8EB7A112B55B7003568C3 /* otGrayScaleModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otGrayScaleModule.h; sourceTree = "<group>"; };
+		12F8EB7B112B55B7003568C3 /* otGrayScaleModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otGrayScaleModule.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -70,6 +76,12 @@
 				12829896112A8C620078B03F /* otImageFilterModule.cpp */,
 				12F8EB0E112B1724003568C3 /* otBackgroundSubtractModule.h */,
 				12F8EB0F112B1724003568C3 /* otBackgroundSubtractModule.cpp */,
+				12F8EB51112B2386003568C3 /* otImageFormatModule.h */,
+				12F8EB52112B2386003568C3 /* otImageFormatModule.cpp */,
+				12F8EB73112B50B1003568C3 /* otThresholdModule.h */,
+				12F8EB74112B50B1003568C3 /* otThresholdModule.cpp */,
+				12F8EB7A112B55B7003568C3 /* otGrayScaleModule.h */,
+				12F8EB7B112B55B7003568C3 /* otGrayScaleModule.cpp */,
 			);
 			path = modules;
 			sourceTree = "<group>";

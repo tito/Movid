@@ -8,7 +8,8 @@
 #include "modules/otImageDisplayModule.h"
 #include "modules/otInvertModule.h"
 #include "modules/otBackgroundSubtractModule.h"
-
+#include "modules/otGrayScaleModule.h"
+#include "modules/otThresholdModule.h"
 
 otModule *otFactory::create(const char *name) {
 	// XXX plug dynamic resolve here too
@@ -32,7 +33,10 @@ otModule *otFactory::create(const char *name) {
 		return new otInvertModule();
 	else if ( sname == "BackgroundSubtract" )
 		return new otBackgroundSubtractModule();
-
+	else if ( sname == "GrayScale" )
+		return new otGrayScaleModule();
+	else if ( sname == "Threshold" )
+		return new otThresholdModule();
 
 	return NULL;
 }
