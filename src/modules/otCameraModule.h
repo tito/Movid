@@ -1,7 +1,7 @@
 #ifndef OT_CAMERA_H
 #define OT_CAMERA_H
 
-#include "otModule.h"
+#include "../otModule.h"
 
 class otDataStream;
 

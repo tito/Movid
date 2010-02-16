@@ -2,8 +2,8 @@
 #define OT_GAUSSIAN_BLUR_MODULE_H
 #include <string>
 #include "cv.h"
-#include "otModule.h"
-#include "otDataStream.h"
+#include "../otModule.h"
+#include "../otDataStream.h"
 // TODO next step will be to remove this and add a generic otConvolutionFilterModule
 //		that takes as argument the mask size and filter kernel
 class otGaussianBlurModule : public otModule{

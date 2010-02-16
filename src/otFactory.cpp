@@ -2,9 +2,9 @@
 
 #include "otFactory.h"
 
-#include "otCameraModule.h"
-#include "otGaussianBlurModule.h"
-#include "otImageDisplayModule.h"
+#include "modules/otCameraModule.h"
+#include "modules/otGaussianBlurModule.h"
+#include "modules/otImageDisplayModule.h"
 
 otModule *otFactory::create(const char *name) {
 	// XXX plug dynamic resolve here too

@@ -1,8 +1,8 @@
 #include <assert.h>
 
-#include "otLog.h"
-#include "otModule.h"
-#include "otDataStream.h"
+#include "../otLog.h"
+#include "../otModule.h"
+#include "../otDataStream.h"
 #include "otCameraModule.h"
 #include "highgui.h"
 

@@ -3,7 +3,7 @@
 #include "highgui.h"
 
 #include "otImageDisplayModule.h"
-#include "otDataStream.h"
+#include "../otDataStream.h"
 
 otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
 

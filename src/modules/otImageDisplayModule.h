@@ -2,7 +2,7 @@
 #define OT_IMAGE_DISPLAY_MODULE_H
 
 #include <string>
-#include "otModule.h"
+#include "../otModule.h"
 
 class otDataStream;
 

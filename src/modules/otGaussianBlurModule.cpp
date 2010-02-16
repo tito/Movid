@@ -1,8 +1,8 @@
 #include <assert.h>
-
-#include "otLog.h"
 #include "otGaussianBlurModule.h"
-#include "otDataStream.h"
+#include "../otLog.h"
+#include "../otDataStream.h"
+
 
 LOG_DECLARE("GaussianBlur");
 
