@@ -20,6 +20,10 @@
 		128297C9112A61DE0078B03F /* otImageDisplayModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageDisplayModule.h; sourceTree = "<group>"; };
 		128297CD112A62090078B03F /* otModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otModule.cpp; sourceTree = "<group>"; };
 		128297CE112A62090078B03F /* otModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otModule.h; sourceTree = "<group>"; };
+		12829893112A8BAE0078B03F /* otInvertModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otInvertModule.h; sourceTree = "<group>"; };
+		12829894112A8BAE0078B03F /* otInvertModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otInvertModule.cpp; sourceTree = "<group>"; };
+		12829895112A8C620078B03F /* otImageFilterModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageFilterModule.h; sourceTree = "<group>"; };
+		12829896112A8C620078B03F /* otImageFilterModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageFilterModule.cpp; sourceTree = "<group>"; };
 		12AF438E112A5ED0001C2529 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
 		12EFF7761129D06B0027DFA2 /* otDaemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDaemon.cpp; sourceTree = "<group>"; };
 		12EFF7771129D06B0027DFA2 /* otDaemon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otDaemon.h; sourceTree = "<group>"; };
@@ -56,6 +60,10 @@
 				128297C7112A61DE0078B03F /* otGaussianBlurModule.h */,
 				128297C8112A61DE0078B03F /* otImageDisplayModule.cpp */,
 				128297C9112A61DE0078B03F /* otImageDisplayModule.h */,
+				12829893112A8BAE0078B03F /* otInvertModule.h */,
+				12829894112A8BAE0078B03F /* otInvertModule.cpp */,
+				12829895112A8C620078B03F /* otImageFilterModule.h */,
+				12829896112A8C620078B03F /* otImageFilterModule.cpp */,
 			);
 			path = modules;
 			sourceTree = "<group>";

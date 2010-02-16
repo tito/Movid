@@ -3,7 +3,8 @@ TRACKER_BIN = tracker
 TESTER_BIN = tester
 
 OBJ = otDataStream.o otModule.o otPipeline.o otParser.o otFactory.o otProperty.o \
-      otDaemon.o otLog.o otCameraModule.o otImageDisplayModule.o otGaussianBlurModule.o
+      otDaemon.o otLog.o otCameraModule.o otImageDisplayModule.o otGaussianBlurModule.o \
+	  otImageFilterModule.o otInvertModule.o
 
 #where the source is, and where to put the object files
 SRC_DIR = src/

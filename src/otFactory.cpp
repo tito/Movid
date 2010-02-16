@@ -5,6 +5,8 @@
 #include "modules/otCameraModule.h"
 #include "modules/otGaussianBlurModule.h"
 #include "modules/otImageDisplayModule.h"
+#include "modules/otInvertModule.h"
+
 
 otModule *otFactory::create(const char *name) {
 	// XXX plug dynamic resolve here too
@@ -22,6 +24,8 @@ otModule *otFactory::create(const char *name) {
 		return new otImageDisplayModule();
 	else if ( sname == "GaussianBlur" )
 		return new otGaussianBlurModule();
+	else if ( sname == "Invert" )
+		return new otInvertModule();
 
 	return NULL;
 }
