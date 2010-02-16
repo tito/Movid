@@ -19,6 +19,7 @@ otVideoModule::otVideoModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 
 	// declare properties
 	this->properties["filename"] = new otProperty("");
+	this->properties["loop"] = new otProperty(true);
 }
 
 otVideoModule::~otVideoModule() {
@@ -29,6 +30,7 @@ void otVideoModule::start() {
 	otModule::start();
 	LOGM(TRACE) << "start video";
 	this->video = cvCaptureFromAVI(this->property("filename").asString().c_str());
+	this->numframes = (int)cvGetCaptureProperty(static_cast<CvCapture *>(this->video), CV_CAP_PROP_FRAME_COUNT);
 }
 
 void otVideoModule::stop() {
@@ -43,6 +45,15 @@ void otVideoModule::update() {
 	// push a new image on the stream
 	LOGM(TRACE) << "push a new image on the stream";
 	this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->video)));
+
+	if ( this->numframes-- > 0 )
+		return;
+
+	if ( this->property("loop").asBool() ) {
+		cvSetCaptureProperty(static_cast<CvCapture *>(this->video), CV_CAP_PROP_POS_FRAMES, 0);
+		this->numframes = (int)cvGetCaptureProperty(static_cast<CvCapture *>(this->video), CV_CAP_PROP_FRAME_COUNT);
+	}
+
 }
 
 void otVideoModule::setInput(otDataStream* input, int n) {

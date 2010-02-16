@@ -16,6 +16,7 @@ public:
 
 private:
 	otDataStream *stream;
+	int numframes;
 	void *video;
 
 	MODULE_INTERNALS();
