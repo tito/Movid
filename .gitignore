@@ -4,6 +4,9 @@
 *.dSYM
 *.mode1v3
 *tehansen.pbxuser
-src/tracker
-src/tester
+*.core
+tracker
+tester
+blobtrack
+describe
 build/
