@@ -32,6 +32,8 @@ public:
 
 private:
 	std::vector<otModule *> modules;
+
+	MODULE_INTERNALS();
 };
 
 #endif

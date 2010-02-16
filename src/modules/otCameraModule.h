@@ -21,6 +21,9 @@ public:
 private:
 	void *camera;
 	otDataStream *stream;
+
+
+	MODULE_INTERNALS();
 };
 
 #endif

@@ -20,6 +20,8 @@ public:
 private:
 	otDataStream *input;
 	std::string window_name;
+
+	MODULE_INTERNALS();
 };
 
 #endif

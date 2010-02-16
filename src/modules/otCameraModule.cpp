@@ -8,6 +8,8 @@
 
 LOG_DECLARE("Camera");
 
+MODULE_DECLARE(Camera, "native", "Fetch camera stream");
+
 otCameraModule::otCameraModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 
 	LOG(DEBUG) << "Create otCameraModule";

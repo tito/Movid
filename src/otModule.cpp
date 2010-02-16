@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <iostream>
 
 #include "otModule.h"
 #include "otDataStream.h"
@@ -88,5 +89,40 @@ otProperty &otModule::property(std::string str) {
 	if ( it == this->properties.end() )
 		return invalid;
 	return *it->second;
+}
+
+void otModule::describe() {
+	std::cout << "Module: " << this->getName() << std::endl;
+	std::cout << "Author: " << this->getAuthor() << std::endl;
+	std::cout << "Description: " << this->getDescription() << std::endl;
+
+	std::cout << "Capabilities: ";
+	if ( this->getCapabilities() & OT_MODULE_INPUT )
+		std::cout << "input,";
+	if ( this->getCapabilities() & OT_MODULE_OUTPUT )
+		std::cout << "output,";
+	std::cout << std::endl;
+
+	std::cout << std::endl;
+	if ( this->getCapabilities() & OT_MODULE_INPUT ) {
+		std::cout << "Input :" << std::endl;
+		for ( int i = 0; i < this->getInputCount(); i++ ) {
+			std::cout << " " << i << ": name=" \
+				<< this->getInputName(i) << ", type=" \
+				<< this->getInputType(i) << std::endl;
+		}
+	}
+
+	std::cout << std::endl;
+	if ( this->getCapabilities() & OT_MODULE_OUTPUT ) {
+		std::cout << "Output :" << std::endl;
+		for ( int i = 0; i < this->getOutputCount(); i++ ) {
+			std::cout << " " << i << ": name=" \
+				<< this->getOutputName(i) << ", type=" \
+				<< this->getOutputType(i) << std::endl;
+		}
+	}
+
+	std::cout << std::endl;
 }
 

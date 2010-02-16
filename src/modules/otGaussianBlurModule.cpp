@@ -1,6 +1,7 @@
 #include "otGaussianBlurModule.h"
 #include "cv.h"
 
+MODULE_DECLARE(GaussianBlur, "native", "Apply a gaussian blur on image");
 
 otGaussianBlurModule::otGaussianBlurModule() : otImageFilterModule(){
 	// declare properties
