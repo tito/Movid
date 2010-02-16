@@ -103,8 +103,8 @@ void otModule::describe() {
 		std::cout << "output,";
 	std::cout << std::endl;
 
-	std::cout << std::endl;
 	if ( this->getCapabilities() & OT_MODULE_INPUT ) {
+		std::cout << std::endl;
 		std::cout << "Input :" << std::endl;
 		for ( int i = 0; i < this->getInputCount(); i++ ) {
 			std::cout << " " << i << ": name=" \
@@ -113,8 +113,8 @@ void otModule::describe() {
 		}
 	}
 
-	std::cout << std::endl;
 	if ( this->getCapabilities() & OT_MODULE_OUTPUT ) {
+		std::cout << std::endl;
 		std::cout << "Output :" << std::endl;
 		for ( int i = 0; i < this->getOutputCount(); i++ ) {
 			std::cout << " " << i << ": name=" \

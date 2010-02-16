@@ -97,16 +97,45 @@ static bool parseNumericToken(std::string &str, std::string &token, bool strip_s
 
 static bool parseStringToken(std::string &str, std::string &token, bool strip_space=true) {
 	unsigned int index = 0;
+	bool have_quote = false;
+	char quote = '\0';
 
 	if ( strip_space && !parserSkipSpaces(str) )
 		return false;
 
-	while ( index < str.size() && isalpha(str[index]) )
+	if ( str[index] == '\'' || str[index] == '\"') {
+		have_quote = true;
+		quote = str[index];
+		str.erase(str.begin());
+	}
+
+	while ( index < str.size() ) {
+
+		if ( str[index] == '\\' && have_quote ) {
+			// peek the next char
+			if ( index+1 < str.size() ) {
+				if ( str[index+1] == quote || str[index+1] == '\\' ) {
+					// remove current
+					str.erase(index, 1);
+					continue;
+				}
+			}
+		}
+
+		if ( have_quote && str[index] == quote )
+			break;
+
+		if ( !have_quote && !isalpha(str[index]) )
+			break;
+
 		index++;
+	}
+
 	if ( index >= str.size() )
 		return false;
-	token = str.substr(0,index);
-	str.erase(0, index);
+
+	token = str.substr(0, index);
+	str.erase(0, index + (have_quote ? 1 : 0));
 
 	if ( strip_space && !parserSkipSpaces(str) )
 		return false;
