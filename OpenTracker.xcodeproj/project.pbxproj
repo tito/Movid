@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		121ECCD61129BED600EA143B /* otGroup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otGroup.cpp; sourceTree = "<group>"; };
-		121ECCD71129BED600EA143B /* otGroup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otGroup.h; sourceTree = "<group>"; };
 		121ECCD81129BED600EA143B /* otParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otParser.cpp; sourceTree = "<group>"; };
 		121ECCD91129BED600EA143B /* otParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otParser.h; sourceTree = "<group>"; };
 		121ECCDA1129BED600EA143B /* tester.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tester.cpp; sourceTree = "<group>"; };
@@ -18,6 +16,7 @@
 		122C5D2A112788CB0033A7DE /* otDataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDataStream.cpp; sourceTree = "<group>"; };
 		123586A21127B3FB00D540BD /* otImageDisplayModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageDisplayModule.h; sourceTree = "<group>"; };
 		123586A31127B3FB00D540BD /* otImageDisplayModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageDisplayModule.cpp; sourceTree = "<group>"; };
+		12AF438E112A5ED0001C2529 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
 		12EFF7761129D06B0027DFA2 /* otDaemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDaemon.cpp; sourceTree = "<group>"; };
 		12EFF7771129D06B0027DFA2 /* otDaemon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otDaemon.h; sourceTree = "<group>"; };
 		12EFF7781129D06B0027DFA2 /* otFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otFactory.cpp; sourceTree = "<group>"; };
@@ -28,6 +27,10 @@
 		12EFF77D1129D5290027DFA2 /* otProperty.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otProperty.cpp; sourceTree = "<group>"; };
 		12EFF77E1129DEF80027DFA2 /* otCameraModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otCameraModule.cpp; sourceTree = "<group>"; };
 		12EFF77F1129DEF80027DFA2 /* otCameraModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otCameraModule.h; sourceTree = "<group>"; };
+		12EFF7AF112A23B30027DFA2 /* otLog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otLog.cpp; sourceTree = "<group>"; };
+		12EFF7B0112A23B30027DFA2 /* otLog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otLog.h; sourceTree = "<group>"; };
+		12EFF7B1112A23B30027DFA2 /* otPipeline.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otPipeline.cpp; sourceTree = "<group>"; };
+		12EFF7B2112A23B30027DFA2 /* otPipeline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otPipeline.h; sourceTree = "<group>"; };
 		12F85BC811274A9900C13390 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		12F85BCD11274A9900C13390 /* tracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tracker.cpp; sourceTree = "<group>"; };
 		12F85C1711275B8B00C13390 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
@@ -48,6 +51,11 @@
 		12F85BC911274A9900C13390 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				12AF438E112A5ED0001C2529 /* .gitignore */,
+				12EFF7B2112A23B30027DFA2 /* otPipeline.h */,
+				12EFF7AF112A23B30027DFA2 /* otLog.cpp */,
+				12EFF7B0112A23B30027DFA2 /* otLog.h */,
+				12EFF7B1112A23B30027DFA2 /* otPipeline.cpp */,
 				12EFF77E1129DEF80027DFA2 /* otCameraModule.cpp */,
 				12EFF77F1129DEF80027DFA2 /* otCameraModule.h */,
 				12EFF7761129D06B0027DFA2 /* otDaemon.cpp */,
@@ -56,8 +64,6 @@
 				12EFF7791129D06B0027DFA2 /* otFactory.h */,
 				12EFF77A1129D06B0027DFA2 /* otGaussianBlurModule.cpp */,
 				12EFF77B1129D06B0027DFA2 /* otGaussianBlurModule.h */,
-				121ECCD61129BED600EA143B /* otGroup.cpp */,
-				121ECCD71129BED600EA143B /* otGroup.h */,
 				121ECCD81129BED600EA143B /* otParser.cpp */,
 				121ECCD91129BED600EA143B /* otParser.h */,
 				121ECCDA1129BED600EA143B /* tester.cpp */,

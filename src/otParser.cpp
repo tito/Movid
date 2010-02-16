@@ -20,6 +20,7 @@
 #include <iostream>
 #include <cstdio>
 #include <string.h>
+#include <sstream>
 #include <assert.h>
 #include <ctype.h>
 
@@ -36,6 +37,21 @@
 
 
 LOG_DECLARE("Parser");
+
+//used to convert string to other type.  example :
+// bool b; string value = "true";
+// from_string<bool>(b, value, std::boolalpha)  -> returns true
+
+template <class T>
+bool from_string(T &t, 
+                 const std::string &s, 
+                 std::ios_base & (*f)(std::ios_base&))
+{
+    std::istringstream iss(s);
+    return !(iss>>f>>t).fail();
+}
+
+
 
 // Skip all spaces/tabs/lines availables
 static bool parserSkipSpaces(std::string &str) {
@@ -55,30 +71,149 @@ static bool parserCheckChar(std::string &str, char wanted) {
 	return false;
 }
 
-static otModule *parseObject(std::string &str) {
-	otModule *object = NULL;
-	unsigned int index = 0;
 
-	while ( index < str.size() && isalpha(str[index]) ) {
+static bool parseNumericToken(std::string &str, std::string &token, bool strip_space=true){
+	int index = 0;
+	
+	if (strip_space && !parserSkipSpaces(str))
+		return false;
+	
+	while ( index < str.size() && (isdigit(str[index]) || str[index] == '.') )
 		index++;
-	}
+	if ( index >= str.size() )
+		return false;
+	token = str.substr(0,index);
+	str.erase(0, index);
+	
+	if (strip_space && !parserSkipSpaces(str))
+		return false;
+	
+	return true;
+	
+}
 
-	if ( index >= str.size() ) {
-		LOG(CRITICAL) << "invalid syntax, eof in object name";
-		return NULL;
-	}
 
-	LOG(INFO) << "Create object <" << str.substr(0, index) << ">";
-
-	object = otFactory::create(str.substr(0, index).c_str());
-	if ( object == NULL )
-	{
-		LOG(CRITICAL) << "Object <" << str.substr(0, index) << "> don't exist";
-		return NULL;
-	}
-
+static bool parseStringToken(std::string &str, std::string &token, bool strip_space=true){
+	int index = 0;
+	
+	if (strip_space && !parserSkipSpaces(str))
+		return false;
+	
+	while ( index < str.size() && isalpha(str[index]) )
+		index++;
+	if ( index >= str.size() )
+		return false;
+	token = str.substr(0,index);
 	str.erase(0, index);
 
+	if (strip_space && !parserSkipSpaces(str))
+		return false;
+	
+	return true;
+	
+}
+
+static bool parseObjectProperty(std::string &str, otModule* object){
+	int index = 0;
+	std::string name; 
+	std::string value;
+	int i; bool b; double d;
+
+
+	if (!parseStringToken(str, name)){
+		LOG(CRITICAL) << "invalid syntax, eof in property name";
+		return false;
+	}
+	if (!parserCheckChar(str, '=')){
+		LOG(CRITICAL) << "invalid syntax, expected '=' after property name: " << name ;
+		return false;
+	}
+	
+	if (!parseStringToken(str, value)){
+		LOG(CRITICAL) << "invalid syntax, eof in property value";
+		return false;
+	}	
+	if (value.size()){
+		//check to see if its boolean ('true' or false)
+		if (from_string<bool>(b, value, std::boolalpha)){
+			object->property(name).set(b);
+			LOG(INFO) << "Set Property <" << name << "> to " << b << "(bool)";
+			return true;
+		}
+		//otherwise set string value
+		object->property(name).set(value);
+		LOG(INFO) << "Set Property <" << name << "> to " << value << "(string)";
+		return true;
+	}
+	
+	//wasnt a string, so parse a number 
+	if (!parseNumericToken(str, value)){
+		LOG(CRITICAL) << "invalid syntax, eof in property value";
+		return false;
+	}	
+	//check to see if its int
+	if (from_string<int>(i, value, std::dec)){
+		object->property(name).set(i);
+		LOG(INFO) << "Set Property <" << name << "> to " << i << "(int)";
+		return true;
+	}
+	//check to see if its float
+	if (from_string<double>(d, value, std::dec)){
+		object->property(name).set(d);
+		LOG(INFO) << "Set Property <" << name << "> to " << d << "(doule)";
+		return true;
+	}
+
+	LOG(CRITICAL) << "couldn't parse property...";
+	return false;
+
+	
+	
+}
+
+static bool parseObjectPropertyList(std::string &str, otModule* object){
+	if ( !parserSkipSpaces(str) )
+		return false;
+	
+	if (!parserCheckChar(str, '('))
+		return true;  //no properties to parse...so justy return happily
+	
+	//parse actual property values as long as they are , seperated
+	if (!parseObjectProperty(str, object))
+		return false;
+	while (parserCheckChar(str,',')) {
+		if (!parseObjectProperty(str, object))
+			return false;
+	}
+	
+	//have to have clsing bracket if we got this far
+	if (!parserCheckChar(str, ')'))
+		return false;
+
+	return true;
+}
+
+
+static otModule *parseObject(std::string &str) {
+	otModule *object = NULL;
+	std::string obj_name;
+	
+	if (!parseStringToken(str, obj_name)){
+		LOG(CRITICAL) << "invalid syntax, eof in object name";
+		return false;
+	}
+	
+	LOG(INFO) << "Create object <" << obj_name << ">";
+	object = otFactory::create(obj_name.c_str());
+	if ( object == NULL )
+	{
+		LOG(CRITICAL) << "Object <" << obj_name << "> don't exist";
+		return NULL;
+	}
+	
+	if (!parseObjectPropertyList(str, object))
+		return NULL;
+	
 	return object;
 }
 
@@ -96,7 +231,7 @@ static otModule *parsePipelineContent(std::string &str, otPipeline* pipeline) {
 	pipeline->addElement(object);
 
 	if ( !parserSkipSpaces(str) )
-		goto parse_error;
+		INVALID_SYNTAX("premature end of pipeline description while parsing piepline");
 
 	// Start of the ->, recurse if possible !
 	if ( str[0] == '-' ) {
@@ -180,13 +315,13 @@ static otPipeline *parseGroup(std::string &str) {
 	group = new otPipeline();
 
 	if ( !parserSkipSpaces(str) )
-		goto parse_error;
+		INVALID_SYNTAX("premature end of pipeline description while parsing group");
 
 	if ( !parseGroupContent(str, group) )
 		goto parse_error;
 
 	if ( !parserSkipSpaces(str) )
-		goto parse_error;
+		INVALID_SYNTAX("premature end of pipeline description while parsing group");
 
 	if ( !parserCheckChar(str, '}') )
 		INVALID_SYNTAX("'}' expected");

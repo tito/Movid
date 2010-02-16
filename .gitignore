@@ -1,4 +1,9 @@
 *.o
 *.swp
+*.orig
+*.dSYM
+*.mode1v3
+*tehansen.pbxuser
 src/tracker
 src/tester
+build/
