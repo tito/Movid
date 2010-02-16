@@ -5,33 +5,33 @@
 
 #define CASTEDGET(x) x value = *(static_cast<x*>(this->val));
 
-otProperty::otProperty() {
+otProperty::otProperty(bool value) {
 	this->val = NULL;
 	this->type = OT_PROPERTY_NONE;
-}
-
-otProperty::otProperty(bool value) {
-	otProperty();
 	this->set(value);
 }
 
 otProperty::otProperty(const char* value) {
-	otProperty();
+	this->val = NULL;
+	this->type = OT_PROPERTY_NONE;
 	this->set(value);
 }
 
 otProperty::otProperty(std::string value) {
-	otProperty();
+	this->val = NULL;
+	this->type = OT_PROPERTY_NONE;
 	this->set(value);
 }
 
 otProperty::otProperty(int value) {
-	otProperty();
+	this->val = NULL;
+	this->type = OT_PROPERTY_NONE;
 	this->set(value);
 }
 
 otProperty::otProperty(double value) {
-	otProperty();
+	this->val = NULL;
+	this->type = OT_PROPERTY_NONE;
 	this->set(value);
 }
 

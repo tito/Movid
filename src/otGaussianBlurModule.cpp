@@ -69,3 +69,6 @@ void otGaussianBlurModule::notifyData(otDataStream *input) {
 	this->output->push(this->smoothed);
 }
 
+void otGaussianBlurModule::update() {
+}
+

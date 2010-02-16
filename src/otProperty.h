@@ -37,7 +37,6 @@ public:
 	friend std::ostream& operator<< (std::ostream& o, const otProperty& f);
 	
 private:
-	otProperty();
 	otProperty(const otProperty& property);
 	otPropertyType type;
 	void* val;

@@ -15,6 +15,7 @@ public:
 	void notifyData(otDataStream *source);
 	void setInput(otDataStream* , int n=0);	
 	otDataStream* getOutput( int n=0 );
+	void update();
 	
 private:
 	otDataStream* input;

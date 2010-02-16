@@ -26,9 +26,6 @@ int otModule::getOutputCount() {
 	return this->output_count;
 }
 
-void otModule::update() {
-}
-
 void otModule::notifyData(otDataStream *source) {
 }
 

@@ -21,22 +21,22 @@ public:
 	
 	virtual void setInput(otDataStream* stream, int n=0) = 0;
 	virtual otDataStream* getOutput(int n=0) = 0;
-	int getInputCount();
-	int getOutputCount();
 
+	virtual int getInputCount();
+	virtual int getOutputCount();
 	virtual std::string getInputName(int n=0);
 	virtual std::string getOutputName(int n=0);
-	std::string getInputType(int n=0);
-	std::string getOutputType(int n=0);
+	virtual std::string getInputType(int n=0);
+	virtual std::string getOutputType(int n=0);
 
 	virtual void notifyData(otDataStream *source);
-	virtual void update();
 
 	virtual void start();
 	virtual void stop();
-	virtual bool isStarted();
+	virtual void update() = 0;
 	virtual void lock();
 	virtual void unlock();
+	virtual bool isStarted();
 
 	otProperty &property(std::string name);
 

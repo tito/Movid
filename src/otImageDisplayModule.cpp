@@ -43,3 +43,6 @@ otDataStream* otImageDisplayModule::getOutput(int n) {
 	return NULL;
 }
 
+void otImageDisplayModule::update() {
+}
+
