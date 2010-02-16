@@ -33,6 +33,8 @@ std::ostringstream &otLogMessage::get() {
 
 otLog::otLog() {
 	this->loglevel = INFO;
+	if ( getenv("OT_DEBUG") )
+		this->loglevel = DEBUG;
 }
 
 otLog::~otLog() {
