@@ -24,6 +24,7 @@
 		12829894112A8BAE0078B03F /* otInvertModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otInvertModule.cpp; sourceTree = "<group>"; };
 		12829895112A8C620078B03F /* otImageFilterModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageFilterModule.h; sourceTree = "<group>"; };
 		12829896112A8C620078B03F /* otImageFilterModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageFilterModule.cpp; sourceTree = "<group>"; };
+		128298C9112AA57C0078B03F /* blobtracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = blobtracker.cpp; sourceTree = "<group>"; };
 		12AF438E112A5ED0001C2529 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
 		12EFF7761129D06B0027DFA2 /* otDaemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDaemon.cpp; sourceTree = "<group>"; };
 		12EFF7771129D06B0027DFA2 /* otDaemon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otDaemon.h; sourceTree = "<group>"; };
@@ -91,6 +92,7 @@
 				12EFF77C1129D5290027DFA2 /* otProperty.h */,
 				12EFF77D1129D5290027DFA2 /* otProperty.cpp */,
 				12AF438E112A5ED0001C2529 /* .gitignore */,
+				128298C9112AA57C0078B03F /* blobtracker.cpp */,
 			);
 			path = src;
 			sourceTree = "<group>";

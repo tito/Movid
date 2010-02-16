@@ -1,6 +1,7 @@
 #stuff we need to compile
 TRACKER_BIN = tracker
 TESTER_BIN = tester
+BLOB_BIN = blobtrack 
 
 OBJ = otDataStream.o otModule.o otPipeline.o otParser.o otFactory.o otProperty.o \
       otDaemon.o otLog.o otCameraModule.o otImageDisplayModule.o otGaussianBlurModule.o \
@@ -30,6 +31,7 @@ BIN = $(addprefix ${BIN_DIR}, ${OBJ})
 all: ${BIN}
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${BIN}
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TESTER_BIN} src/tester.cpp ${BIN}
+	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${BLOB_BIN} src/blobtracker.cpp
 	
 #how to build stuff in SRC_DIR
 ${BIN_DIR}%.o : ${SRC_DIR}%.cpp
