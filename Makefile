@@ -41,5 +41,5 @@ ${BIN_DIR}/%.o : ${MOD_DIR}/%.cpp
 	${CXX} ${ALL_CFLAGS} -c $< -o $@
 
 clean:
-	rm -${TESTER_BIN} ${TRACKER_BIN} ${DESCRIBE_BIN} ${BLOB_BIN} 2>/dev/null &>/dev/null
+	rm ${TESTER_BIN} ${TRACKER_BIN} ${DESCRIBE_BIN} ${BLOB_BIN} 2>/dev/null &>/dev/null
 	rm -r ${BIN_DIR}/*.o *.dSYM build 2>/dev/null &>/dev/null
