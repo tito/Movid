@@ -270,8 +270,8 @@ static otModule *parseObject(std::string &str) {
 // Parse a pipeline content (an object and maybe -> + recurse)
 static otPipeline *parsePipeline(std::string &str, otPipeline *pipeline) {
 	otModule *object = NULL,
-			 *next = NULL,
-			 *subobject = NULL;
+			 *next = NULL;
+			 //*subobject = NULL;
 	otPipeline *ret = pipeline;
 	unsigned int nextindex = 0;
 
@@ -299,8 +299,12 @@ static otPipeline *parsePipeline(std::string &str, otPipeline *pipeline) {
 		if ( !parserCheckChar(str, '>') )
 			INVALID_SYNTAX("'>' expected");
 
-		ret = parseGroupOrPipeline(str, pipeline);
+		return parseGroupOrPipeline(str, pipeline);
+		//
+		//if ( ret != pipeline && ret->isPipeline() )
+		//	pipeline->addElement(ret);
 
+#if 0
 		// we got a , !
 		if ( ret != pipeline ) {
 
@@ -317,9 +321,13 @@ static otPipeline *parsePipeline(std::string &str, otPipeline *pipeline) {
 					LOG(INFO) << "PIPE:" << i << "=" << pipe->getModule(i)->property("id").asString();
 				}
 
-				assert( pipe->isGroup() == true );
+				// if it's a group, connect to all object inside the group
+				// NOTE: in a group, only pipeline are created
+				unsigned int max = 1;
+				if ( pipe->isGroup() )
+					max = pipe->size();
 
-				for ( unsigned int i = 0; i < pipe->size(); i++ ) {
+				for ( unsigned int i = 0; i < max; i++ ) {
 					subobject = pipe->getModule(i);
 					assert( subobject != NULL );
 
@@ -358,6 +366,7 @@ static otPipeline *parsePipeline(std::string &str, otPipeline *pipeline) {
 				next->setInput(object->getOutput(i), i);
 			}
 		}
+#endif
 
 	// It's a group separation ,
 	} else if ( str[0] == ',' ) {
@@ -390,7 +399,7 @@ parse_error:;
 
 // Parse a group { ... }
 static otPipeline *parseGroup(std::string &str, otPipeline *pipeline) {
-	otPipeline *group = NULL;
+	otPipeline *group = NULL, *ret;
 
 	PARSER_TRACE(parseGroup);
 
@@ -403,11 +412,11 @@ static otPipeline *parseGroup(std::string &str, otPipeline *pipeline) {
 	if ( !parserSkipSpaces(str) )
 		INVALID_SYNTAX("premature end of pipeline description while parsing group");
 
-	group = parseGroupOrPipeline(str, pipeline);
+	group = new otPipeline();
 	if ( group == NULL )
 		goto parse_error;
 
-	group->setGroup(true);
+	ret = parseGroupOrPipeline(str, group);
 
 	if ( !parserSkipSpaces(str) )
 		INVALID_SYNTAX("premature end of pipeline description while parsing group");
@@ -415,7 +424,9 @@ static otPipeline *parseGroup(std::string &str, otPipeline *pipeline) {
 	if ( !parserCheckChar(str, '}') )
 		INVALID_SYNTAX("'}' expected");
 
-	return group;
+	if ( pipeline == NULL )
+		return group;
+	return ret;
 
 parse_error:;
 	if ( group == NULL )
@@ -427,16 +438,100 @@ static otPipeline *parseGroupOrPipeline(std::string &str, otPipeline *pipeline) 
 	PARSER_TRACE(parseGroupOrPipeline);
 	if ( !parserSkipSpaces(str) )
 		return NULL;
-	if ( str[0] == '{' )
-		return parseGroup(str, NULL);
+	if ( str[0] == '{' ) {
+		otPipeline *group = parseGroup(str, pipeline);
+		if ( pipeline )
+			pipeline->addElement(group);
+		return group;
+	}
 	return parsePipeline(str, pipeline);
 }
 
+static bool parserConnectModules(otModule *a, otModule *b) {
+	assert( a != NULL );
+	assert( b != NULL );
+
+	// connect object together
+	if ( a->getOutputCount() != b->getInputCount() ) {
+		LOG(CRITICAL) << "<" << b->property("id").asString() << "> input / " \
+			<< "<" << a->property("id").asString() << "> output don't have the same number of entries";
+		return false;
+	}
+
+	for ( int i = 0; i < b->getInputCount(); i++ ) {
+		LOG(TRACE) << "connect <" << b->property("id").asString() << ">.input[" << i << "] to " \
+			<< "<" << a->property("id").asString() << ">.output[" << i << "]";
+		b->setInput(a->getOutput(i), i);
+	}
+
+	return true;
+}
+
+static bool parserConnect(otPipeline *pipeline) {
+	otModule *a, *b;
+	assert( pipeline != NULL );
+	std::string id = pipeline->property("id").asString();
+
+	LOG(TRACE) << "parserConnect() pipeline=" << pipeline->property("id").asString() << ", size=" << pipeline->size();
+
+	unsigned int size = pipeline->size();
+	if ( size == 1 ) {
+		a = pipeline->getModule(0);
+		LOG(TRACE) << "first " << a->property("id").asString() << ": ispipeline=" << a->isPipeline();
+		if ( a->isPipeline() )
+			return parserConnect(static_cast<otPipeline*>(a));
+		return true;
+	}
+
+	// connect each pipeline contained in the current one
+	for ( unsigned int i = 0; i < size; i++ ) {
+		a = pipeline->getModule(i);
+		if ( !a->isPipeline() )
+			continue;
+		if ( !parserConnect(static_cast<otPipeline*>(a)) )
+			return false;
+	}
+
+	if ( pipeline->isGroup() )
+		return true;
+
+	for ( unsigned int i = 0; i < size - 1; i++ ) {
+		a = pipeline->getModule(i);
+		b = pipeline->getModule(i+1);
+
+		if ( b->isPipeline() && static_cast<otPipeline*>(b)->isGroup() ) {
+			otPipeline *bp = static_cast<otPipeline*>(b);
+			for ( unsigned int j = 0; j < bp->size(); j++ ) {
+				b = bp->getModule(j);
+				LOG(TRACE) << "<" << pipeline->property("id").asString() << ">" \
+					<< " want to connect <" << a->property("id").asString() << "> with <" \
+					<< b->property("id").asString() << ">";
+				parserConnectModules(a, b);
+			}
+		} else {
+			LOG(TRACE) << "<" << pipeline->property("id").asString() << ">" \
+				<< " want to connect <" << a->property("id").asString() << "> with <" \
+				<< b->property("id").asString() << ">";
+			parserConnectModules(a, b);
+		}
+
+	}
+
+	return true;
+}
 
 //
 // Public functions
 //
 
 otPipeline* otParser::parseString(std::string str) {
-	return parseGroupOrPipeline(str, NULL);
+	otPipeline *pipeline = parseGroupOrPipeline(str, NULL);
+	if ( pipeline == NULL )
+		return NULL;
+
+	LOG(TRACE) << "parseString() got <" << pipeline->property("id").asString() << ">";
+
+	parserConnect(pipeline);
+
+	return pipeline;
 }
