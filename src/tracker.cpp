@@ -7,7 +7,7 @@
 #include "otDataStream.h"
 #include "otFactory.h"
 #include "otProperty.h"
-#include "otGroup.h"
+#include "otPipeline.h"
 
 static bool want_quit = false;
 
@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
 
-	otGroup *pipeline = new otGroup();
+	otPipeline *pipeline = new otPipeline();
 
 	// Camera input stream
 	otModule* cam  = otFactory::create("Camera");

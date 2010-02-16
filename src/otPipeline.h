@@ -1,14 +1,14 @@
-#ifndef OT_GROUP_H
-#define OT_GROUP_H
+#ifndef OT_PIPELINE_H
+#define OT_PIPELINE_H
 
 #include <vector>
 #include "otModule.h"
 
-class otGroup : public otModule {
+class otPipeline : public otModule {
 public:
 
-	otGroup();
-	virtual ~otGroup();
+	otPipeline();
+	virtual ~otPipeline();
 
 	virtual void addElement(otModule *module);
 	virtual void removeElement(otModule *module);

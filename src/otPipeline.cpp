@@ -1,28 +1,28 @@
 //
-// otGroup.cpp
+// otPipeline.cpp
 //
 // Handle a group of object (pipeline)
 //
 
 #include <assert.h>
-#include "otGroup.h"
+#include "otPipeline.h"
 #include "otLog.h"
 
 LOG_DECLARE("Group");
 
-otGroup::otGroup() : otModule(OT_MODULE_NONE, 0, 0) {
+otPipeline::otPipeline() : otModule(OT_MODULE_NONE, 0, 0) {
 }
 
-otGroup::~otGroup() {
+otPipeline::~otPipeline() {
 }
 
-void otGroup::addElement(otModule *module) {
+void otPipeline::addElement(otModule *module) {
 	assert( module != NULL );
 	module->owner = this;
 	this->modules.push_back(module);
 }
 
-void otGroup::removeElement(otModule *module) {
+void otPipeline::removeElement(otModule *module) {
 	std::vector<otModule *>::iterator it;
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
 		if ( *it == module ) {
@@ -32,47 +32,47 @@ void otGroup::removeElement(otModule *module) {
 	}
 }
 
-void otGroup::setInput(otDataStream* stream, int n=0) {
+void otPipeline::setInput(otDataStream* stream, int n=0) {
 	assert( this->modules.size() > 0 );
 	this->modules[0]->setInput(stream, n);
 }
 
-otDataStream* otGroup::getOutput(int n=0) {
+otDataStream* otPipeline::getOutput(int n=0) {
 	assert( this->modules.size() > 0 );
 	return this->modules[this->modules.size() - 1]->getOutput(n);
 }
 
-int otGroup::getInputCount() {
+int otPipeline::getInputCount() {
 	assert( this->modules.size() > 0 );
 	return this->modules[0]->getInputCount();
 }
 
-int otGroup::getOutputCount() {
+int otPipeline::getOutputCount() {
 	assert( this->modules.size() > 0 );
 	return this->modules[this->modules.size() - 1]->getOutputCount();
 }
 
-std::string otGroup::getInputName(int n) {
+std::string otPipeline::getInputName(int n) {
 	assert( this->modules.size() > 0 );
 	return this->modules[0]->getInputName(n);
 }
 
-std::string otGroup::getOutputName(int n) {
+std::string otPipeline::getOutputName(int n) {
 	assert( this->modules.size() > 0 );
 	return this->modules[this->modules.size() - 1]->getOutputName(n);
 }
 
-std::string otGroup::getInputType(int n) {
+std::string otPipeline::getInputType(int n) {
 	assert( this->modules.size() > 0 );
 	return this->modules[0]->getInputType(n);
 }
 
-std::string otGroup::getOutputType(int n) {
+std::string otPipeline::getOutputType(int n) {
 	assert( this->modules.size() > 0 );
 	return this->modules[this->modules.size() - 1]->getOutputType(n);
 }
 
-void otGroup::start() {
+void otPipeline::start() {
 	std::vector<otModule *>::iterator it;
 
 	LOG(INFO) << "Start the pipeline";
@@ -84,7 +84,7 @@ void otGroup::start() {
 	}
 }
 
-void otGroup::stop() {
+void otPipeline::stop() {
 	std::vector<otModule *>::iterator it;
 
 	LOG(INFO) << "Stop the pipeline";
@@ -96,7 +96,7 @@ void otGroup::stop() {
 	otModule::stop();
 }
 
-void otGroup::update() {
+void otPipeline::update() {
 	std::vector<otModule *>::iterator it;
 
 	LOG(DEBUG) << "Update the pipeline";

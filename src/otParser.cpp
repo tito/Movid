@@ -24,7 +24,7 @@
 
 #include "otParser.h"
 #include "otModule.h"
-#include "otGroup.h"
+#include "otPipeline.h"
 
 #define INVALID_SYNTAX(error) do { \
 		std::cerr << "otParser: invalid syntax: " << error << std::endl; \
@@ -58,7 +58,7 @@ static otModule *parseObject(char **p, char *end) {
 	otModule *object;
 
 	// FIXME: create the real object
-	object = new otGroup();
+	object = new otPipeline();
 
 	assert("unimplemented" && 0);
 
@@ -66,8 +66,8 @@ static otModule *parseObject(char **p, char *end) {
 }
 
 // Parse a pipeline content (an object and maybe -> + recurse)
-static otGroup *parsePipeline(char **p, char *end);
-static bool parsePipelineContent(char **p, char *end, otGroup* pipeline) {
+static otPipeline *parsePipeline(char **p, char *end);
+static bool parsePipelineContent(char **p, char *end, otPipeline* pipeline) {
 	otModule *object = NULL;
 
 	if ( !parserSkipSpaces(p, end) )
@@ -101,11 +101,11 @@ parse_error:;
 }
 
 // Parse a pipeline (object -> object -> object)
-static otGroup *parsePipeline(char **p, char *end) {
-	otGroup *pipeline;
+static otPipeline *parsePipeline(char **p, char *end) {
+	otPipeline *pipeline;
 
 	// FIXME: Replace with real pipeline
-	pipeline = new otGroup();
+	pipeline = new otPipeline();
 
 	if ( !parsePipelineContent(p, end, pipeline) )
 	{
@@ -117,9 +117,9 @@ static otGroup *parsePipeline(char **p, char *end) {
 }
 
 // Parse the content of a group
-static otGroup *parseGroup(char **p, char *end);
-static bool parseGroupContent(char **p, char *end, otGroup* group) {
-	otGroup *child;
+static otPipeline *parseGroup(char **p, char *end);
+static bool parseGroupContent(char **p, char *end, otPipeline* group) {
+	otPipeline *child;
 
 	// Check if it's a new group, or a pipeline
 	if ( **p == '{' )
@@ -140,8 +140,8 @@ static bool parseGroupContent(char **p, char *end, otGroup* group) {
 }
 
 // Parse a group { ... }
-static otGroup *parseGroup(char **p, char *end) {
-	otGroup *group = NULL;
+static otPipeline *parseGroup(char **p, char *end) {
+	otPipeline *group = NULL;
 
 	if ( !parserSkipSpaces(p, end) )
 		return NULL;
@@ -149,7 +149,7 @@ static otGroup *parseGroup(char **p, char *end) {
 	if ( !parserCheckChar(p, '{') )
 		INVALID_SYNTAX("'{' expected");
 
-	group = new otGroup();
+	group = new otPipeline();
 
 	if ( !parserSkipSpaces(p, end) )
 		goto parse_error;
