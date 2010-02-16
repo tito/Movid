@@ -15,8 +15,8 @@
 		122C5D2A112788CB0033A7DE /* otDataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDataStream.cpp; sourceTree = "<group>"; };
 		128297C4112A61DE0078B03F /* otCameraModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otCameraModule.cpp; sourceTree = "<group>"; };
 		128297C5112A61DE0078B03F /* otCameraModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otCameraModule.h; sourceTree = "<group>"; };
-		128297C6112A61DE0078B03F /* otGaussianBlurModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otGaussianBlurModule.cpp; sourceTree = "<group>"; };
-		128297C7112A61DE0078B03F /* otGaussianBlurModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otGaussianBlurModule.h; sourceTree = "<group>"; };
+		128297C6112A61DE0078B03F /* otSmoothModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otSmoothModule.cpp; sourceTree = "<group>"; };
+		128297C7112A61DE0078B03F /* otSmoothModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otSmoothModule.h; sourceTree = "<group>"; };
 		128297C8112A61DE0078B03F /* otImageDisplayModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageDisplayModule.cpp; sourceTree = "<group>"; };
 		128297C9112A61DE0078B03F /* otImageDisplayModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otImageDisplayModule.h; sourceTree = "<group>"; };
 		128297CD112A62090078B03F /* otModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otModule.cpp; sourceTree = "<group>"; };
@@ -58,8 +58,8 @@
 			children = (
 				128297C5112A61DE0078B03F /* otCameraModule.h */,
 				128297C4112A61DE0078B03F /* otCameraModule.cpp */,
-				128297C6112A61DE0078B03F /* otGaussianBlurModule.cpp */,
-				128297C7112A61DE0078B03F /* otGaussianBlurModule.h */,
+				128297C6112A61DE0078B03F /* otSmoothModule.cpp */,
+				128297C7112A61DE0078B03F /* otSmoothModule.h */,
 				128297C8112A61DE0078B03F /* otImageDisplayModule.cpp */,
 				128297C9112A61DE0078B03F /* otImageDisplayModule.h */,
 				12829893112A8BAE0078B03F /* otInvertModule.h */,

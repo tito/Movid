@@ -26,10 +26,11 @@ int main(int argc, char **argv) {
 	// Camera input stream
 	otModule* cam  = otFactory::create("Camera");
 
-	otModule* gauss = otFactory::create("GaussianBlur");
+	otModule* gauss = otFactory::create("Smooth");
 	gauss->setInput(cam->getOutput(0));
-	gauss->property("width").set(31);
-	gauss->property("height").set(31);
+	gauss->property("width").set(11);
+	gauss->property("height").set(11);
+	gauss->property("filter").set("OT_MEDIAN");
 
 	// otImageDisplayModule opens a window and displays an Image in it
 	otModule* display = otFactory::create("ImageDisplay");

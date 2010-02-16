@@ -3,7 +3,7 @@
 #include "otFactory.h"
 
 #include "modules/otCameraModule.h"
-#include "modules/otGaussianBlurModule.h"
+#include "modules/otSmoothModule.h"
 #include "modules/otImageDisplayModule.h"
 #include "modules/otInvertModule.h"
 #include "modules/otVideoModule.h"
@@ -23,8 +23,8 @@ otModule *otFactory::create(const char *name) {
 		return new otCameraModule();
 	else if ( sname == "ImageDisplay" )
 		return new otImageDisplayModule();
-	else if ( sname == "GaussianBlur" )
-		return new otGaussianBlurModule();
+	else if ( sname == "Smooth" )
+		return new otSmoothModule();
 	else if ( sname == "Invert" )
 		return new otInvertModule();
 	else if ( sname == "Video" )

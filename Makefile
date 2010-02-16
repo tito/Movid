@@ -5,7 +5,7 @@ BLOB_BIN = blobtrack
 DESCRIBE_BIN = describe
 
 OBJ = otDataStream.o otModule.o otPipeline.o otParser.o otFactory.o otProperty.o \
-      otDaemon.o otLog.o otCameraModule.o otImageDisplayModule.o otGaussianBlurModule.o \
+      otDaemon.o otLog.o otCameraModule.o otImageDisplayModule.o otSmoothModule.o \
 	  otImageFilterModule.o otInvertModule.o otVideoModule.o
 
 #where the source is, and where to put the object files
