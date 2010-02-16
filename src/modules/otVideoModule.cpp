@@ -27,14 +27,13 @@ otVideoModule::~otVideoModule() {
 void otVideoModule::start() {
 	assert( this->video == NULL );
 	otModule::start();
-	LOG(INFO) << "Video playing started";
-
+	LOGM(TRACE) << "start video";
 	this->video = cvCaptureFromAVI(this->property("filename").asString().c_str());
 }
 
 void otVideoModule::stop() {
 	if ( this->video != NULL ) {
-		LOG(DEBUG) << "Release video";
+		LOGM(TRACE) << "release video";
 		cvReleaseCapture((CvCapture **)&this->video);
 		this->video = NULL;
 	}
@@ -42,7 +41,7 @@ void otVideoModule::stop() {
 
 void otVideoModule::update() {
 	// push a new image on the stream
-	LOG(DEBUG) << "Push a new image on the stream";
+	LOGM(TRACE) << "push a new image on the stream";
 	this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->video)));
 }
 

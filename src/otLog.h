@@ -10,6 +10,7 @@
 
 #define LOG(x) otLogMessage(log_name, __FILE__, __LINE__, x).get()
 #define LOGX(x) otLogMessage(this->getName(), __FILE__, __LINE__, x).get()
+#define LOGM(x) LOG(x) << "<" << this->property("id").asString() << "> "
 
 enum {
 	CRITICAL	= 0,

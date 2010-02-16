@@ -63,6 +63,7 @@ std::string otLog::getLogLevelName(int n) {
 		case WARNING:	return "Warning";
 		case INFO:		return "Info";
 		case DEBUG:		return "Debug";
+		case TRACE:		return "Trace";
 	}
 	return "Unknown";
 }

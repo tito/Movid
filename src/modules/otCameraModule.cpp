@@ -28,16 +28,14 @@ otCameraModule::~otCameraModule() {
 
 void otCameraModule::start() {
 	assert( this->camera == NULL );
-
 	otModule::start();
-
-	LOG(INFO) << "Camera capture started";
+	LOGM(TRACE) << "start camera";
 	this->camera = cvCaptureFromCAM(this->property("index").asInteger());
 }
 
 void otCameraModule::stop() {
 	if ( this->camera != NULL ) {
-		LOG(DEBUG) << "Release camera capture";
+		LOGM(TRACE) << "release camera";
 		cvReleaseCapture((CvCapture **)&this->camera);
 		this->camera = NULL;
 	}
@@ -45,7 +43,7 @@ void otCameraModule::stop() {
 
 void otCameraModule::update() {
 	// push a new image on the stream
-	LOG(DEBUG) << "Push a new image on the stream";
+	LOGM(TRACE) << "push a new image on the stream";
 	this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->camera)));
 }
 

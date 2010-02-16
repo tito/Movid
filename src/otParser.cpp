@@ -169,13 +169,13 @@ static bool parseObjectProperty(std::string &str, otModule* object) {
 		// check to see if its boolean ('true' or false)
 		if (from_string<bool>(b, value, std::boolalpha)) {
 			object->property(name).set(b);
-			LOG(INFO) << "set Property <" << name << "> to " << b << "(bool)";
+			LOG(TRACE) << "set Property <" << name << "> to " << b << "(bool)";
 			return true;
 		}
 
 		// otherwise set string value
 		object->property(name).set(value);
-		LOG(INFO) << "set Property <" << name << "> to " << value << "(string)";
+		LOG(TRACE) << "set Property <" << name << "> to " << value << "(string)";
 		return true;
 	}
 
@@ -188,14 +188,14 @@ static bool parseObjectProperty(std::string &str, otModule* object) {
 	// check to see if its int
 	if ( from_string<int>(i, value, std::dec) ) {
 		object->property(name).set(i);
-		LOG(INFO) << "set Property <" << name << "> to " << i << "(int)";
+		LOG(TRACE) << "set Property <" << name << "> to " << i << "(int)";
 		return true;
 	}
 
 	// check to see if its float
 	if ( from_string<double>(d, value, std::dec) ) {
 		object->property(name).set(d);
-		LOG(INFO) << "set Property <" << name << "> to " << d << "(double)";
+		LOG(TRACE) << "set Property <" << name << "> to " << d << "(double)";
 		return true;
 	}
 

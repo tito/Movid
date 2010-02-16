@@ -100,7 +100,7 @@ void otPipeline::stop() {
 void otPipeline::update() {
 	std::vector<otModule *>::iterator it;
 
-	LOG(TRACE) << "Update the pipeline";
+	LOGM(TRACE) << "update";
 
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
 		(*it)->update();
