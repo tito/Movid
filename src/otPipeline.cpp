@@ -13,6 +13,7 @@ LOG_DECLARE("Group");
 MODULE_DECLARE_EX(Pipeline,, "native", "Handle object list");
 
 otPipeline::otPipeline() : otModule(OT_MODULE_NONE, 0, 0) {
+	MODULE_INIT();
 }
 
 otPipeline::~otPipeline() {
@@ -79,8 +80,6 @@ std::string otPipeline::getOutputType(int n) {
 void otPipeline::start() {
 	std::vector<otModule *>::iterator it;
 
-	LOG(INFO) << "Start the pipeline";
-
 	otModule::start();
 
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
@@ -91,19 +90,17 @@ void otPipeline::start() {
 void otPipeline::stop() {
 	std::vector<otModule *>::iterator it;
 
-	LOG(INFO) << "Stop the pipeline";
+	otModule::stop();
 
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
 		(*it)->stop();
 	}
-
-	otModule::stop();
 }
 
 void otPipeline::update() {
 	std::vector<otModule *>::iterator it;
 
-	LOG(DEBUG) << "Update the pipeline";
+	LOG(TRACE) << "Update the pipeline";
 
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
 		(*it)->update();

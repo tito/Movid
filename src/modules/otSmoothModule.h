@@ -4,9 +4,9 @@
 #include "otImageFilterModule.h"
 
 class otSmoothModule : public otImageFilterModule{
-
 public:
 	otSmoothModule();
+	virtual ~otSmoothModule();
 	
 protected:
 	void applyFilter();

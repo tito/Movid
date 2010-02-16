@@ -66,6 +66,3 @@ void otImageFilterModule::update() {
 	}
 }
 
-
-
-

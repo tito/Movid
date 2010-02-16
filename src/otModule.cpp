@@ -1,8 +1,11 @@
 #include <assert.h>
+#include <sstream>
 #include <iostream>
 
 #include "otModule.h"
 #include "otDataStream.h"
+
+static unsigned int idcount = 0;
 
 otModule::otModule(unsigned int capabilities, int input_count, int output_count) {
 	this->capabilities	= capabilities;
@@ -13,6 +16,21 @@ otModule::otModule(unsigned int capabilities, int input_count, int output_count)
 }
 
 otModule::~otModule() {
+	this->stop();
+
+	if ( this->properties.size() > 0 ) {
+		std::map<std::string, otProperty*>::iterator it;
+		for ( it = this->properties.begin(); it != this->properties.end(); it++ ) {
+			delete (*it).second;
+			(*it).second = NULL;
+		}
+	}
+}
+
+std::string otModule::createId(std::string base) {
+	std::ostringstream oss;
+	oss << base << (idcount++);
+	return oss.str();
 }
 
 unsigned int otModule::getCapabilities() {
@@ -32,10 +50,12 @@ void otModule::notifyData(otDataStream *source) {
 
 void otModule::start() {
 	this->is_started = true;
+	LOGX(DEBUG) << "start <" << this->property("id").asString() << ">";
 }
 
 void otModule::stop() {
 	this->is_started = false;
+	LOGX(DEBUG) << "stop <" << this->property("id").asString() << ">";
 }
 
 void otModule::lock() {

@@ -4,9 +4,11 @@
 #include <string>
 #include <map>
 
+#include "otLog.h"
 #include "otProperty.h"
 
 #define MODULE_DECLARE(name, author, description) \
+	LOG_DECLARE(#name); \
 	MODULE_DECLARE_EX(name, Module, author, description);
 
 #define MODULE_DECLARE_EX(name, module, author, description) \
@@ -16,6 +18,11 @@
 	std::string ot##name##module::getName() { return module_name; } \
 	std::string ot##name##module::getDescription() { return module_description; } \
 	std::string ot##name##module::getAuthor() { return module_author; }
+
+#define MODULE_INIT() \
+	this->properties["id"] = new otProperty(otModule::createId(module_name)); \
+	LOG(DEBUG) << "create object <" << module_name << "> with id <" \
+			   << this->property("id").asString() << ">";
 
 #define MODULE_INTERNALS() 					\
 	public:									\
@@ -58,6 +65,8 @@ public:
 	otProperty &property(std::string name);
 
 	unsigned int getCapabilities();
+
+	static std::string createId(std::string base);
 
 	virtual std::string getName() = 0;
 	virtual std::string getDescription() = 0;

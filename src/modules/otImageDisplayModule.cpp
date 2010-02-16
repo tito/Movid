@@ -9,6 +9,8 @@ MODULE_DECLARE(ImageDisplay, "native", "Display image on a window");
 
 otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
 
+	MODULE_INIT();
+
 	// declare inputs
 	this->input_names[0] = std::string("image");
 	this->input_types[0] = std::string("IplImage");
@@ -18,6 +20,9 @@ otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
 }
 
 otImageDisplayModule::~otImageDisplayModule(){
+}
+
+void otImageDisplayModule::stop() {
 	cvDestroyWindow(this->property("name").asString().c_str());
 }
 

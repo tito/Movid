@@ -6,13 +6,11 @@
 #include "otCameraModule.h"
 #include "highgui.h"
 
-LOG_DECLARE("Camera");
-
 MODULE_DECLARE(Camera, "native", "Fetch camera stream");
 
 otCameraModule::otCameraModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 
-	LOG(DEBUG) << "Create otCameraModule";
+	MODULE_INIT();
 
 	this->camera = NULL;
 	this->stream = new otDataStream("IplImage");
@@ -26,7 +24,6 @@ otCameraModule::otCameraModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 }
 
 otCameraModule::~otCameraModule() {
-	this->stop();
 }
 
 void otCameraModule::start() {

@@ -17,6 +17,8 @@ public:
 	void setInput(otDataStream *input, int n=0);
 	otDataStream* getOutput(int n=0);
 
+	void stop();
+
 private:
 	otDataStream *input;
 	std::string window_name;

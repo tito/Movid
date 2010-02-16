@@ -8,7 +8,7 @@ class otDataStream;
 class otCameraModule : public otModule {
 public:
 	otCameraModule(); 
-	~otCameraModule();
+	virtual ~otCameraModule();
 
 	void setInput(otDataStream *input, int n=0);
 	otDataStream* getOutput(int n=0);

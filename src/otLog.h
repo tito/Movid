@@ -9,6 +9,7 @@
 	static char log_name[] = x;
 
 #define LOG(x) otLogMessage(log_name, __FILE__, __LINE__, x).get()
+#define LOGX(x) otLogMessage(this->getName(), __FILE__, __LINE__, x).get()
 
 enum {
 	CRITICAL	= 0,
@@ -16,6 +17,7 @@ enum {
 	WARNING		= 2,
 	INFO		= 3,
 	DEBUG		= 4,
+	TRACE		= 5,
 };
 
 class otLogMessage {

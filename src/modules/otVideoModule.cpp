@@ -4,12 +4,11 @@
 #include "../otDataStream.h"
 #include "../otLog.h"
 
-LOG_DECLARE("Video");
 MODULE_DECLARE(Video, "native", "Provide a stream from a video file");
 
 otVideoModule::otVideoModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 
-	LOG(DEBUG) << "Create otVideoModule";
+	MODULE_INIT();
 
 	this->video = NULL;
 	this->stream = new otDataStream("IplImage");
@@ -23,7 +22,6 @@ otVideoModule::otVideoModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 }
 
 otVideoModule::~otVideoModule() {
-	this->stop();
 }
 
 void otVideoModule::start() {

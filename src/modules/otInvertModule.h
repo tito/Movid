@@ -4,7 +4,11 @@
 #include <string>
 #include "otImageFilterModule.h"
 
-class otInvertModule : public otImageFilterModule{
+class otInvertModule : public otImageFilterModule {
+public:
+	otInvertModule();
+	virtual ~otInvertModule();
+
 protected:
 	void applyFilter();
 

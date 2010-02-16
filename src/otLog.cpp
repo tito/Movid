@@ -35,6 +35,8 @@ otLog::otLog() {
 	this->loglevel = INFO;
 	if ( getenv("OT_DEBUG") )
 		this->loglevel = DEBUG;
+	if ( getenv("OT_TRACE") )
+		this->loglevel = TRACE;
 }
 
 otLog::~otLog() {

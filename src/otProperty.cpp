@@ -219,6 +219,7 @@ std::string otProperty::getPropertyTypeName(otPropertyType type) {
 		case OT_PROPERTY_INTEGER: return "integer";
 		case OT_PROPERTY_STRING: return "string";
 		case OT_PROPERTY_BOOL: return "bool";
+		default:;
 	}
 
 	return "unknown";

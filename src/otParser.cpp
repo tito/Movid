@@ -31,7 +31,7 @@
 #include "otLog.h"
 
 #define INVALID_SYNTAX(error) do { \
-		LOG(CRITICAL) << "Invalid syntax: " << error << std::endl; \
+		LOG(CRITICAL) << "invalid syntax: " << error << std::endl; \
 		goto parse_error; \
 	} while (0);
 
@@ -169,13 +169,13 @@ static bool parseObjectProperty(std::string &str, otModule* object) {
 		// check to see if its boolean ('true' or false)
 		if (from_string<bool>(b, value, std::boolalpha)) {
 			object->property(name).set(b);
-			LOG(INFO) << "Set Property <" << name << "> to " << b << "(bool)";
+			LOG(INFO) << "set Property <" << name << "> to " << b << "(bool)";
 			return true;
 		}
 
 		// otherwise set string value
 		object->property(name).set(value);
-		LOG(INFO) << "Set Property <" << name << "> to " << value << "(string)";
+		LOG(INFO) << "set Property <" << name << "> to " << value << "(string)";
 		return true;
 	}
 
@@ -188,14 +188,14 @@ static bool parseObjectProperty(std::string &str, otModule* object) {
 	// check to see if its int
 	if ( from_string<int>(i, value, std::dec) ) {
 		object->property(name).set(i);
-		LOG(INFO) << "Set Property <" << name << "> to " << i << "(int)";
+		LOG(INFO) << "set Property <" << name << "> to " << i << "(int)";
 		return true;
 	}
 
 	// check to see if its float
 	if ( from_string<double>(d, value, std::dec) ) {
 		object->property(name).set(d);
-		LOG(INFO) << "Set Property <" << name << "> to " << d << "(double)";
+		LOG(INFO) << "set Property <" << name << "> to " << d << "(double)";
 		return true;
 	}
 
@@ -238,11 +238,11 @@ static otModule *parseObject(std::string &str) {
 		return false;
 	}
 
-	LOG(INFO) << "Create object <" << obj_name << ">";
+	LOG(TRACE) << "create object <" << obj_name << ">";
 	object = otFactory::create(obj_name.c_str());
 	if ( object == NULL )
 	{
-		LOG(CRITICAL) << "Object <" << obj_name << "> don't exist";
+		LOG(CRITICAL) << "object <" << obj_name << "> don't exist";
 		return NULL;
 	}
 
@@ -279,7 +279,7 @@ static otModule *parsePipelineContent(std::string &str, otPipeline* pipeline) {
 
 		// connect object together
 		if ( next->getInputCount() != object->getOutputCount() ) {
-			LOG(CRITICAL) << "Input / output don't have the same number of entries";
+			LOG(CRITICAL) << "input / output don't have the same number of entries";
 			goto parse_error;
 		}
 
