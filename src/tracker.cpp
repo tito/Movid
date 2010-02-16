@@ -17,29 +17,60 @@ void signal_term(int signal) {
 
 int main(int argc, char **argv) {
 	int key = 0x0;
+	std::string testname = "default";
+
+	if ( argc > 1 )
+		testname = argv[1];
 
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
 
 	otPipeline *pipeline = new otPipeline();
 
-	// Camera input stream
-	otModule* cam  = otFactory::create("Camera");
+	if ( testname == "default" ) {
 
-	otModule* gauss = otFactory::create("Smooth");
-	gauss->setInput(cam->getOutput(0));
-	gauss->property("width").set(11);
-	gauss->property("height").set(11);
-	gauss->property("filter").set("blur");
+		// Camera input stream
+		otModule* cam = otFactory::create("Camera");
 
-	// otImageDisplayModule opens a window and displays an Image in it
-	otModule* display = otFactory::create("ImageDisplay");
-	display->setInput(gauss->getOutput(0));
+		otModule* gauss = otFactory::create("Smooth");
+		gauss->setInput(cam->getOutput());
+		gauss->property("width").set(11);
+		gauss->property("height").set(11);
+		gauss->property("filter").set("blur");
 
-	// order is important (specially the first and the last)
-	pipeline->addElement(cam);
-	pipeline->addElement(gauss);
-	pipeline->addElement(display);
+		// otImageDisplayModule opens a window and displays an Image in it
+		otModule* display = otFactory::create("ImageDisplay");
+		display->setInput(gauss->getOutput());
+
+		// order is important (specially the first and the last)
+		pipeline->addElement(cam);
+		pipeline->addElement(gauss);
+		pipeline->addElement(display);
+
+	} else if ( testname == "video" ) {
+
+		otModule* video  = otFactory::create("Video");
+		video->property("filename").set("media/blob.avi");
+
+		otModule* invert = otFactory::create("Invert");
+		invert->setInput(video->getOutput());
+
+		// otImageDisplayModule opens a window and displays an Image in it
+		otModule* display = otFactory::create("ImageDisplay");
+		display->property("name").set("OpenTracker result");
+		display->setInput(invert->getOutput());
+
+		otModule* displaysrc = otFactory::create("ImageDisplay");
+		displaysrc->property("name").set("OpenTracker source");
+		displaysrc->setInput(video->getOutput());
+
+		// order is important (specially the first and the last)
+		pipeline->addElement(video);
+		pipeline->addElement(invert);
+		pipeline->addElement(display);
+		pipeline->addElement(displaysrc);
+
+	}
 
 	pipeline->start();
 
