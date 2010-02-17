@@ -59,7 +59,7 @@ otModule *otFactory::create(const std::string &name) {
 }
 
 std::vector<std::string> otFactory::list() {
-	static std::vector<std::string> l;
+	std::vector<std::string> l;
 	std::map<std::string, otFactoryCreateCallback>::iterator it;
 	for ( it = this->database.begin(); it != this->database.end(); it++ )
 		l.push_back(it->first);
