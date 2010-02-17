@@ -21,6 +21,7 @@
 #define COLOR_LINE		0x4444ffff
 #define COLOR_LINE_BAD	0xff2222ff
 #define COLOR_LINE_OK	0x44ff44ff
+#define COLOR_RUNNING	0x44dd44ff
 
 class World;
 class Module;
@@ -43,6 +44,7 @@ public:
 		this->w = 100;
 		this->h = 100;
 		this->is_hover = false;
+		this->color = COLOR_BLACK;
 	}
 
 	virtual ~Widget() {
@@ -52,7 +54,7 @@ public:
 		boxColor(screen, this->x, this->y,
 			this->x + this->w,
 			this->y + this->h,
-			this->is_hover ? COLOR_SELECTED : COLOR_BLACK
+			this->is_hover ? COLOR_SELECTED : this->color
 		);
 		rectangleColor(screen, this->x, this->y,
 			this->x + this->w,
@@ -89,6 +91,7 @@ public:
 	virtual void draw_current_link() { }
 
 	int x, y, w, h;
+	unsigned int color;
 	bool is_hover;
 };
 
@@ -218,6 +221,52 @@ public:
 
 };
 
+class otGuiDisplayModule : public otModule {
+public:
+	otGuiDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
+		this->input = new otDataStream("stream");
+		this->output_buffer = NULL;
+	}
+
+	void stop() {
+		if ( this->output_buffer != NULL ) {
+			cvReleaseImage(&this->output_buffer);
+			this->output_buffer = NULL;
+		}
+		otModule::stop();
+	}
+
+	void notifyData(otDataStream *source) {
+		IplImage* src = (IplImage*)(this->input->getData());
+		if ( src == NULL )
+			return;
+		if ( this->output_buffer == NULL )
+			this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
+		cvCopy(src, this->output_buffer);
+	}
+
+	void setInput(otDataStream* stream, int n=0) {
+		this->input = stream;
+		stream->addObserver(this);
+	}
+
+	virtual otDataStream *getInput(int n=0) {
+		return this->input;
+	}
+
+	virtual otDataStream *getOutput(int n=0) {
+		return NULL;
+	}
+
+	void update() {}
+	std::string getName() { return "GuiDisplay"; }
+	std::string getDescription() { return "Get image from an output for GUI"; }
+	std::string getAuthor() { return "sdlgui"; }
+
+	otDataStream *input;
+	IplImage* output_buffer;
+};
+
 class Module : public Widget {
 public:
 	Module(std::string name) {
@@ -226,6 +275,12 @@ public:
 
 		world->pipeline->addElement(this->module);
 		world->mapping[this->module] = this;
+
+		for ( int i = 0; i < this->module->getOutputCount(); i++ ) {
+			otGuiDisplayModule *output = new otGuiDisplayModule();
+			this->output_video[i] = output;
+			output->setInput(this->module->getOutput(i));
+		}
 
 		this->input_selected = -1;
 		this->output_selected = -1;
@@ -325,6 +380,8 @@ public:
 			for ( unsigned int j = 0; j < stream->getObserverCount(); j++ ) {
 				module = stream->getObserver(j);
 				g_module = world->mapping[module];
+				if ( g_module == NULL )
+					continue;
 
 				// search the index inside the module
 				found = true;
@@ -335,7 +392,8 @@ public:
 					}
 				}
 
-				assert( found == true );
+				if ( !found )
+					continue;
 
 				// i = index output source
 				// k = index input destination
@@ -344,6 +402,26 @@ public:
 						g_module->x,
 						g_module->y + 15 + 20 * k,
 						COLOR_LINE);
+			}
+		}
+
+		// draw video ?
+		if ( this->module->isStarted() ) {
+			int idx = this->in_output(mouse_x, mouse_y);
+			if ( idx >= 0 ) {
+				printf("IDX=%d\n", idx);
+				IplImage *opencvimg = this->output_video[idx]->output_buffer;
+				if ( opencvimg ) {
+					SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void*)opencvimg->imageData,
+						opencvimg->width,
+						opencvimg->height,
+						opencvimg->depth * opencvimg->nChannels,
+						opencvimg->widthStep,
+						0xff0000, 0x00ff00, 0x0000ff, 0
+					);
+					SDL_BlitSurface(surface, NULL, screen, NULL);
+					SDL_FreeSurface(surface);
+				}
 			}
 		}
 	}
@@ -397,7 +475,6 @@ public:
 	}
 
 	virtual bool on_mousemove(int x, int y, int xrel, int yrel) {
-		//std::cout << this->in_input(x, y) << ":" << this->in_output(x, y) << std::endl;
 		if ( this->selected ) {
 			this->x = x - this->select_x;
 			this->y = y - this->select_y;
@@ -431,6 +508,7 @@ public:
 	otModule *module;
 	int input_selected;
 	int output_selected;
+	std::map<int, otGuiDisplayModule *> output_video;
 
 protected:
 	bool selected;
@@ -456,6 +534,8 @@ void _callback_buttonstart(Button *src) {
 		world->pipeline->stop();
 	else
 		world->pipeline->start();
+
+	src->color = world->pipeline->isStarted() ? COLOR_RUNNING : COLOR_BLACK;
 }
 
 void gui_createWorld() {
