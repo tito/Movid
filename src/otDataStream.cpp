@@ -48,3 +48,13 @@ void otDataStream::notifyObservers() {
 void *otDataStream::getData() {
 	return this->data;
 }
+
+unsigned int otDataStream::getObserverCount() {
+	return this->observers.size();
+}
+
+otModule *otDataStream::getObserver(unsigned int index) {
+	assert( index >= 0 && index < this->observers.size() );
+	return this->observers[index];
+}
+
