@@ -29,6 +29,7 @@ otImageDisplayModule::~otImageDisplayModule(){
 
 void otImageDisplayModule::stop() {
 	cvDestroyWindow(this->property("name").asString().c_str());
+	otModule::stop();
 }
 
 void otImageDisplayModule::notifyData(otDataStream *input) {

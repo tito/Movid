@@ -39,6 +39,7 @@ void otVideoModule::stop() {
 		cvReleaseCapture((CvCapture **)&this->video);
 		this->video = NULL;
 	}
+	otModule::stop();
 }
 
 void otVideoModule::update() {

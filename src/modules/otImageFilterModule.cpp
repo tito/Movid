@@ -46,6 +46,7 @@ void otImageFilterModule::stop() {
 		this->output_buffer = NULL;
 	}
 	this->need_update = false;
+	otModule::stop();
 }
 
 void otImageFilterModule::notifyData(otDataStream *input) {

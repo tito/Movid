@@ -25,6 +25,8 @@ void otBackgroundSubtractModule::stop() {
 	}
 	this->need_update = false;
 	this->property("recapture").set(true);
+
+	otImageFilterModule::stop();
 }
 
 void otBackgroundSubtractModule::allocateBuffers() {

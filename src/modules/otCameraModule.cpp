@@ -42,6 +42,7 @@ void otCameraModule::stop() {
 		cvReleaseCapture((CvCapture **)&this->camera);
 		this->camera = NULL;
 	}
+	otModule::stop();
 }
 
 void otCameraModule::update() {
@@ -49,9 +50,6 @@ void otCameraModule::update() {
 		// push a new image on the stream
 		LOGM(TRACE) << "push a new image on the stream";
 		this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->camera)));
-	}
-	else {
-		LOGM(INFO) << "trying to get frame from uninitialized device";
 	}
 }
 
