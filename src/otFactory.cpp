@@ -47,3 +47,17 @@ otModule *otFactory::create(const char *name) {
 	return NULL;
 }
 
+std::vector<std::string> otFactory::list() {
+	static std::vector<std::string> l;
+	l.push_back("Amplify");
+	l.push_back("BackgroundSubtract");
+	l.push_back("Camera");
+	l.push_back("GrayScale");
+	l.push_back("Highpass");
+	l.push_back("ImageDisplay");
+	l.push_back("Invert");
+	l.push_back("Smooth");
+	l.push_back("Threshold");
+	l.push_back("Video");
+	return l;
+}
