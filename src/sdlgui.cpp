@@ -12,11 +12,15 @@
 #include "otFactory.h"
 #include "otModule.h"
 #include "otPipeline.h"
+#include "otDataStream.h"
 
 #define COLOR_WHITE		0xffffffff
 #define COLOR_BLACK		0x000000ff
 #define COLOR_SELECTED	0x666666ff
 #define COLOR_IO		0xeeeeeeff
+#define COLOR_LINE		0x4444ffff
+#define COLOR_LINE_BAD	0xff2222ff
+#define COLOR_LINE_OK	0x44ff44ff
 
 class World;
 class Module;
@@ -25,6 +29,11 @@ static World *world = NULL;
 static SDL_Surface *screen = NULL;
 static bool link_in_progress = false;
 static Module *link_module_src = NULL;
+static Module *link_module_hover = NULL;
+static int link_module_input = -1;
+static int link_module_output = -1;
+static int mouse_x = 0;
+static int mouse_y = 0;
 
 class Widget {
 public:
@@ -52,6 +61,9 @@ public:
 		);
 	}
 
+	virtual void draw_after() {
+	}
+
 	virtual void update() {
 	}
 
@@ -74,6 +86,8 @@ public:
 			 y >= this->y && y <= this->h + this->y ) ? true : false;
 	}
 
+	virtual void draw_current_link() { }
+
 	int x, y, w, h;
 	bool is_hover;
 };
@@ -95,35 +109,58 @@ public:
 		std::vector<Widget *>::iterator it;
 		for ( it = this->widgets.begin(); it != this->widgets.end(); it++ )
 			(*it)->draw();
+		for ( it = this->widgets.begin(); it != this->widgets.end(); it++ )
+			(*it)->draw_after();
+		if ( link_in_progress )
+			((Widget *)link_module_src)->draw_current_link();
 		SDL_Flip(screen);
 	}
 
 	void update() {
+		// handle add/remove widget
+		std::vector<Widget *>::iterator it, it2;
+		for ( it = this->widgets_to_remove.begin(); it != this->widgets_to_remove.end(); it++ ) {
+			for ( it = this->widgets.begin(); it2 != this->widgets.end(); it2++ ) {
+				if ( *it2 != *it )
+					continue;
+				this->widgets.erase(it);
+				break;
+			}
+		}
+
+		for ( it = this->widgets_to_add.begin(); it != this->widgets_to_add.end(); it++ )
+			this->widgets.push_back(*it);
+
+		this->widgets_to_add.clear();
+		this->widgets_to_remove.clear();
+
+		// ui
 		cvWaitKey(5);
 		if ( this->pipeline->isStarted() )
 			this->pipeline->update();
-		std::vector<Widget *>::iterator it;
 		for ( it = this->widgets.begin(); it != this->widgets.end(); it++ )
 			(*it)->update();
 	}
 
 	void on_mousemove(int x, int y, int xrel, int yrel) {
-		std::vector<Widget *>::iterator it;
-		for ( it = this->widgets.begin(); it != this->widgets.end(); it++ )
+		std::vector<Widget *>::reverse_iterator it;
+		mouse_x = x;
+		mouse_y = y;
+		for ( it = this->widgets.rbegin(); it != this->widgets.rend(); it++ )
 			if ( (*it)->on_mousemove(x, y, xrel, yrel) )
 				return;
 	}
 
 	void on_mousedown(int x, int y) {
-		std::vector<Widget *>::iterator it;
-		for ( it = this->widgets.begin(); it != this->widgets.end(); it++ )
+		std::vector<Widget *>::reverse_iterator it;
+		for ( it = this->widgets.rbegin(); it != this->widgets.rend(); it++ )
 			if ( (*it)->on_mousedown(x, y) )
 				return;
 	}
 
 	void on_mouseup(int x, int y) {
-		std::vector<Widget *>::iterator it;
-		for ( it = this->widgets.begin(); it != this->widgets.end(); it++ ) {
+		std::vector<Widget *>::reverse_iterator it;
+		for ( it = this->widgets.rbegin(); it != this->widgets.rend(); it++ ) {
 			if ( (*it)->on_mouseup(x, y) ) {
 				link_in_progress = false;
 				return;
@@ -133,21 +170,18 @@ public:
 	}
 
 	void addWidget(Widget *widget) {
-		this->widgets.push_back(widget);
+		this->widgets_to_add.push_back(widget);
 	}
 
 	void removeWidget(Widget *widget) {
-		std::vector<Widget *>::iterator it;
-		for ( it = this->widgets.begin(); it != this->widgets.end(); it++ ) {
-			if ( *it == widget ) {
-				this->widgets.erase(it);
-				return;
-			}
-		}
+		this->widgets_to_remove.push_back(widget);
 	}
 
 	otPipeline *pipeline;
 	std::vector<Widget *> widgets;
+	std::map<otModule *, Module*> mapping;
+	std::vector<Widget *> widgets_to_add;
+	std::vector<Widget *> widgets_to_remove;
 	int w;
 	int h;
 };
@@ -188,13 +222,35 @@ class Module : public Widget {
 public:
 	Module(std::string name) {
 		this->name = name;
-		this->module = otFactory::create(name.c_str());
+		this->module = otFactory::getInstance()->create(name.c_str());
 
 		world->pipeline->addElement(this->module);
+		world->mapping[this->module] = this;
 
 		this->input_selected = -1;
 		this->output_selected = -1;
 		this->selected = false;
+	}
+
+	void update() {
+		if ( this->is_hover && link_in_progress ) {
+			int idx;
+			if ( link_module_src->input_selected >= 0 ) {
+				idx = this->in_output(mouse_x, mouse_y);
+				if ( idx >= 0 ) {
+					link_module_hover = this;
+					link_module_output = idx;
+				}
+			}
+
+			if ( link_module_src->output_selected >= 0 ) {
+				idx = this->in_input(mouse_x, mouse_y);
+				if ( idx >= 0 ) {
+					link_module_hover = this;
+					link_module_input = idx;
+				}
+			}
+		}
 	}
 
 	int in_input(int x, int y) {
@@ -255,6 +311,43 @@ public:
 		}
 	}
 
+	virtual void draw_after() {
+		otDataStream *stream;
+		otModule *module;
+		Module *g_module;
+		int k;
+		bool found;
+		Widget::draw_after();
+
+		for ( int i = 0; i < this->module->getOutputCount(); i++ ) {
+			stream = this->module->getOutput(i);
+
+			for ( unsigned int j = 0; j < stream->getObserverCount(); j++ ) {
+				module = stream->getObserver(j);
+				g_module = world->mapping[module];
+
+				// search the index inside the module
+				found = true;
+				for ( k = 0; k < module->getInputCount(); k++ ) {
+					if ( module->getInput(k) == stream ) {
+						found = true;
+						break;
+					}
+				}
+
+				assert( found == true );
+
+				// i = index output source
+				// k = index input destination
+				lineColor(screen, this->x + this->w,
+						this->y + 15 + 20 * i,
+						g_module->x,
+						g_module->y + 15 + 20 * k,
+						COLOR_LINE);
+			}
+		}
+	}
+
 	virtual bool on_mousedown(int x, int y) {
 		this->input_selected = this->in_input(x, y);
 		this->output_selected = this->in_output(x, y);
@@ -292,7 +385,6 @@ public:
 					return false;
 
 				// connect !
-				std::cout << "B:" << idx << ":" << link_module_src->output_selected << std::endl;
 				this->module->setInput(
 					link_module_src->module->getOutput(link_module_src->output_selected),
 					idx);
@@ -312,6 +404,28 @@ public:
 		}
 		return Widget::on_mousemove(x, y, xrel, yrel);
 	}
+
+	void draw_current_link() {
+		if ( link_in_progress ) {
+			int ox, oy;
+			if ( this->input_selected >= 0 ) {
+				ox = link_module_src->x;
+				oy = this->y + 15 + 20 * this->input_selected;
+			} else {
+				ox = link_module_src->x + link_module_src->w;
+				oy = this->y + 15 + 20 * this->output_selected;
+			}
+
+			lineColor(screen, ox, oy, mouse_x, mouse_y,
+				link_module_hover ? COLOR_LINE_OK : COLOR_LINE_BAD);
+		}
+
+		// reset !
+		link_module_hover = NULL;
+		link_module_output = -1;
+		link_module_input = -1;
+	}
+
 
 	std::string name;
 	otModule *module;
@@ -358,7 +472,7 @@ void gui_createWorld() {
 	world->addWidget(bstart);
 
 	// ask factory availables 
-	std::vector<std::string> l = otFactory::list();
+	std::vector<std::string> l = otFactory::getInstance()->list();
 	std::vector<std::string>::iterator it;
 
 	y += 40;
@@ -392,6 +506,8 @@ int main(int argc, char **argv) {
 		printf("Unable to set video mode: %s\n", SDL_GetError());
 		return 1;
 	}
+
+	otFactory::init();
 
 	gui_createWorld();
 
