@@ -29,7 +29,7 @@
 	public:									\
 	virtual std::string getName(); 			\
 	virtual std::string getDescription(); 	\
-	virtual std::string getAuthor(); 		\
+	virtual std::string getAuthor();
 
 class otDataStream;
 
@@ -45,7 +45,8 @@ public:
 	virtual ~otModule();
 	
 	virtual void setInput(otDataStream* stream, int n=0) = 0;
-	virtual otDataStream* getOutput(int n=0) = 0;
+	virtual otDataStream *getInput(int n=0) = 0;
+	virtual otDataStream *getOutput(int n=0) = 0;
 
 	virtual int getInputCount();
 	virtual int getOutputCount();

@@ -64,3 +64,7 @@ otDataStream* otCameraModule::getOutput(int n) {
 	return this->stream;
 }
 
+otDataStream* otCameraModule::getInput(int n) {
+	return NULL;
+}
+

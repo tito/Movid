@@ -30,8 +30,13 @@ void otImageFilterModule::setInput(otDataStream* stream, int n) {
 	this->input->addObserver(this);
 }
 
-otDataStream* otImageFilterModule::getOutput(int n){
-	assert( n == 0);
+otDataStream* otImageFilterModule::getInput(int n) {
+	assert(n == 0);
+	return this->input;
+}
+
+otDataStream* otImageFilterModule::getOutput(int n) {
+	assert(n == 0);
 	return this->output;
 }
 

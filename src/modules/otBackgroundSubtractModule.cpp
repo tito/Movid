@@ -6,7 +6,7 @@ MODULE_DECLARE(BackgroundSubtract, "native", "subtracts the background from teh 
 
 otBackgroundSubtractModule::otBackgroundSubtractModule() : otImageFilterModule(){
 	MODULE_INIT();
-	
+
 	// declare properties
 	this->properties["recapture"] = new otProperty(true);
 }
@@ -24,7 +24,7 @@ void otBackgroundSubtractModule::allocateBuffers(){
 
 void otBackgroundSubtractModule::applyFilter(){
 	IplImage* src = (IplImage*)(this->input->getData());
-	
+
 	//check for recapture
 	if (this->property("recapture").asBool()){
 		cvCopy(src, this->bg_buffer);

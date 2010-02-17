@@ -10,11 +10,12 @@ public:
 	otPipeline();
 	virtual ~otPipeline();
 
+	virtual void setInput(otDataStream* stream, int n=0);
+	virtual otDataStream *getInput(int n=0);
+	virtual otDataStream *getOutput(int n=0);
+
 	virtual void addElement(otModule *module);
 	virtual void removeElement(otModule *module);
-
-	virtual void setInput(otDataStream* , int n);
-	virtual otDataStream* getOutput(int n);
 
 	virtual int getInputCount();
 	virtual int getOutputCount();

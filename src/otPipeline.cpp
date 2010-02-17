@@ -49,11 +49,15 @@ void otPipeline::removeElement(otModule *module) {
 	}
 }
 
-void otPipeline::setInput(otDataStream* stream, int n=0) {
+void otPipeline::setInput(otDataStream* stream, int n) {
 	this->firstModule()->setInput(stream, n);
 }
 
-otDataStream* otPipeline::getOutput(int n=0) {
+otDataStream* otPipeline::getInput(int n) {
+	return this->lastModule()->getInput(n);
+}
+
+otDataStream* otPipeline::getOutput(int n) {
 	return this->lastModule()->getOutput(n);
 }
 

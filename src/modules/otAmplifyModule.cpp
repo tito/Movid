@@ -12,11 +12,8 @@ otAmplifyModule::otAmplifyModule() : otImageFilterModule(){
 otAmplifyModule::~otAmplifyModule() {
 }
 
-
-
-
-
-void otAmplifyModule::applyFilter(){
+void otAmplifyModule::applyFilter() {
 	IplImage* src = (IplImage*)(this->input->getData());
 	cvMul( src,src, this->output_buffer, this->property("amplification").asDouble() );
 }
+

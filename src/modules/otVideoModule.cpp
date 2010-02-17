@@ -60,6 +60,10 @@ void otVideoModule::setInput(otDataStream* input, int n) {
 	assert( "no input supported on otVideoModule()" && 0 );
 }
 
+otDataStream* otVideoModule::getInput(int n) {
+	return NULL;
+}
+
 otDataStream* otVideoModule::getOutput(int n) {
 	assert( n == 0 );
 	return this->stream;

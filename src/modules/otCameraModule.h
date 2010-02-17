@@ -10,12 +10,12 @@ public:
 	otCameraModule(); 
 	virtual ~otCameraModule();
 
-	void setInput(otDataStream *input, int n=0);
-	otDataStream* getOutput(int n=0);
+	virtual void setInput(otDataStream* stream, int n=0);
+	virtual otDataStream *getInput(int n=0);
+	virtual otDataStream *getOutput(int n=0);
 
 	void start();
 	void stop();
-
 	void update();
 
 private:
@@ -27,3 +27,4 @@ private:
 };
 
 #endif
+

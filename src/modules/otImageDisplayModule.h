@@ -11,11 +11,12 @@ public:
 	otImageDisplayModule();
 	virtual ~otImageDisplayModule();
 
+	virtual void setInput(otDataStream* stream, int n=0);
+	virtual otDataStream *getInput(int n=0);
+	virtual otDataStream *getOutput(int n=0);
+
 	void notifyData(otDataStream *stream);
 	void update();
-
-	void setInput(otDataStream *input, int n=0);
-	otDataStream* getOutput(int n=0);
 
 	void stop();
 

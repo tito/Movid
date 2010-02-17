@@ -50,6 +50,11 @@ void otImageDisplayModule::setInput(otDataStream *input, int n) {
 	this->input->addObserver(this);
 }
 
+otDataStream* otImageDisplayModule::getInput(int n) {
+	assert( n == 0);
+	return this->input;
+}
+
 otDataStream* otImageDisplayModule::getOutput(int n) {
 	assert( "otImageDisplayModule don't accept output" && 0 );
 	return NULL;

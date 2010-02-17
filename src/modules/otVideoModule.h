@@ -8,11 +8,13 @@ public:
 	otVideoModule();
 	virtual ~otVideoModule();
 
+	virtual void setInput(otDataStream* stream, int n=0);
+	virtual otDataStream *getInput(int n=0);
+	virtual otDataStream *getOutput(int n=0);
+
 	void start();
 	void stop();
 	void update();
-	void setInput(otDataStream* , int n=0);	
-	otDataStream* getOutput( int n=0 );
 
 private:
 	otDataStream *stream;
