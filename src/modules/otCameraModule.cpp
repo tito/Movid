@@ -30,7 +30,10 @@ void otCameraModule::start() {
 	assert( this->camera == NULL );
 	otModule::start();
 	LOGM(TRACE) << "start camera";
-	this->camera = cvCaptureFromCAM(this->property("index").asInteger());
+	if(!(this->camera = cvCaptureFromCAM(this->property("index").asInteger()))) {
+		this->camera = NULL;
+		LOGM(ERROR) << "could not load camera: " << this->property("index").asInteger();
+	}
 }
 
 void otCameraModule::stop() {
@@ -42,9 +45,14 @@ void otCameraModule::stop() {
 }
 
 void otCameraModule::update() {
-	// push a new image on the stream
-	LOGM(TRACE) << "push a new image on the stream";
-	this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->camera)));
+	if ( this->camera != NULL ) {
+		// push a new image on the stream
+		LOGM(TRACE) << "push a new image on the stream";
+		this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->camera)));
+	}
+	else {
+		LOGM(INFO) << "trying to get frame from uninitialized device";
+	}
 }
 
 void otCameraModule::setInput(otDataStream* input, int n) {
