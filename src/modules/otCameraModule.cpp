@@ -30,7 +30,12 @@ void otCameraModule::start() {
 	assert( this->camera == NULL );
 	otModule::start();
 	LOGM(TRACE) << "start camera";
-	this->camera = cvCaptureFromCAM(this->property("index").asInteger());
+	if(!(this->camera = cvCaptureFromCAM(this->property("index").asInteger())))
+	{
+		this->camera = NULL;
+		LOGM(ERROR) << "could not load camera: " << this->property("index").asInteger();
+	}
+
 }
 
 void otCameraModule::stop() {
