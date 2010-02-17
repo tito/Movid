@@ -2,14 +2,13 @@
 #include "otThresholdModule.h"
 #include "cv.h"
 
-MODULE_DECLARE(Threshold, "native", "Thresholding to throw awaay all values below or above certain threshold");
+MODULE_DECLARE(Threshold, "native", "Thresholding to throw away all values below or above certain threshold");
 
 otThresholdModule::otThresholdModule() : otImageFilterModule(){
-	
 	MODULE_INIT();
 	
 	// declare properties
-	this->properties["threshold"] = new otProperty(.5);
+	this->properties["threshold"] = new otProperty(100.0);
 	this->properties["type"] = new otProperty("binary");
 }
 
@@ -33,7 +32,7 @@ void otThresholdModule::applyFilter(){
 	cvThreshold( (IplImage*)this->input->getData(),
 				this->output_buffer,
 			    this->property("threshold").asDouble(),
-			    1.0, //max value is output of where threshold was passed
+			    255.0, //max value is output of where threshold was passed
 			    cv_thresh_type(this->property("type").asString())
 			  );
 }
