@@ -8,33 +8,39 @@ otThresholdModule::otThresholdModule() : otImageFilterModule(){
 	MODULE_INIT();
 	
 	// declare properties
-	this->properties["threshold"] = new otProperty(100.0);
-	this->properties["type"] = new otProperty("binary");
+	this->properties["threshold"] = new otProperty(50);
+	this->properties["adaptive"] = new otProperty(false);
+	this->properties["block_size"] = new otProperty(21); // size fo neighbor hood to compare to for adaptive threshold
 }
 
 otThresholdModule::~otThresholdModule() {
 }
 
 
-static int cv_thresh_type(std::string type){
-	if ( type == "binary" )
-		return CV_THRESH_BINARY;
-	if ( type == "truncate" )
-		return CV_THRESH_TRUNC;
-	assert( "unimplemented filter" && 0 );
-}
-
 
 void otThresholdModule::applyFilter(){
 	IplImage* src = (IplImage*)this->input->getData();
 	assert( "threshold filter needs single channel input" && (src->nChannels == 1) );
-	
-	cvThreshold( (IplImage*)this->input->getData(),
-				this->output_buffer,
-			    this->property("threshold").asDouble(),
-			    255.0, //max value is output of where threshold was passed
-			    cv_thresh_type(this->property("type").asString())
-			  );
+
+	if (this->property("adaptive").asBool()){
+		cvAdaptiveThreshold( (IplImage*)this->input->getData(),
+					this->output_buffer,
+					255.0, //max value is output of where threshold was passed
+					CV_ADAPTIVE_THRESH_MEAN_C,
+					CV_THRESH_BINARY,
+					this->property("block_size").asInteger(),
+					this->property("threshold").asDouble()*-1 //other way around on adpative, pass if src > (AVRG(block) - this arg)...so pixel pass if brighter than average neighboorhood + thresh (-1* -thresh)
+					);
+	}
+	else{
+		cvThreshold( (IplImage*)this->input->getData(),
+					this->output_buffer,
+					this->property("threshold").asDouble(),
+					255.0, //max value is output of where threshold was passed
+					CV_THRESH_BINARY
+					);
+	}
+
 }
 
 

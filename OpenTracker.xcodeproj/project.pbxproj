@@ -48,6 +48,8 @@
 		12F8EB74112B50B1003568C3 /* otThresholdModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otThresholdModule.cpp; sourceTree = "<group>"; };
 		12F8EB7A112B55B7003568C3 /* otGrayScaleModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otGrayScaleModule.h; sourceTree = "<group>"; };
 		12F8EB7B112B55B7003568C3 /* otGrayScaleModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otGrayScaleModule.cpp; sourceTree = "<group>"; };
+		12F8EC28112BAB71003568C3 /* otAmplifyModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otAmplifyModule.h; sourceTree = "<group>"; };
+		12F8EC29112BAB71003568C3 /* otAmplifyModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otAmplifyModule.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -82,6 +84,8 @@
 				12F8EB74112B50B1003568C3 /* otThresholdModule.cpp */,
 				12F8EB7A112B55B7003568C3 /* otGrayScaleModule.h */,
 				12F8EB7B112B55B7003568C3 /* otGrayScaleModule.cpp */,
+				12F8EC28112BAB71003568C3 /* otAmplifyModule.h */,
+				12F8EC29112BAB71003568C3 /* otAmplifyModule.cpp */,
 			);
 			path = modules;
 			sourceTree = "<group>";
