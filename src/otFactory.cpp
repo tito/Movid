@@ -11,7 +11,7 @@
 #include "modules/otGrayScaleModule.h"
 #include "modules/otThresholdModule.h"
 #include "modules/otAmplifyModule.h"
-
+#include "modules/otHighpassModule.h"
 
 otModule *otFactory::create(const char *name) {
 	// XXX plug dynamic resolve here too
@@ -41,6 +41,8 @@ otModule *otFactory::create(const char *name) {
 		return new otThresholdModule();
 	if ( sname == "Amplify" )
 		return new otAmplifyModule();
+	if ( sname == "Highpass" )
+		return new otHighpassModule();
 
 	return NULL;
 }

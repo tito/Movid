@@ -9,38 +9,31 @@ otSmoothModule::otSmoothModule() : otImageFilterModule(){
 	MODULE_INIT();
 
 	// declare properties
-	this->properties["width"] = new otProperty(5.);
-	this->properties["height"] = new otProperty(5.);
+	this->properties["size"] = new otProperty(2.);
 	this->properties["filter"] = new otProperty("gaussian");
 }
 
 otSmoothModule::~otSmoothModule() {
 }
 
-void otSmoothModule::applyFilter(){
-	std::string filter = this->property("filter").asString();
-	int _filter = -1;
-
+static int cv_smooth_type(std::string filter){
 	if ( filter == "median" )
-		_filter = CV_MEDIAN;
-	else if ( filter == "gaussian" )
-		_filter = CV_GAUSSIAN;
-	else if ( filter == "blur" )
-		_filter = CV_BLUR;
-	else if ( filter == "blur_no_scale" )
-		_filter = CV_BLUR_NO_SCALE;
-	//if ( filter == "bilateral" )
-	//	_filter = CV_BILATERAL;
+		return CV_MEDIAN;
+	if ( filter == "gaussian" )
+		return CV_GAUSSIAN;
+	if ( filter == "blur" )
+		return CV_BLUR;
+	if ( filter == "blur_no_scale" )
+		return CV_BLUR_NO_SCALE;
+	assert( "unsupported filter type for Smooth module!!" && 0 );
+}
 
-	if ( _filter == -1 )
-		assert( "unimplemented filter" && 0 );
-
+void otSmoothModule::applyFilter(){
 	cvSmooth(
 			 (IplImage*)this->input->getData(),
 			 this->output_buffer,
-			 _filter,
-			 this->property("width").asDouble(),
-			 this->property("height").asDouble()
+			 cv_smooth_type(this->property("filter").asString()),
+			 this->property("size").asInteger()*2+1 //make sure its odd
 			);
 }
 

@@ -10,7 +10,7 @@ LIBOT_SHARED = libot.so
 OBJ = otDataStream.o otModule.o otPipeline.o otParser.o otFactory.o otProperty.o \
       otDaemon.o otLog.o otCameraModule.o otImageDisplayModule.o otSmoothModule.o \
 	  otImageFilterModule.o otInvertModule.o otVideoModule.o otBackgroundSubtractModule.o \
-	  otGrayScaleModule.o otThresholdModule.o otAmplifyModule.o
+	  otGrayScaleModule.o otThresholdModule.o otAmplifyModule.o otHighpassModule.o
 
 #where the source is, and where to put the object files
 SRC_DIR = src
