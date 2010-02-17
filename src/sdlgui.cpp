@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <stdio.h>
+#include <time.h>
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_gfxPrimitives.h>
@@ -21,7 +22,7 @@
 #define COLOR_LINE		0x4444ffff
 #define COLOR_LINE_BAD	0xff2222ff
 #define COLOR_LINE_OK	0x44ff44ff
-#define COLOR_RUNNING	0x44dd44ff
+#define COLOR_RUNNING	0x22aa22ff
 
 class World;
 class Module;
@@ -102,6 +103,9 @@ public:
 		this->w = info->current_w;
 		this->h = info->current_h;
 		this->pipeline = new otPipeline();
+		this->frametime = 0;
+		this->framecount = 0;
+		this->fps = 0;
 	}
 
 	~World() {
@@ -116,7 +120,24 @@ public:
 			(*it)->draw_after();
 		if ( link_in_progress )
 			((Widget *)link_module_src)->draw_current_link();
+		this->dofps();
 		SDL_Flip(screen);
+	}
+
+	void dofps() {
+		double cur = SDL_GetTicks() / 1000.;
+		this->framecount++;
+		if ( this->frametime == 0 )
+			this->frametime = cur;
+		if ( cur - this->frametime > 0.5 ) {
+			this->fps = this->framecount / (cur - this->frametime);
+			this->framecount = 0;
+			this->frametime = cur;
+		}
+
+		std::ostringstream oss;
+		oss << "FPS=" << (int)this->fps;
+		stringColor(screen, 0, this->h - 8, oss.str().c_str(), 0xffffffff);
 	}
 
 	void update() {
@@ -138,7 +159,7 @@ public:
 		this->widgets_to_remove.clear();
 
 		// ui
-		cvWaitKey(5);
+		cvWaitKey(2);
 		if ( this->pipeline->isStarted() )
 			this->pipeline->update();
 		for ( it = this->widgets.begin(); it != this->widgets.end(); it++ )
@@ -187,6 +208,9 @@ public:
 	std::vector<Widget *> widgets_to_remove;
 	int w;
 	int h;
+	int framecount;
+	double fps;
+	double frametime;
 };
 
 class Button;
@@ -242,7 +266,6 @@ public:
 			return;
 		if ( this->output_buffer == NULL )
 			this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
-		cvCopy(src, this->output_buffer);
 	}
 
 	void setInput(otDataStream* stream, int n=0) {
@@ -256,6 +279,17 @@ public:
 
 	virtual otDataStream *getOutput(int n=0) {
 		return NULL;
+	}
+
+	void copy() {
+		if ( this->output_buffer == NULL )
+			return;
+		this->input->lock();
+		IplImage* src = (IplImage*)(this->input->getData());
+		if ( src == NULL )
+			return;
+		cvCopy(src, this->output_buffer);
+		this->input->unlock();
 	}
 
 	void update() {}
@@ -345,6 +379,7 @@ public:
 	}
 
 	virtual void draw() {
+		this->color = this->module->isStarted() ? COLOR_RUNNING : COLOR_BLACK;
 		Widget::draw();
 		stringColor(screen, this->x + (this->w - this->name.size() * 8) / 2,
 			this->y + this->h / 2 - 4,
@@ -409,9 +444,10 @@ public:
 		if ( this->module->isStarted() ) {
 			int idx = this->in_output(mouse_x, mouse_y);
 			if ( idx >= 0 ) {
-				printf("IDX=%d\n", idx);
+				this->output_video[idx]->copy();
 				IplImage *opencvimg = this->output_video[idx]->output_buffer;
 				if ( opencvimg ) {
+					// XXX may be a long operation if SDL copy pixels, but i'm not sure...
 					SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void*)opencvimg->imageData,
 						opencvimg->width,
 						opencvimg->height,
@@ -520,8 +556,8 @@ class ButtonCreateModule : public Button {
 public:
 	virtual void on_click() {
 		Module *m = new Module(this->label);
-		m->x = (world->w + this->w) / 2;
-		m->y = (world->h + this->h) / 2;
+		m->x = (world->w - this->w) / 2;
+		m->y = (world->h - this->h) / 2;
 		m->w = 150;
 		m->h = 150;
 		world->addWidget(m);
@@ -581,7 +617,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	screen = SDL_SetVideoMode(800, 600, 16, SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(1024, 768, 16, SDL_DOUBLEBUF);
 	if ( screen == NULL ) {
 		printf("Unable to set video mode: %s\n", SDL_GetError());
 		return 1;
