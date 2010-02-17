@@ -3,6 +3,7 @@
 
 #include "highgui.h"
 
+#include "otFactory.h"
 #include "otParser.h"
 #include "otPipeline.h"
 
@@ -29,6 +30,8 @@ int main(int argc, char **argv) {
 		usage();
 		return 1;
 	}
+
+	otFactory::init();
 
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);

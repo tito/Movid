@@ -19,6 +19,8 @@ int main(int argc, char **argv) {
 	int key = 0x0;
 	std::string testname = "default";
 
+	otFactory::init();
+
 	if ( argc > 1 )
 		testname = argv[1];
 
@@ -30,16 +32,16 @@ int main(int argc, char **argv) {
 	if ( testname == "default" ) {
 
 		// Camera input stream
-		otModule* cam = otFactory::create("Camera");
+		otModule* cam = otFactory::getInstance()->create("Camera");
 
-		otModule* gauss = otFactory::create("Smooth");
+		otModule* gauss = otFactory::getInstance()->create("Smooth");
 		gauss->setInput(cam->getOutput());
 		gauss->property("width").set(11);
 		gauss->property("height").set(11);
 		gauss->property("filter").set("blur");
 
 		// otImageDisplayModule opens a window and displays an Image in it
-		otModule* display = otFactory::create("ImageDisplay");
+		otModule* display = otFactory::getInstance()->create("ImageDisplay");
 		display->setInput(gauss->getOutput());
 
 		// order is important (specially the first and the last)
@@ -49,18 +51,18 @@ int main(int argc, char **argv) {
 
 	} else if ( testname == "video" ) {
 
-		otModule* video  = otFactory::create("Video");
+		otModule* video  = otFactory::getInstance()->create("Video");
 		video->property("filename").set("media/blob.avi");
 
-		otModule* invert = otFactory::create("Invert");
+		otModule* invert = otFactory::getInstance()->create("Invert");
 		invert->setInput(video->getOutput());
 
 		// otImageDisplayModule opens a window and displays an Image in it
-		otModule* display = otFactory::create("ImageDisplay");
+		otModule* display = otFactory::getInstance()->create("ImageDisplay");
 		display->property("name").set("OpenTracker result");
 		display->setInput(invert->getOutput());
 
-		otModule* displaysrc = otFactory::create("ImageDisplay");
+		otModule* displaysrc = otFactory::getInstance()->create("ImageDisplay");
 		displaysrc->property("name").set("OpenTracker source");
 		displaysrc->setInput(video->getOutput());
 

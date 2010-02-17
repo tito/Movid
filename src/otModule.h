@@ -17,7 +17,8 @@
 	static std::string module_description = description; \
 	std::string ot##name##module::getName() { return module_name; } \
 	std::string ot##name##module::getDescription() { return module_description; } \
-	std::string ot##name##module::getAuthor() { return module_author; }
+	std::string ot##name##module::getAuthor() { return module_author; } \
+	otModule *factory_create_ot##name() { return new ot##name##module(); }
 
 #define MODULE_INIT() \
 	this->properties["id"] = new otProperty(otModule::createId(module_name)); \

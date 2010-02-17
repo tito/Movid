@@ -254,7 +254,7 @@ static otModule *parseObject(std::string &str) {
 	}
 
 	LOG(TRACE) << "create object <" << obj_name << ">";
-	object = otFactory::create(obj_name.c_str());
+	object = otFactory::getInstance()->create(obj_name.c_str());
 	if ( object == NULL )
 	{
 		LOG(CRITICAL) << "object <" << obj_name << "> don't exist";

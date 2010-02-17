@@ -19,6 +19,7 @@ otDaemon *otDaemon::getInstance() {
 }
 
 void otDaemon::init() {
+	otFactory::init();
 }
 
 void otDaemon::cleanup() {
