@@ -14,26 +14,42 @@ otBackgroundSubtractModule::otBackgroundSubtractModule() : otImageFilterModule()
 otBackgroundSubtractModule::~otBackgroundSubtractModule() {
 }
 
+void otBackgroundSubtractModule::stop() {
+	if ( this->output_buffer != NULL ) {
+		cvReleaseImage(&this->output_buffer);
+		this->output_buffer = NULL;
+	}
+	if ( this->bg_buffer != NULL ) {
+		cvReleaseImage(&this->bg_buffer);
+		this->bg_buffer = NULL;
+	}
+	this->need_update = false;
+	this->property("recapture").set(true);
+}
 
-void otBackgroundSubtractModule::allocateBuffers(){
+void otBackgroundSubtractModule::allocateBuffers() {
 	IplImage* src = (IplImage*)(this->input->getData());
-	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);	
+	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
 	this->bg_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
 	LOG(DEBUG) << "allocated output and background buffers for BackgroundSubtract module.";
 }
 
-void otBackgroundSubtractModule::applyFilter(){
-	IplImage* src = (IplImage*)(this->input->getData());
+void otBackgroundSubtractModule::applyFilter() {
+	assert( this->bg_buffer != NULL );
+	assert( this->output_buffer != NULL );
 
-	//check for recapture
-	if (this->property("recapture").asBool()){
+	IplImage* src = (IplImage*)(this->input->getData());
+	if ( src == NULL )
+		return;
+
+	// check for recapture
+	if (this->property("recapture").asBool()) {
 		cvCopy(src, this->bg_buffer);
 		this->property("recapture").set(false);
 		LOG(DEBUG) << "recaptured background in BackgroundSubtract module.";
 	}
 
-	//do subtraction
+	// do subtraction
 	cvSub(src, this->bg_buffer, this->output_buffer);
 }
-
 

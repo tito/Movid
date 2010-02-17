@@ -16,8 +16,9 @@ public:
 	virtual otDataStream *getInput(int n=0);
 	virtual otDataStream *getOutput(int n=0);
 	
-	void notifyData(otDataStream *source);
-	void update();
+	virtual void notifyData(otDataStream *source);
+	virtual void update();
+	virtual void stop();
 	
 protected:
 	otDataStream* input;
@@ -27,7 +28,6 @@ protected:
 	virtual void applyFilter()=0;
 	virtual void allocateBuffers();
 	
-private:
 	bool need_update;
 
 };

@@ -40,6 +40,14 @@ otDataStream* otImageFilterModule::getOutput(int n) {
 	return this->output;
 }
 
+void otImageFilterModule::stop() {
+	if ( this->output_buffer != NULL ) {
+		cvReleaseImage(&this->output_buffer);
+		this->output_buffer = NULL;
+	}
+	this->need_update = false;
+}
+
 void otImageFilterModule::notifyData(otDataStream *input) {
 	// ensure that input data is IplImage
 	assert( input != NULL );
@@ -54,13 +62,11 @@ void otImageFilterModule::notifyData(otDataStream *input) {
 }
 
 
-void otImageFilterModule::allocateBuffers(){
+void otImageFilterModule::allocateBuffers() {
 	LOG(DEBUG) << "First time, allocating output buffer for image filter";
 	IplImage* src = (IplImage*)(this->input->getData());
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
 }
-
-
 
 void otImageFilterModule::update() {
 	if ( this->need_update ) {

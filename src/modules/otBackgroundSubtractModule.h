@@ -14,6 +14,7 @@ protected:
 	
 	void applyFilter();
 	void allocateBuffers();
+	void stop();
 
 	MODULE_INTERNALS();
 };

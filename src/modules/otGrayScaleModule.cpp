@@ -11,7 +11,6 @@ otGrayScaleModule::otGrayScaleModule() : otImageFilterModule(){
 otGrayScaleModule::~otGrayScaleModule() {
 }
 
-
 void otGrayScaleModule::allocateBuffers(){
 	IplImage* src = (IplImage*)(this->input->getData());
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, 1);	//only one channel
