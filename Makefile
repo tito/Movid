@@ -7,6 +7,9 @@ DESCRIBE_BIN = describe
 LIBOT_STATIC = libot.a
 LIBOT_SHARED = libot.so
 
+SDLGUI_BIN = otgui_sdl
+SDLGUI_LIBS = `pkg-config --libs --cflags sdl` `pkg-config --libs --cflags SDL_gfx`
+
 OBJ = otDataStream.o otModule.o otPipeline.o otParser.o otFactory.o otProperty.o \
       otDaemon.o otLog.o otCameraModule.o otImageDisplayModule.o otSmoothModule.o \
 	  otImageFilterModule.o otInvertModule.o otVideoModule.o otBackgroundSubtractModule.o \
@@ -38,6 +41,10 @@ all: static
 
 static: ${BIN}
 	${AR} rcs ${LIBOT_STATIC} ${BIN}
+
+gui: static
+	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} ${SDLGUI_LIBS} -o ${SDLGUI_BIN} src/sdlgui.cpp ${LIBOT_STATIC}
+
 
 #shared: ${BIN}
 #	${CXX} -shared -Wl,-soname,${LIBOT_SHARED} -o ${LIBOT_SHARED} ${BIN}
