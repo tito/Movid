@@ -12,6 +12,7 @@
 #include "modules/otThresholdModule.h"
 #include "modules/otAmplifyModule.h"
 #include "modules/otHighpassModule.h"
+#include "modules/otBlobTrackerModule.h"
 
 otModule *otFactory::create(const char *name) {
 	// XXX plug dynamic resolve here too
@@ -23,6 +24,8 @@ otModule *otFactory::create(const char *name) {
 	if ( sname.size() > 6 && sname.substr(sname.length() - 6, 6) == "Module" )
 		sname = sname.substr(0, sname.length() - 6);
 
+	if ( sname == "BlobTracker" )
+		return new otBlobTrackerModule();
 	if ( sname == "Camera" )
 		return new otCameraModule();
 	if ( sname == "Video" )
@@ -44,6 +47,7 @@ otModule *otFactory::create(const char *name) {
 	if ( sname == "Highpass" )
 		return new otHighpassModule();
 
+
 	return NULL;
 }
 
@@ -59,5 +63,6 @@ std::vector<std::string> otFactory::list() {
 	l.push_back("Smooth");
 	l.push_back("Threshold");
 	l.push_back("Video");
+	l.push_back("BlobTracker");
 	return l;
 }

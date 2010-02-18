@@ -27,6 +27,10 @@
 		12829896112A8C620078B03F /* otImageFilterModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageFilterModule.cpp; sourceTree = "<group>"; };
 		128298C9112AA57C0078B03F /* blobtracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = blobtracker.cpp; sourceTree = "<group>"; };
 		12AF438E112A5ED0001C2529 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = .gitignore; path = ../.gitignore; sourceTree = "<group>"; };
+		12E1F6AB112D0F9B00D24FA4 /* otVideoModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otVideoModule.cpp; sourceTree = "<group>"; };
+		12E1F6AC112D0F9B00D24FA4 /* otVideoModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otVideoModule.h; sourceTree = "<group>"; };
+		12E1F6B1112D0FF700D24FA4 /* otBlobTrackerModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otBlobTrackerModule.cpp; sourceTree = "<group>"; };
+		12E1F6B2112D100500D24FA4 /* otBlobTrackerModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otBlobTrackerModule.h; sourceTree = "<group>"; };
 		12EFF7761129D06B0027DFA2 /* otDaemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDaemon.cpp; sourceTree = "<group>"; };
 		12EFF7771129D06B0027DFA2 /* otDaemon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otDaemon.h; sourceTree = "<group>"; };
 		12EFF7781129D06B0027DFA2 /* otFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otFactory.cpp; sourceTree = "<group>"; };
@@ -68,6 +72,10 @@
 		128297C3112A61DE0078B03F /* modules */ = {
 			isa = PBXGroup;
 			children = (
+				12E1F6B2112D100500D24FA4 /* otBlobTrackerModule.h */,
+				12E1F6B1112D0FF700D24FA4 /* otBlobTrackerModule.cpp */,
+				12E1F6AB112D0F9B00D24FA4 /* otVideoModule.cpp */,
+				12E1F6AC112D0F9B00D24FA4 /* otVideoModule.h */,
 				128297C5112A61DE0078B03F /* otCameraModule.h */,
 				128297C4112A61DE0078B03F /* otCameraModule.cpp */,
 				128297C6112A61DE0078B03F /* otSmoothModule.cpp */,

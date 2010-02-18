@@ -1,5 +1,5 @@
-#ifndef OT_AMPLIFY_MODULE_H
-#define OT_AMPLIFY_MODULE_H
+#ifndef OT_BLOB_TRACKER_MODULE_H
+#define OT_BLOB_TRACKER_MODULE_H
 
 #include "otImageFilterModule.h"
 #include "cvaux.h"

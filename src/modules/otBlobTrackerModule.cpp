@@ -31,7 +31,7 @@ void otFGDetector::Release(){
 
 
 
-MODULE_DECLARE(BlobTracker, "native", "Amplifies input image (for evry pixel: p = p^amp, so lareg values get larger quicker");
+MODULE_DECLARE(BlobTracker, "native", "Tracks Blobs");
 
 otBlobTrackerModule::otBlobTrackerModule() : otImageFilterModule(){
 	MODULE_INIT();
