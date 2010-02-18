@@ -448,6 +448,7 @@ public:
 				IplImage *opencvimg = this->output_video[idx]->output_buffer;
 				if ( opencvimg ) {
 					// XXX may be a long operation if SDL copy pixels, but i'm not sure...
+					SDL_Rect r;
 					SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void*)opencvimg->imageData,
 						opencvimg->width,
 						opencvimg->height,
@@ -455,8 +456,13 @@ public:
 						opencvimg->widthStep,
 						0xff0000, 0x00ff00, 0x0000ff, 0
 					);
-					SDL_BlitSurface(surface, NULL, screen, NULL);
+					r.x = (world->w - opencvimg->width) / 2.;
+					r.y = (world->h - opencvimg->height) / 2.;
+					r.w = opencvimg->width;
+					r.h = opencvimg->height;
+					SDL_BlitSurface(surface, NULL, screen, &r);
 					SDL_FreeSurface(surface);
+					rectangleColor(screen, r.x, r.y, r.x + r.w, r.y + r.h, COLOR_WHITE);
 				}
 			}
 		}
