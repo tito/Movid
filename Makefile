@@ -57,7 +57,7 @@ static: ${BIN}
 gui: static
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} ${SDLGUI_LIBS} -o ${SDLGUI_BIN} src/sdlgui.cpp ${LIBOT_STATIC}
 
-daemon: src/daemon.cpp
+daemon: src/daemon.cpp static libwebserver
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DAEMON_BIN} src/daemon.cpp ${ALL_LIBS_STATIC} 
 
 libwebserver:
