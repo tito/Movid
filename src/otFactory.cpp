@@ -17,6 +17,7 @@ void otFactory::init() {
 	REGISTER_MODULE(BlobTracker)
 	REGISTER_MODULE(BackgroundSubtract);
 	REGISTER_MODULE(Camera);
+	REGISTER_MODULE(Combine);
 	REGISTER_MODULE(Dump);
 	REGISTER_MODULE(GrayScale);
 	REGISTER_MODULE(Highpass);

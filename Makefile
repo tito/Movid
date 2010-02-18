@@ -15,7 +15,7 @@ OBJ = otDataStream.o otModule.o otPipeline.o otParser.o otFactory.o otProperty.o
 	  otCameraModule.o otImageDisplayModule.o otSmoothModule.o \
 	  otImageFilterModule.o otInvertModule.o otVideoModule.o otBackgroundSubtractModule.o \
 	  otGrayScaleModule.o otThresholdModule.o otAmplifyModule.o otHighpassModule.o \
-	  otBlobTrackerModule.o
+	  otBlobTrackerModule.o otCombineModule.o
 
 #where the source is, and where to put the object files
 SRC_DIR = src
