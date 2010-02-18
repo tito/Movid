@@ -31,6 +31,9 @@
 		12E1F6AC112D0F9B00D24FA4 /* otVideoModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otVideoModule.h; sourceTree = "<group>"; };
 		12E1F6B1112D0FF700D24FA4 /* otBlobTrackerModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otBlobTrackerModule.cpp; sourceTree = "<group>"; };
 		12E1F6B2112D100500D24FA4 /* otBlobTrackerModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otBlobTrackerModule.h; sourceTree = "<group>"; };
+		12E1F6F9112DBF5F00D24FA4 /* otDataGenericContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDataGenericContainer.cpp; sourceTree = "<group>"; };
+		12E1F6FA112DBF5F00D24FA4 /* otDataGenericContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otDataGenericContainer.h; sourceTree = "<group>"; };
+		12E1F6FB112DBF5F00D24FA4 /* sdlgui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sdlgui.cpp; sourceTree = "<group>"; };
 		12EFF7761129D06B0027DFA2 /* otDaemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otDaemon.cpp; sourceTree = "<group>"; };
 		12EFF7771129D06B0027DFA2 /* otDaemon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otDaemon.h; sourceTree = "<group>"; };
 		12EFF7781129D06B0027DFA2 /* otFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otFactory.cpp; sourceTree = "<group>"; };
@@ -105,12 +108,15 @@
 		12F85BC911274A9900C13390 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				12E1F6FB112DBF5F00D24FA4 /* sdlgui.cpp */,
 				0156A990112AAA8B00E6063F /* describe.cpp */,
 				12F85BCD11274A9900C13390 /* tracker.cpp */,
 				121ECCDA1129BED600EA143B /* tester.cpp */,
 				128297C3112A61DE0078B03F /* modules */,
 				128297CD112A62090078B03F /* otModule.cpp */,
 				128297CE112A62090078B03F /* otModule.h */,
+				12E1F6FA112DBF5F00D24FA4 /* otDataGenericContainer.h */,
+				12E1F6F9112DBF5F00D24FA4 /* otDataGenericContainer.cpp */,
 				12EFF7B2112A23B30027DFA2 /* otPipeline.h */,
 				12EFF7AF112A23B30027DFA2 /* otLog.cpp */,
 				12EFF7B0112A23B30027DFA2 /* otLog.h */,
