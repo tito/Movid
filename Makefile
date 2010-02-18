@@ -1,8 +1,16 @@
+# contrib path
+CONTRIB_PATH = contrib
+LIBWEBSERVER_PATH = ${CONTRIB_PATH}/libwebserver-0.5.3
+
 #stuff we need to compile
 TRACKER_BIN = tracker
 TESTER_BIN = tester
 BLOB_BIN = blobtrack
 DESCRIBE_BIN = describe
+DAEMON_BIN = daemon
+
+LIBWEBSERVER_LIBS = ${LIBWEBSERVER_PATH}/bin/libwebserver.a
+LIBWEBSERVER_CFLAGS = -I${LIBWEBSERVER_PATH}/include
 
 LIBOT_STATIC = libot.a
 LIBOT_SHARED = libot.so
@@ -29,13 +37,14 @@ LIBS   ?=
 OPENCV_CFLAGS ?= `pkg-config --cflags opencv`
 OPENCV_LIBS   ?= `pkg-config --libs opencv`
 
-ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS}
-ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}
+ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS} ${LIBWEBSERVER_CFLAGS}
+ALL_LIBS   = ${LIBS} ${OPENCV_LIBS} ${LIBWEBSERVER_LIBS}
+ALL_LIBS_STATIC = ${LIBOT_STATIC} ${LIBWEBSERVER_LIBS}
 
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
 #rules for building targets
-all: static
+all: static libwebserver
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${LIBOT_STATIC}
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TESTER_BIN} src/tester.cpp ${LIBOT_STATIC}
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${BLOB_BIN} src/blobtracker.cpp
@@ -46,6 +55,12 @@ static: ${BIN}
 
 gui: static
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} ${SDLGUI_LIBS} -o ${SDLGUI_BIN} src/sdlgui.cpp ${LIBOT_STATIC}
+
+daemon: src/daemon.cpp
+	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DAEMON_BIN} src/daemon.cpp ${ALL_LIBS_STATIC} 
+
+libwebserver:
+	cd ${LIBWEBSERVER_PATH}/src; make
 
 
 #shared: ${BIN}
@@ -62,5 +77,6 @@ ${BIN_DIR}/%.o : ${MOD_DIR}/%.cpp
 clean:
 	-rm  ${BIN_DIR}/*.o &>/dev/null
 	-rm ${TESTER_BIN} ${TRACKER_BIN} ${DESCRIBE_BIN} ${BLOB_BIN} ${SDLGUI_BIN} &>/dev/null
+	-rm ${DAEMON_BIN} &>/dev/null
 	-rm -r  *.dSYM build  &>/dev/null
 	-rm ${LIBOT_STATIC} ${LIBOT_SHARED} &>/dev/null
