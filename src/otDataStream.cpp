@@ -15,6 +15,10 @@ std::string otDataStream::getFormat() {
 	return this->format;
 }
 
+void otDataStream::setFormat(const std::string &format) {
+	this->format = format;
+}
+
 void otDataStream::lock() {
 	// FIXME
 }

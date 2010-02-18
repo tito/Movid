@@ -24,6 +24,7 @@ public:
 	void unlock();
 
 	std::string getFormat();
+	void setFormat(const std::string& format);
 	
 protected:
 	std::string format;

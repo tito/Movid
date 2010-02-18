@@ -82,11 +82,11 @@ public:
 
 private:
 	unsigned int capabilities;
-	int	input_count;
-	int	output_count;
 	bool is_started;
 
 protected:
+	int	input_count;
+	int	output_count;
 	std::map<int, std::string> input_types;
 	std::map<int, std::string> input_names;
 	std::map<int, std::string> output_types;
