@@ -40,7 +40,6 @@ otBlobTrackerModule::otBlobTrackerModule() : otImageFilterModule(){
 	this->new_blobs = new CvBlobSeq();
 	this->old_blobs = new CvBlobSeq();
 
-	
 	CvBlobTrackerAutoParam1 param = {0};
 	param.FGTrainFrames = 0;
 	param.pFG       = cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
@@ -51,21 +50,12 @@ otBlobTrackerModule::otBlobTrackerModule() : otImageFilterModule(){
 	param.UsePPData = false;
 	param.pBTA      = NULL;
 
-	
 	this->tracker = cvCreateBlobTrackerAuto1(&param);
-	
-
-	
-	
-	LOG(INFO) << "Created OpenCV Blob Detectore...";
 }
 
 otBlobTrackerModule::~otBlobTrackerModule() {
 
 }
-
-
-
 
 
 void otBlobTrackerModule::applyFilter(){
@@ -89,6 +79,8 @@ void otBlobTrackerModule::applyFilter(){
 				  s,
 				  0, 0, 360,
 				  CV_RGB(c,255-c,0), cvRound(1+(3*0)/255), CV_AA, 8 );
+		
+		LOG(INFO) << "<Blob>:  id="<<pB->ID<<"  pos=" <<pB->x <<","<< pB->y <<"size="<<pB->w <<","<< pB->h;
 	}   /* Next blob. */;
 	
 	

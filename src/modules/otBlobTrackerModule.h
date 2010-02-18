@@ -10,17 +10,12 @@ public:
 	virtual ~otBlobTrackerModule();
 	
 protected:
-	void applyFilter();	
+	int next_id;
 	CvBlobSeq* new_blobs;
 	CvBlobSeq* old_blobs;
+	CvBlobTrackerAuto* tracker;	
 	
-	CvBlobTrackerAuto* tracker;
-	CvFGDetector*   fg_detector;
-	CvBlobDetector* blob_detector;
-	CvBlobTracker*  blob_tracker;
-	
-	int next_id;
-	
+	void applyFilter();	
 	MODULE_INTERNALS();
 };
 
