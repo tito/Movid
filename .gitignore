@@ -10,4 +10,5 @@ tracker
 tester
 blobtrack
 describe
+daemon
 build/

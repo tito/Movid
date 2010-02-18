@@ -44,11 +44,12 @@ ALL_LIBS_STATIC = ${LIBOT_STATIC} ${LIBWEBSERVER_LIBS}
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
 #rules for building targets
-all: static libwebserver
+all: static libwebserver daemon
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${LIBOT_STATIC}
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TESTER_BIN} src/tester.cpp ${LIBOT_STATIC}
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${BLOB_BIN} src/blobtracker.cpp
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DESCRIBE_BIN} src/describe.cpp ${LIBOT_STATIC}
+	
 
 static: ${BIN}
 	${AR} rcs ${LIBOT_STATIC} ${BIN}
@@ -80,3 +81,4 @@ clean:
 	-rm ${DAEMON_BIN} &>/dev/null
 	-rm -r  *.dSYM build  &>/dev/null
 	-rm ${LIBOT_STATIC} ${LIBOT_SHARED} &>/dev/null
+	cd ${LIBWEBSERVER_PATH}/src; make clean
