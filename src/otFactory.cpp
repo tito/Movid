@@ -14,6 +14,7 @@ static otFactory *instance = NULL;
 
 void otFactory::init() {
 	REGISTER_MODULE(Amplify);
+	REGISTER_MODULE(BlobTracker)
 	REGISTER_MODULE(BackgroundSubtract);
 	REGISTER_MODULE(Camera);
 	REGISTER_MODULE(GrayScale);
@@ -65,3 +66,4 @@ std::vector<std::string> otFactory::list() {
 		l.push_back(it->first);
 	return l;
 }
+
