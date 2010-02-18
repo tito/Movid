@@ -4,7 +4,7 @@
 #include "cvaux.h"
 
 
-
+//pass through f detection
 class otFGDetector : public CvFGDetector{
 private:
 	IplImage* blob_image;
@@ -15,19 +15,40 @@ public:
 	void    Release();
 };
 
-
 IplImage* otFGDetector::GetMask(){
 	return this->blob_image;
 }
-
 void otFGDetector::Process(IplImage* pImg){
 	assert ("Blob Tracker input image, must be single channel binary image!" && pImg->nChannels ==1);
 	this->blob_image = pImg;
 }
-
 void otFGDetector::Release(){
 
 }
+
+
+
+
+ 
+//class otBlobFinder : CvBlobDetector
+//{
+//public:
+    /* pFGMask - image of foreground mask */
+    /* pNewBlobList - pointer to sequence to save new detected blobs  */
+    /* pOldBlobList - pointer to blob list which already exist on image */
+	/* return number of detected blobs */
+//	int DetectNewBlob(IplImage* pFGMask, CvBlobSeq* pNewBlobList, CvBlobSeq* pOldBlobList) = 0;
+	
+    /* release blob detector */
+//    void Release()=0;
+//};
+
+//otBlobFinder::DetectNewBlob((IplImage* pFGMask, CvBlobSeq* pNewBlobList, CvBlobSeq* pOldBlobList)){
+//}
+
+//otBlobFinder::Release();
+
+
 
 
 
@@ -48,7 +69,7 @@ otBlobTrackerModule::otBlobTrackerModule() : otImageFilterModule() {
 	CvBlobTrackerAutoParam1 param = {0};
 	param.FGTrainFrames = 0;
 	param.pFG       = cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
-	param.pBD       = cvCreateBlobDetectorCC();
+	param.pBD       = NULL;
 	param.pBT       = cvCreateBlobTrackerCCMSPF();
 	param.pBTGen    = NULL;
 	param.pBTPP     = cvCreateModuleBlobTrackPostProcKalman();
