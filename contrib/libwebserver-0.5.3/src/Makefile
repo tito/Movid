@@ -1,4 +1,3 @@
-CC=gcc
 INCLUDE=-I../include 
 BIN=../bin
 CFLAGS= -O2 -fomit-frame-pointer -Wall -fPIC
@@ -9,11 +8,11 @@ LIBDIR=
 OBJS= clientinfo.o server.o client.o gethandler.o socket.o memory.o outstream.o weblog.o utils.o fnmatch.o outgif.o error.o
 
 all: $(OBJS)
-	$(CC) $(OBJS) $(LIBS) $(LIBDIR) -shared -o libwebserver.so
+	#$(CC) $(OBJS) $(LIBS) $(LIBDIR) -shared -o libwebserver.so
 	ar -r libwebserver.a *.o
 	ranlib libwebserver.a   
 	mkdir -p $(BIN);
-	cp libwebserver.a libwebserver.so $(BIN)
+	cp libwebserver.a $(BIN)
 
 
 
