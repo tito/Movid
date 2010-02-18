@@ -125,7 +125,7 @@ void web_pipeline_get() {
 		return;
 	}
 
-	printf("%s\r\n", module->property(ClientInfo->Query("name")).asString());
+	printf("%s\r\n", module->property(ClientInfo->Query("name")).asString().c_str());
 }
 
 void web_pipeline_set() {
