@@ -68,14 +68,9 @@ otBlobTrackerModule::otBlobTrackerModule() : otImageFilterModule() {
 
 	CvBlobTrackerAutoParam1 param = {0};
 	param.FGTrainFrames = 0;
-	param.pFG       = cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
-	param.pBD       = NULL;
+	param.pFG       = new otFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
 	param.pBT       = cvCreateBlobTrackerCCMSPF();
-	param.pBTGen    = NULL;
 	param.pBTPP     = cvCreateModuleBlobTrackPostProcKalman();
-	param.UsePPData = false;
-	param.pBTA      = NULL;
-
 	this->tracker = cvCreateBlobTrackerAuto1(&param);
 }
 
