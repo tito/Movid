@@ -1,24 +1,44 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
+#include <map>
 
 #include "highgui.h"
 #include "web_server.h"
 #include "otPipeline.h"
 #include "otModule.h"
 #include "otFactory.h"
+#include "otProperty.h"
+#include "otDataStream.h"
+#include "cJSON.h"
 
 static otPipeline *pipeline = NULL;
 static bool running = true;
 
-void web_status() {
-	printf("Content-type: text/plain\r\n\r\n");
-	printf("Running OTDaemon.\r\n");
-};
+void web_message(const char *message, int success=1) {
+	char *out;
+	cJSON *root;
+
+	root = cJSON_CreateObject();
+	cJSON_AddNumberToObject(root, "success", success);
+	cJSON_AddStringToObject(root, "message", message);
+	out = cJSON_Print(root);
+	cJSON_Delete(root);
+
+	printf("Content-type: application/json\r\n\r\n");
+	printf("%s\r\n", out);
+
+	free(out);
+}
+
+void web_error(const char* message) {
+	return web_message(message, 0);
+}
 
 otModule *module_search(const std::string &id) {
 	otModule *module;
-	for ( int i = 0; i < pipeline->size(); i++ ) {
+	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
 		module = pipeline->getModule(i);
 		if ( module->property("id").asString() == id )
 			return module;
@@ -26,134 +46,176 @@ otModule *module_search(const std::string &id) {
 	return NULL;
 }
 
+void web_status() {
+	web_message("ok");
+}
+
 void web_pipeline_create() {
 	otModule *module;
-	printf("Content-type: text/plain\r\n\r\n");
 
-	if ( strlen(ClientInfo->Query("objectname")) == 0 ) {
-		printf("error:no objectname !\r\n");
-		return;
-	}
+	if ( strlen(ClientInfo->Query((char*)"objectname")) == 0 )
+		return web_error("missing objectname");
 
-	module = otFactory::getInstance()->create(ClientInfo->Query("objectname"));
-	if ( module == NULL ) {
-		printf("error:invalid objectname\r\n");
-		return;
-	}
+	module = otFactory::getInstance()->create(ClientInfo->Query((char*)"objectname"));
+	if ( module == NULL )
+		return web_error("invalid objectname");
 
 	pipeline->addElement(module);
 
-	printf("%s\r\n", module->property("id").asString().c_str());
-}
-
-void web_pipeline_start() {
-	pipeline->start();
-	printf("Content-type: text/plain\r\n\r\n");
-	printf("ok\r\n");
-}
-
-void web_pipeline_stop() {
-	pipeline->stop();
-	printf("Content-type: text/plain\r\n\r\n");
-	printf("ok\r\n");
+	web_message(module->property("id").asString().c_str());
 }
 
 void web_pipeline_status() {
-	printf("Content-type: text/plain\r\n\r\n");
-	printf("%s\r\n", pipeline->isStarted() ? "running" : "stopped");
+	std::map<std::string, otProperty*>::iterator it;
+	char *out, buffer[64];
+	cJSON *root, *data, *modules, *mod, *properties, *io, *observers;
+	otDataStream *ds;
+
+	root = cJSON_CreateObject();
+	cJSON_AddNumberToObject(root, "success", 1);
+	cJSON_AddStringToObject(root, "message", "ok");
+	cJSON_AddItemToObject(root, "status", data=cJSON_CreateObject());
+	cJSON_AddNumberToObject(data, "size", pipeline->size());
+	cJSON_AddNumberToObject(data, "running", pipeline->isStarted() ? 1 : 0);
+	cJSON_AddItemToObject(data, "modules", modules=cJSON_CreateObject());
+
+	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
+		otModule *module = pipeline->getModule(i);
+		assert( module != NULL );
+
+		cJSON_AddItemToObject(modules,
+			module->property("id").asString().c_str(),
+			mod=cJSON_CreateObject());
+
+		cJSON_AddStringToObject(mod, "name", module->getName().c_str());
+		cJSON_AddStringToObject(mod, "description", module->getDescription().c_str());
+		cJSON_AddStringToObject(mod, "author", module->getAuthor().c_str());
+		cJSON_AddNumberToObject(mod, "running", module->isStarted() ? 1 : 0);
+		cJSON_AddItemToObject(mod, "properties", properties=cJSON_CreateObject());
+
+		for ( it = module->properties.begin(); it != module->properties.end(); it++ ) {
+			cJSON_AddStringToObject(properties, it->first.c_str(),
+					it->second->asString().c_str());
+		}
+
+		if ( module->getInputCount() ) {
+			cJSON_AddItemToObject(mod, "inputs", io=cJSON_CreateObject());
+			for ( int i = 0; i < module->getInputCount(); i++ ) {
+				ds = module->getInput(i);
+				cJSON_AddNumberToObject(io, "index", i);
+				cJSON_AddStringToObject(io, "name", module->getInputName(i).c_str());
+				cJSON_AddStringToObject(io, "type", module->getInputType(i).c_str());
+				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
+			}
+		}
+
+		if ( module->getOutputCount() ) {
+			cJSON_AddItemToObject(mod, "outputs", io=cJSON_CreateObject());
+			for ( int i = 0; i < module->getOutputCount(); i++ ) {
+				ds = module->getOutput(i);
+				cJSON_AddNumberToObject(io, "index", i);
+				cJSON_AddStringToObject(io, "name", module->getOutputName(i).c_str());
+				cJSON_AddStringToObject(io, "type", module->getOutputType(i).c_str());
+				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
+				cJSON_AddItemToObject(io, "observers", observers=cJSON_CreateObject());
+				if ( ds != NULL ) {
+					for ( unsigned int j = 0; j < ds->getObserverCount(); j++ ) {
+						snprintf(buffer, sizeof(buffer), "%d", j);
+						cJSON_AddStringToObject(observers, buffer,
+							ds->getObserver(j)->property("id").asString().c_str());
+					}
+				}
+			}
+		}
+	}
+
+	out = cJSON_Print(root);
+	cJSON_Delete(root);
+
+	printf("Content-type: application/json\r\n\r\n");
+	printf("%s\r\n", out);
+	free(out);
 }
 
 void web_pipeline_connect() {
 	otModule *in, *out;
 	int inidx = 0, outidx = 0;
-	printf("Content-type: text/plain\r\n\r\n");
 
-	if ( strlen(ClientInfo->Query("out")) == 0 ) {
-		printf("error:no out property !\r\n");
-		return;
-	}
+	if ( strlen(ClientInfo->Query((char*)"out")) == 0 )
+		return web_error("missing out");
 
-	if ( strlen(ClientInfo->Query("in")) == 0 ) {
-		printf("error:no in property !\r\n");
-		return;
-	}
+	if ( strlen(ClientInfo->Query((char*)"in")) == 0 )
+		return web_error("missing in");
 
-	if ( strlen(ClientInfo->Query("outidx")) != 0 )
-		outidx = atoi(ClientInfo->Query("outidx"));
-	if ( strlen(ClientInfo->Query("inidx")) != 0 )
-		inidx = atoi(ClientInfo->Query("inidx"));
+	if ( strlen(ClientInfo->Query((char*)"outidx")) != 0 )
+		outidx = atoi(ClientInfo->Query((char*)"outidx"));
+	if ( strlen(ClientInfo->Query((char*)"inidx")) != 0 )
+		inidx = atoi(ClientInfo->Query((char*)"inidx"));
 
-	in = module_search(ClientInfo->Query("in"));
-	out = module_search(ClientInfo->Query("out"));
+	in = module_search(ClientInfo->Query((char*)"in"));
+	out = module_search(ClientInfo->Query((char*)"out"));
 
-	if ( in == NULL ) {
-		printf("error:unable to found in object\r\n");
-		return;
-	}
+	if ( in == NULL )
+		return web_error("in object not found");
 
-	if ( out == NULL ) {
-		printf("error:unable to found out object\r\n");
-		return;
-	}
+	if ( out == NULL )
+		return web_error("out object not found");
 
 	in->setInput(out->getOutput(outidx), inidx);
-	printf("ok\r\n");
-}
 
-void web_pipeline_quit() {
-	printf("Content-type: text/plain\r\n\r\n");
-	printf("bye\r\n\r\n");
-	running = false;
+	web_message("ok");
 }
 
 void web_pipeline_get() {
 	otModule *module;
 
-	if ( strlen(ClientInfo->Query("objectname")) == 0 ) {
-		printf("error:no objectname !\r\n");
-		return;
-	}
+	if ( strlen(ClientInfo->Query((char*)"objectname")) == 0 )
+		return web_error("missing objectname");
 
-	if ( strlen(ClientInfo->Query("name")) == 0 ) {
-		printf("error:no name !\r\n");
-		return;
-	}
+	if ( strlen(ClientInfo->Query((char*)"name")) == 0 )
+		return web_error("missing name");
 
-	module = module_search(ClientInfo->Query("objectname"));
-	if ( module == NULL ) {
-		printf("error:unable to found out object\r\n");
-		return;
-	}
+	module = module_search(ClientInfo->Query((char*)"objectname"));
+	if ( module == NULL )
+		return web_error("object not found");
 
-	printf("%s\r\n", module->property(ClientInfo->Query("name")).asString().c_str());
+	web_message(module->property(ClientInfo->Query((char*)"name")).asString().c_str());
 }
 
 void web_pipeline_set() {
 	otModule *module;
 
-	if ( strlen(ClientInfo->Query("objectname")) == 0 ) {
-		printf("error:no objectname !\r\n");
-		return;
-	}
+	if ( strlen(ClientInfo->Query((char*)"objectname")) == 0 )
+		return web_error("missing objectname");
 
-	if ( strlen(ClientInfo->Query("name")) == 0 ) {
-		printf("error:no name !\r\n");
-		return;
-	}
+	if ( strlen(ClientInfo->Query((char*)"name")) == 0 )
+		return web_error("missing name");
 
-	if ( strlen(ClientInfo->Query("value")) == 0 ) {
-		printf("error:no value !\r\n");
-		return;
-	}
+	if ( strlen(ClientInfo->Query((char*)"value")) == 0 )
+		return web_error("missing value");
 
-	module = module_search(ClientInfo->Query("objectname"));
-	if ( module == NULL ) {
-		printf("error:unable to found out object\r\n");
-		return;
-	}
+	module = module_search(ClientInfo->Query((char*)"objectname"));
+	if ( module == NULL )
+		return web_error("object not found");
 
-	module->property(ClientInfo->Query("name")).set(ClientInfo->Query("value"));
-	printf("ok\r\n");
+	module->property(ClientInfo->Query((char*)"name")).set(ClientInfo->Query((char*)"value"));
+
+	web_message("ok");
+}
+
+void web_pipeline_start() {
+	pipeline->start();
+	web_message("ok");
+}
+
+void web_pipeline_stop() {
+	pipeline->stop();
+	web_message("ok");
+}
+
+void web_pipeline_quit() {
+	web_message("bye");
+	running = false;
 }
 
 int main(int argc, char **argv) {
@@ -164,12 +226,12 @@ int main(int argc, char **argv) {
 
 	web_server_init(&server, 7500, NULL, 0);
 	web_server_addhandler(&server, "* /pipeline/create", web_pipeline_create, 0);
-	web_server_addhandler(&server, "* /pipeline/start", web_pipeline_start, 0);
-	web_server_addhandler(&server, "* /pipeline/stop", web_pipeline_stop, 0);
 	web_server_addhandler(&server, "* /pipeline/status", web_pipeline_status, 0);
 	web_server_addhandler(&server, "* /pipeline/connect", web_pipeline_connect, 0);
 	web_server_addhandler(&server, "* /pipeline/set", web_pipeline_set, 0);
 	web_server_addhandler(&server, "* /pipeline/get", web_pipeline_get, 0);
+	web_server_addhandler(&server, "* /pipeline/start", web_pipeline_start, 0);
+	web_server_addhandler(&server, "* /pipeline/stop", web_pipeline_stop, 0);
 	web_server_addhandler(&server, "* /pipeline/quit", web_pipeline_quit, 0);
 
 	while ( running ) {
