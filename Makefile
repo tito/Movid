@@ -1,7 +1,8 @@
 # contrib path
 CONTRIB_PATH = contrib
-LIBWEBSERVER_PATH = ${CONTRIB_PATH}/libwebserver-0.5.3
+LIBEVENT_PATH = ${CONTRIB_PATH}/libevent-1.4.13-stable
 LIBCJSON_PATH = ${CONTRIB_PATH}/cJSON
+LIBJPEG_PATH = ${CONTRIB_PATH}/jpeg-8
 
 #stuff we need to compile
 TRACKER_BIN = tracker
@@ -10,15 +11,14 @@ BLOB_BIN = blobtrack
 DESCRIBE_BIN = describe
 DAEMON_BIN = daemon
 
-LIBWEBSERVER_LIBS = ${LIBWEBSERVER_PATH}/bin/libwebserver.a
-LIBWEBSERVER_CFLAGS = -I${LIBWEBSERVER_PATH}/include
+LIBEVENT_LIBS = ${LIBEVENT_PATH}/.libs/libevent.a
+LIBEVENT_CFLAGS = -I${LIBEVENT_PATH}
+LIBJPEG_LIBS = ${LIBJPEG_PATH}/.libs/libjpeg.a
+LIBJPEG_CFLAGS = -I${LIBJPEG_PATH}
 LIBCJSON_CFLAGS = -I${LIBCJSON_PATH}
 
 LIBOT_STATIC = libot.a
 LIBOT_SHARED = libot.so
-
-SDLGUI_BIN = otgui_sdl
-SDLGUI_LIBS = `pkg-config --libs --cflags sdl` `pkg-config --libs --cflags SDL_gfx`
 
 OBJ = otDataStream.o otModule.o otPipeline.o otParser.o otFactory.o otProperty.o \
       otDaemon.o otLog.o otDataGenericContainer.o otDumpModule.o \
@@ -33,7 +33,7 @@ MOD_DIR = ${SRC_DIR}/modules
 BIN_DIR = bin
 
 # compiler flags
-CFLAGS ?= -O0 -g -Wall # -fPIC << needed for shared
+CFLAGS ?= -O0 -g -Wall
 LIBS   ?=
 
 OPENCV_CFLAGS ?= `pkg-config --cflags opencv`
@@ -46,7 +46,7 @@ ALL_LIBS_STATIC = ${LIBOT_STATIC}
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
 #rules for building targets
-all: static libwebserver daemon
+all: static daemon
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${LIBOT_STATIC}
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TESTER_BIN} src/tester.cpp ${LIBOT_STATIC}
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${BLOB_BIN} src/blobtracker.cpp
@@ -55,32 +55,28 @@ all: static libwebserver daemon
 static: ${BIN}
 	${AR} rcs ${LIBOT_STATIC} ${BIN}
 
-gui: static
-	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} ${SDLGUI_LIBS} -o ${SDLGUI_BIN} src/sdlgui.cpp ${LIBOT_STATIC}
-
-daemon: src/daemon.cpp static libwebserver
+daemon: contribs static src/daemon.cpp
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DAEMON_BIN} src/daemon.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
-		${LIBWEBSERVER_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBWEBSERVER_LIBS}
+		${LIBEVENT_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBJPEG_CFLAGS} \
+		${LIBJPEG_LIBS} ${LIBEVENT_LIBS} \
 
-libwebserver:
-	cd ${LIBWEBSERVER_PATH}/src; make
+contribs:
+	${MAKE} -C contrib
 
-
-#shared: ${BIN}
-#	${CXX} -shared -Wl,-soname,${LIBOT_SHARED} -o ${LIBOT_SHARED} ${BIN}
-
-#how to build stuff in SRC_DIR
+# how to build stuff in SRC_DIR
 ${BIN_DIR}/%.o : ${SRC_DIR}/%.cpp
 	${CXX} ${ALL_CFLAGS} -c $< -o $@
 
-#how to build stuff in MOD_DIR
+# how to build stuff in MOD_DIR
 ${BIN_DIR}/%.o : ${MOD_DIR}/%.cpp
 	${CXX} ${ALL_CFLAGS} -c $< -o $@
 
 clean:
-	-rm  ${BIN_DIR}/*.o &>/dev/null
-	-rm ${TESTER_BIN} ${TRACKER_BIN} ${DESCRIBE_BIN} ${BLOB_BIN} ${SDLGUI_BIN} &>/dev/null
-	-rm ${DAEMON_BIN} &>/dev/null
-	-rm -r  *.dSYM build  &>/dev/null
-	-rm ${LIBOT_STATIC} ${LIBOT_SHARED} &>/dev/null
-	cd ${LIBWEBSERVER_PATH}/src; make clean
+	-rm ${BIN_DIR}/*.o
+	-rm ${TESTER_BIN} ${TRACKER_BIN} ${DESCRIBE_BIN} ${BLOB_BIN}
+	-rm ${DAEMON_BIN}
+	-rm -r *.dSYM build
+	-rm ${LIBOT_STATIC} ${LIBOT_SHARED}
+
+distclean: clean
+	${MAKE} -C contrib clean

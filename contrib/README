@@ -1,7 +1,3 @@
 changes to prevent warning:
 cJSON/cJSON.c:330 : add (char*) cast
 
-changes made to work on OSX:
-libwebserver/src/Makefile:
-  removed CC=gcc :  had to do this becasue we need to use gcc-4.0, so now it uses env CC
-  removed shared library from target...we only need the static build

@@ -1,39 +1,162 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/queue.h>
 #include <string>
 #include <map>
 
+// jpeg !
+#include <jpeglib.h>
+
+// opencv (for cvWaitKey)
 #include "highgui.h"
-#include "web_server.h"
+
+// JSON
+#include "cJSON.h"
+
+// opentracker
 #include "otPipeline.h"
 #include "otModule.h"
 #include "otFactory.h"
 #include "otProperty.h"
 #include "otDataStream.h"
-#include "cJSON.h"
+
+// libevent
+#include "event.h"
+#include "evhttp.h"
 
 static otPipeline *pipeline = NULL;
 static bool running = true;
+static struct event_base *base = NULL;
 
-void web_message(const char *message, int success=1) {
+class otStreamModule : public otModule {
+public:
+	otStreamModule() : otModule(OT_MODULE_INPUT, 1, 0) {
+		this->input = new otDataStream("stream");
+		this->output_buffer = NULL;
+		this->need_update = false;
+	}
+
+	void stop() {
+		if ( this->output_buffer != NULL ) {
+			cvReleaseImage(&this->output_buffer);
+			this->output_buffer = NULL;
+		}
+		otModule::stop();
+	}
+
+	void notifyData(otDataStream *source) {
+		IplImage* src = (IplImage*)(this->input->getData());
+		if ( src == NULL )
+			return;
+		if ( this->output_buffer == NULL )
+			this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
+		this->need_update = true;
+	}
+
+	void setInput(otDataStream* stream, int n=0) {
+		this->input = stream;
+		stream->addObserver(this);
+	}
+
+	virtual otDataStream *getInput(int n=0) {
+		return this->input;
+	}
+
+	virtual otDataStream *getOutput(int n=0) {
+		return NULL;
+	}
+
+	void copy() {
+		if ( this->output_buffer == NULL )
+			return;
+		this->input->lock();
+		IplImage* src = (IplImage*)(this->input->getData());
+		if ( src == NULL )
+			return;
+		cvCopy(src, this->output_buffer);
+		this->input->unlock();
+	}
+
+	void update() {}
+	std::string getName() { return "Stream"; }
+	std::string getDescription() { return ""; }
+	std::string getAuthor() { return ""; }
+	bool need_update;
+
+	otDataStream *input;
+	IplImage* output_buffer;
+};
+
+
+
+bool ipl2jpeg(IplImage *frame, unsigned char **outbuffer, long unsigned int *outlen) {
+	unsigned char *outdata = (uchar *) frame->imageData;
+	struct jpeg_compress_struct cinfo = {0};
+	JSAMPROW row_ptr[1];
+	int row_stride;
+
+	*outbuffer = NULL;
+	*outlen = 0;
+
+	jpeg_create_compress(&cinfo);
+	jpeg_mem_dest(&cinfo, outbuffer, outlen);
+
+	cinfo.image_width = frame->width;
+	cinfo.image_height = frame->height;
+	cinfo.input_components = frame->nChannels;
+	cinfo.in_color_space = JCS_RGB;
+
+	jpeg_set_defaults(&cinfo);
+	jpeg_start_compress(&cinfo, TRUE);
+	row_stride = frame->width * frame->nChannels;
+
+	while (cinfo.next_scanline < cinfo.image_height) {
+		row_ptr[0] = &outdata[cinfo.next_scanline * row_stride];
+		jpeg_write_scanlines(&cinfo, row_ptr, 1);
+	}
+
+	jpeg_finish_compress(&cinfo);
+	jpeg_destroy_compress(&cinfo);
+
+	return true;
+
+}
+
+
+//
+// WEB CALLBACKS
+//
+
+void web_json(struct evhttp_request *req, cJSON *root) {
+	struct evbuffer *evb = evbuffer_new();
 	char *out;
-	cJSON *root;
 
-	root = cJSON_CreateObject();
-	cJSON_AddNumberToObject(root, "success", success);
-	cJSON_AddStringToObject(root, "message", message);
 	out = cJSON_Print(root);
 	cJSON_Delete(root);
 
-	printf("Content-type: application/json\r\n\r\n");
-	printf("%s\r\n", out);
+	evbuffer_add(evb, out, strlen(out));
+	evhttp_add_header(req->output_headers, "Content-Type", "text/plain");
+	evhttp_send_reply(req, HTTP_OK, "Everything is fine", evb);
+	evbuffer_free(evb);
 
 	free(out);
 }
 
-void web_error(const char* message) {
-	return web_message(message, 0);
+void web_message(struct evhttp_request *req, const char *message, int success=1) {
+	cJSON *root = cJSON_CreateObject();
+	cJSON_AddNumberToObject(root, "success", success);
+	cJSON_AddStringToObject(root, "message", message);
+	web_json(req, root);
+}
+
+void web_error(struct evhttp_request *req, const char* message) {
+	return web_message(req, message, 0);
+}
+
+void web_status(struct evhttp_request *req, void *arg) {
+	web_message(req, "ok");
 }
 
 otModule *module_search(const std::string &id) {
@@ -46,28 +169,90 @@ otModule *module_search(const std::string &id) {
 	return NULL;
 }
 
-void web_status() {
-	web_message("ok");
+
+void web_pipeline_stream(struct evhttp_request *req, void *arg) {
+	struct evkeyvalq headers;
+	const char *uri;
+	int	idx = 0;
+	otModule *module = NULL;
+	//long unsigned int outlen;
+	//unsigned char *outbuf;
+	//otStreamModule *stream = NULL;
+
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
+
+	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing objectname");
+	}
+
+	module = module_search(evhttp_find_header(&headers, "objectname"));
+	if ( module == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "object not found");
+	}
+
+	if ( strlen(evhttp_find_header(&headers, "index")) != 0 )
+		idx = atoi(evhttp_find_header(&headers, "index"));
+
+	evhttp_add_header(req->output_headers, "Content-Type", "multipart/x-mixed-replace; boundary=mjpegstream");
+
+#if 0
+	stream = new otStreamModule();
+	stream->setInput(module->getOutput(idx));
+
+	printf("Content-type: multipart/x-mixed-replace; boundary=mjpegstream\r\n\r\n");
+
+	while ( true ) { // FIXME
+		pipeline->update();
+		if ( stream->need_update == false ) {
+			usleep(20);
+			continue;
+		}
+		stream->copy();
+		stream->need_update = false;
+
+		ipl2jpeg(stream->output_buffer, &outbuf, &outlen);
+
+		printf("--mjpegstream\r\n");
+		printf("Content-Type: image/jpeg\r\n");
+		printf("Content-Length: %lu\r\n\r\n", outlen);
+		fwrite(outbuf, outlen, 1, stdout);
+		free(outbuf);
+		fprintf(stderr, "PUSH %d\n", outlen);
+	}
+#endif
 }
 
-void web_pipeline_create() {
+void web_pipeline_create(struct evhttp_request *req, void *arg) {
 	otModule *module;
+	struct evkeyvalq headers;
+	const char *uri;
 
-	if ( strlen(ClientInfo->Query((char*)"objectname")) == 0 )
-		return web_error("missing objectname");
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
 
-	module = otFactory::getInstance()->create(ClientInfo->Query((char*)"objectname"));
-	if ( module == NULL )
-		return web_error("invalid objectname");
+	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing objectname");
+	}
+
+	module = otFactory::getInstance()->create(evhttp_find_header(&headers, "objectname"));
+	if ( module == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "invalid objectname");
+	}
 
 	pipeline->addElement(module);
 
-	web_message(module->property("id").asString().c_str());
+	evhttp_clear_headers(&headers);
+	web_message(req, module->property("id").asString().c_str());
 }
 
-void web_pipeline_status() {
+void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	std::map<std::string, otProperty*>::iterator it;
-	char *out, buffer[64];
+	char buffer[64];
 	cJSON *root, *data, *modules, *mod, *properties, *io, *observers, *array;
 	otDataStream *ds;
 
@@ -131,16 +316,10 @@ void web_pipeline_status() {
 		}
 	}
 
-	out = cJSON_Print(root);
-	cJSON_Delete(root);
-
-	printf("Content-type: application/json\r\n\r\n");
-	printf("%s\r\n", out);
-	free(out);
+	web_json(req, root);
 }
 
-void web_factory_list() {
-	char *out;
+void web_factory_list(struct evhttp_request *req, void *arg) {
 	std::vector<std::string>::iterator it;
 	std::vector<std::string> list = otFactory::getInstance()->list();
 	cJSON *root, *data;
@@ -154,27 +333,30 @@ void web_factory_list() {
 		cJSON_AddItemToArray(data, cJSON_CreateString(it->c_str()));
 	}
 
-	out = cJSON_Print(root);
-	cJSON_Delete(root);
-
-	printf("Content-type: application/json\r\n\r\n");
-	printf("%s\r\n", out);
-	free(out);
+	web_json(req, root);
 }
 
-void web_factory_desribe() {
+void web_factory_desribe(struct evhttp_request *req, void *arg) {
 	std::map<std::string, otProperty*>::iterator it;
-	char *out;
 	cJSON *root, *mod, *properties, *io, *array;
 	otDataStream *ds;
 	otModule *module;
+	struct evkeyvalq headers;
+	const char *uri;
 
-	if ( strlen(ClientInfo->Query((char*)"name")) == 0 )
-		return web_error("missing name");
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
 
-	module = otFactory::getInstance()->create(ClientInfo->Query((char*)"name"));
-	if ( module == NULL )
-		return web_error("invalid name");
+	if ( evhttp_find_header(&headers, "name") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing name");
+	}
+
+	module = otFactory::getInstance()->create(evhttp_find_header(&headers, "name"));
+	if ( module == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "invalid name");
+	}
 
 	root = cJSON_CreateObject();
 	cJSON_AddNumberToObject(root, "success", 1);
@@ -216,118 +398,161 @@ void web_factory_desribe() {
 
 	delete module;
 
-	out = cJSON_Print(root);
-	cJSON_Delete(root);
-
-	printf("Content-type: application/json\r\n\r\n");
-	printf("%s\r\n", out);
-	free(out);
+	evhttp_clear_headers(&headers);
+	web_json(req, root);
 }
 
-void web_pipeline_connect() {
+void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 	otModule *in, *out;
 	int inidx = 0, outidx = 0;
+	struct evkeyvalq headers;
+	const char *uri;
 
-	if ( strlen(ClientInfo->Query((char*)"out")) == 0 )
-		return web_error("missing out");
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
 
-	if ( strlen(ClientInfo->Query((char*)"in")) == 0 )
-		return web_error("missing in");
+	if ( evhttp_find_header(&headers, "out") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing out");
+	}
 
-	if ( strlen(ClientInfo->Query((char*)"outidx")) != 0 )
-		outidx = atoi(ClientInfo->Query((char*)"outidx"));
-	if ( strlen(ClientInfo->Query((char*)"inidx")) != 0 )
-		inidx = atoi(ClientInfo->Query((char*)"inidx"));
+	if ( evhttp_find_header(&headers, "in") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing in");
+	}
 
-	in = module_search(ClientInfo->Query((char*)"in"));
-	out = module_search(ClientInfo->Query((char*)"out"));
+	if ( evhttp_find_header(&headers, "outidx") != NULL );
+		outidx = atoi(evhttp_find_header(&headers, "outidx"));
+	if ( evhttp_find_header(&headers, "inidx") != NULL );
+		inidx = atoi(evhttp_find_header(&headers, "inidx"));
 
-	if ( in == NULL )
-		return web_error("in object not found");
+	in = module_search(evhttp_find_header(&headers, "in"));
+	out = module_search(evhttp_find_header(&headers, "out"));
 
-	if ( out == NULL )
-		return web_error("out object not found");
+	if ( in == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "in object not found");
+	}
+
+	if ( out == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "out object not found");
+	}
 
 	in->setInput(out->getOutput(outidx), inidx);
 
-	web_message("ok");
+	evhttp_clear_headers(&headers);
+	web_message(req, "ok");
 }
 
-void web_pipeline_get() {
+void web_pipeline_get(struct evhttp_request *req, void *arg) {
 	otModule *module;
+	struct evkeyvalq headers;
+	const char *uri;
 
-	if ( strlen(ClientInfo->Query((char*)"objectname")) == 0 )
-		return web_error("missing objectname");
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
 
-	if ( strlen(ClientInfo->Query((char*)"name")) == 0 )
-		return web_error("missing name");
+	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing objectname");
+	}
 
-	module = module_search(ClientInfo->Query((char*)"objectname"));
-	if ( module == NULL )
-		return web_error("object not found");
+	if ( evhttp_find_header(&headers, "name") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing name");
+	}
 
-	web_message(module->property(ClientInfo->Query((char*)"name")).asString().c_str());
+	module = module_search(evhttp_find_header(&headers, "objectname"));
+	if ( module == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "object not found");
+	}
+
+	web_message(req, module->property(evhttp_find_header(&headers, "name")).asString().c_str());
+	evhttp_clear_headers(&headers);
 }
 
-void web_pipeline_set() {
+void web_pipeline_set(struct evhttp_request *req, void *arg) {
 	otModule *module;
+	struct evkeyvalq headers;
+	const char *uri;
 
-	if ( strlen(ClientInfo->Query((char*)"objectname")) == 0 )
-		return web_error("missing objectname");
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
 
-	if ( strlen(ClientInfo->Query((char*)"name")) == 0 )
-		return web_error("missing name");
+	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing objectname");
+	}
 
-	if ( strlen(ClientInfo->Query((char*)"value")) == 0 )
-		return web_error("missing value");
+	if ( evhttp_find_header(&headers, "name") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing name");
+	}
 
-	module = module_search(ClientInfo->Query((char*)"objectname"));
-	if ( module == NULL )
-		return web_error("object not found");
+	if ( evhttp_find_header(&headers, "value") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing value");
+	}
 
-	module->property(ClientInfo->Query((char*)"name")).set(ClientInfo->Query((char*)"value"));
+	module = module_search(evhttp_find_header(&headers, "objectname"));
+	if ( module == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "object not found");
+	}
 
-	web_message("ok");
+	module->property(evhttp_find_header(&headers, "name")).set(
+		evhttp_find_header(&headers, "value"));
+
+	evhttp_clear_headers(&headers);
+	web_message(req, "ok");
 }
 
-void web_pipeline_start() {
+void web_pipeline_start(struct evhttp_request *req, void *arg) {
 	pipeline->start();
-	web_message("ok");
+	web_message(req, "ok");
 }
 
-void web_pipeline_stop() {
+void web_pipeline_stop(struct evhttp_request *req, void *arg) {
 	pipeline->stop();
-	web_message("ok");
+	web_message(req, "ok");
 }
 
-void web_pipeline_quit() {
-	web_message("bye");
+void web_pipeline_quit(struct evhttp_request *req, void *arg) {
+	web_message(req, "bye");
 	running = false;
 }
 
 int main(int argc, char **argv) {
-	struct web_server server = {0};
+	struct evhttp *server;
 
 	otFactory::init();
 	pipeline = new otPipeline();
 
-	web_server_init(&server, 7500, NULL, 0);
-	web_server_addhandler(&server, "* /factory/list", web_factory_list, 0);
-	web_server_addhandler(&server, "* /factory/describe", web_factory_desribe, 0);
-	web_server_addhandler(&server, "* /pipeline/create", web_pipeline_create, 0);
-	web_server_addhandler(&server, "* /pipeline/status", web_pipeline_status, 0);
-	web_server_addhandler(&server, "* /pipeline/connect", web_pipeline_connect, 0);
-	web_server_addhandler(&server, "* /pipeline/set", web_pipeline_set, 0);
-	web_server_addhandler(&server, "* /pipeline/get", web_pipeline_get, 0);
-	web_server_addhandler(&server, "* /pipeline/start", web_pipeline_start, 0);
-	web_server_addhandler(&server, "* /pipeline/stop", web_pipeline_stop, 0);
-	web_server_addhandler(&server, "* /pipeline/quit", web_pipeline_quit, 0);
+	base = event_init();
+
+	server = evhttp_new(NULL);
+
+	evhttp_bind_socket(server, "127.0.0.1", 7500);
+
+	evhttp_set_cb(server, "/factory/list", web_factory_list, NULL);
+	evhttp_set_cb(server, "/factory/describe", web_factory_desribe, NULL);
+	evhttp_set_cb(server, "/pipeline/create", web_pipeline_create, NULL);
+	evhttp_set_cb(server, "/pipeline/status", web_pipeline_status, NULL);
+	evhttp_set_cb(server, "/pipeline/connect", web_pipeline_connect, NULL);
+	evhttp_set_cb(server, "/pipeline/set", web_pipeline_set, NULL);
+	evhttp_set_cb(server, "/pipeline/get", web_pipeline_get, NULL);
+	evhttp_set_cb(server, "/pipeline/stream", web_pipeline_stream, NULL);
+	evhttp_set_cb(server, "/pipeline/start", web_pipeline_start, NULL);
+	evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
+	evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
 
 	while ( running ) {
 		cvWaitKey(2);
 		if ( pipeline->isStarted() )
 			pipeline->update();
-		web_server_run(&server);
+		event_dispatch();
 	}
 
 	delete pipeline;
