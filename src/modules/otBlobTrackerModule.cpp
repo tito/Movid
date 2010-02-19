@@ -84,16 +84,21 @@ void otBlobTrackerModule::clearBlobs() {
 	this->blobs.clear();
 }
 
+
+void otBlobTrackerModule::allocateBuffers(){
+	IplImage* src = (IplImage*)(this->input->getData());
+	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, 3);	//only one channel
+	LOG(DEBUG) << "allocated output buffer for BlobTracker module.";
+}
+
 void otBlobTrackerModule::applyFilter() {
 	IplImage* src = (IplImage*)(this->input->getData());
 	IplImage* fg_map = NULL;
-
 	assert( src != NULL );
 
 	this->tracker->Process(src, fg_map);
-
+	
 	cvSet(this->output_buffer, CV_RGB(0,0,0));
-
 	this->clearBlobs();
 
 	for ( int i = this->tracker->GetBlobNum(); i > 0; i-- ) {
@@ -125,8 +130,8 @@ void otBlobTrackerModule::applyFilter() {
 }
 
 otDataStream* otBlobTrackerModule::getOutput(int n) {
-	if ( n == 1 )
-		return this->output_data;
+	//if ( n == 1 )
+	//	return this->output_data;
 	return otImageFilterModule::getOutput(n);
 }
 

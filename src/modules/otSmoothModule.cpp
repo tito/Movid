@@ -9,7 +9,7 @@ otSmoothModule::otSmoothModule() : otImageFilterModule(){
 	MODULE_INIT();
 
 	// declare properties
-	this->properties["size"] = new otProperty(2.);
+	this->properties["size"] = new otProperty(1.);
 	this->properties["filter"] = new otProperty("gaussian");
 }
 

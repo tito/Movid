@@ -20,6 +20,7 @@ protected:
 	otDataStream *output_data;
 	
 	void applyFilter();	
+	void allocateBuffers();
 	void clearBlobs();
 
 	MODULE_INTERNALS();

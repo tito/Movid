@@ -32,45 +32,68 @@ int main(int argc, char **argv) {
 	if ( testname == "default" ) {
 
 		// Camera input stream
-		otModule* cam = otFactory::getInstance()->create("Camera");
+		otModule* cam = otFactory::getInstance()->create("Video");
 
+		otModule* gray = otFactory::getInstance()->create("GrayScale");
+		gray->setInput(cam->getOutput());
+		
 		otModule* gauss = otFactory::getInstance()->create("Smooth");
 		gauss->setInput(cam->getOutput());
-		gauss->property("width").set(11);
-		gauss->property("height").set(11);
-		gauss->property("filter").set("blur");
-
-		// otImageDisplayModule opens a window and displays an Image in it
+		
 		otModule* display = otFactory::getInstance()->create("ImageDisplay");
 		display->setInput(gauss->getOutput());
+		
 
 		// order is important (specially the first and the last)
 		pipeline->addElement(cam);
+		pipeline->addElement(gray);
 		pipeline->addElement(gauss);
 		pipeline->addElement(display);
 
 	} else if ( testname == "video" ) {
 
 		otModule* video  = otFactory::getInstance()->create("Video");
-		video->property("filename").set("media/blob.avi");
+		video->property("filename").set("media/blob2.avi");
 
-		otModule* invert = otFactory::getInstance()->create("Invert");
-		invert->setInput(video->getOutput());
+		otModule* gray = otFactory::getInstance()->create("GrayScale");
+		gray->setInput(video->getOutput());
+		
+		otModule* bg = otFactory::getInstance()->create("BackgroundSubtract");
+		bg->setInput(gray->getOutput());
+		
+		otModule* smooth = otFactory::getInstance()->create("Smooth");
+		smooth->setInput(bg->getOutput());
+		
+		otModule* thresh = otFactory::getInstance()->create("Threshold");
+		thresh->setInput(smooth->getOutput());	
+
+		
+		otModule* blob = otFactory::getInstance()->create("BlobTracker");
+		blob->setInput(thresh->getOutput());
 
 		// otImageDisplayModule opens a window and displays an Image in it
 		otModule* display = otFactory::getInstance()->create("ImageDisplay");
-		display->property("name").set("OpenTracker result");
-		display->setInput(invert->getOutput());
+		display->property("name").set("GrayScale");
+		display->setInput(smooth->getOutput());
 
-		otModule* displaysrc = otFactory::getInstance()->create("ImageDisplay");
-		displaysrc->property("name").set("OpenTracker source");
-		displaysrc->setInput(video->getOutput());
+		otModule* display2 = otFactory::getInstance()->create("ImageDisplay");
+		display2->property("name").set("Threshold");
+		display2->setInput(thresh->getOutput());
+		
+		otModule* display3 = otFactory::getInstance()->create("ImageDisplay");
+		display3->property("name").set("Blobs");
+		display3->setInput(blob->getOutput());
 
 		// order is important (specially the first and the last)
 		pipeline->addElement(video);
-		pipeline->addElement(invert);
+		pipeline->addElement(gray);
+		pipeline->addElement(bg);
+		pipeline->addElement(smooth);
+		pipeline->addElement(thresh);
+		pipeline->addElement(blob);
 		pipeline->addElement(display);
-		pipeline->addElement(displaysrc);
+		pipeline->addElement(display2);
+		pipeline->addElement(display3);
 
 	}
 
