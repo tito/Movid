@@ -68,7 +68,7 @@ void web_pipeline_create() {
 void web_pipeline_status() {
 	std::map<std::string, otProperty*>::iterator it;
 	char *out, buffer[64];
-	cJSON *root, *data, *modules, *mod, *properties, *io, *observers;
+	cJSON *root, *data, *modules, *mod, *properties, *io, *observers, *array;
 	otDataStream *ds;
 
 	root = cJSON_CreateObject();
@@ -99,9 +99,10 @@ void web_pipeline_status() {
 		}
 
 		if ( module->getInputCount() ) {
-			cJSON_AddItemToObject(mod, "inputs", io=cJSON_CreateObject());
+			cJSON_AddItemToObject(mod, "inputs", array=cJSON_CreateArray());
 			for ( int i = 0; i < module->getInputCount(); i++ ) {
 				ds = module->getInput(i);
+				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 				cJSON_AddNumberToObject(io, "index", i);
 				cJSON_AddStringToObject(io, "name", module->getInputName(i).c_str());
 				cJSON_AddStringToObject(io, "type", module->getInputType(i).c_str());
@@ -110,9 +111,10 @@ void web_pipeline_status() {
 		}
 
 		if ( module->getOutputCount() ) {
-			cJSON_AddItemToObject(mod, "outputs", io=cJSON_CreateObject());
+			cJSON_AddItemToObject(mod, "outputs", array=cJSON_CreateArray());
 			for ( int i = 0; i < module->getOutputCount(); i++ ) {
 				ds = module->getOutput(i);
+				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 				cJSON_AddNumberToObject(io, "index", i);
 				cJSON_AddStringToObject(io, "name", module->getOutputName(i).c_str());
 				cJSON_AddStringToObject(io, "type", module->getOutputType(i).c_str());
@@ -163,7 +165,7 @@ void web_factory_list() {
 void web_factory_desribe() {
 	std::map<std::string, otProperty*>::iterator it;
 	char *out;
-	cJSON *root, *mod, *properties, *io;
+	cJSON *root, *mod, *properties, *io, *array;
 	otDataStream *ds;
 	otModule *module;
 
@@ -191,9 +193,10 @@ void web_factory_desribe() {
 	}
 
 	if ( module->getInputCount() ) {
-		cJSON_AddItemToObject(mod, "inputs", io=cJSON_CreateObject());
+		cJSON_AddItemToObject(mod, "inputs", array=cJSON_CreateArray());
 		for ( int i = 0; i < module->getInputCount(); i++ ) {
 			ds = module->getInput(i);
+			cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 			cJSON_AddNumberToObject(io, "index", i);
 			cJSON_AddStringToObject(io, "name", module->getInputName(i).c_str());
 			cJSON_AddStringToObject(io, "type", module->getInputType(i).c_str());
@@ -201,9 +204,10 @@ void web_factory_desribe() {
 	}
 
 	if ( module->getOutputCount() ) {
-		cJSON_AddItemToObject(mod, "outputs", io=cJSON_CreateObject());
+		cJSON_AddItemToObject(mod, "outputs", array=cJSON_CreateArray());
 		for ( int i = 0; i < module->getOutputCount(); i++ ) {
 			ds = module->getOutput(i);
+			cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 			cJSON_AddNumberToObject(io, "index", i);
 			cJSON_AddStringToObject(io, "name", module->getOutputName(i).c_str());
 			cJSON_AddStringToObject(io, "type", module->getOutputType(i).c_str());
