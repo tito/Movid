@@ -130,8 +130,8 @@ void otBlobTrackerModule::applyFilter() {
 }
 
 otDataStream* otBlobTrackerModule::getOutput(int n) {
-	//if ( n == 1 )
-	//	return this->output_data;
+	if ( n == 1 )
+		return this->output_data;
 	return otImageFilterModule::getOutput(n);
 }
 

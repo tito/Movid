@@ -27,6 +27,8 @@
 		12829896112A8C620078B03F /* otImageFilterModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otImageFilterModule.cpp; sourceTree = "<group>"; };
 		128298C9112AA57C0078B03F /* blobtracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = blobtracker.cpp; sourceTree = "<group>"; };
 		12AF438E112A5ED0001C2529 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		12D789B9112E46BE0051E2CA /* pymt-gui.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = "pymt-gui.py"; path = "gui/pymt-gui.py"; sourceTree = "<group>"; };
+		12D78A08112E688F0051E2CA /* pyot.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = pyot.py; path = gui/pyot.py; sourceTree = "<group>"; };
 		12E1F6AB112D0F9B00D24FA4 /* otVideoModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otVideoModule.cpp; sourceTree = "<group>"; };
 		12E1F6AC112D0F9B00D24FA4 /* otVideoModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = otVideoModule.h; sourceTree = "<group>"; };
 		12E1F6B1112D0FF700D24FA4 /* otBlobTrackerModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = otBlobTrackerModule.cpp; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 		08FB7794FE84155DC02AAC07 /* OpenTracker */ = {
 			isa = PBXGroup;
 			children = (
+				12D789DC112E49770051E2CA /* gui */,
 				12F85C1711275B8B00C13390 /* README */,
 				12AF438E112A5ED0001C2529 /* .gitignore */,
 				12F85BC811274A9900C13390 /* Makefile */,
@@ -223,6 +226,15 @@
 				12F8ED99112BC0A2003568C3 /* otHighpassModule.cpp */,
 			);
 			path = modules;
+			sourceTree = "<group>";
+		};
+		12D789DC112E49770051E2CA /* gui */ = {
+			isa = PBXGroup;
+			children = (
+				12D78A08112E688F0051E2CA /* pyot.py */,
+				12D789B9112E46BE0051E2CA /* pymt-gui.py */,
+			);
+			name = gui;
 			sourceTree = "<group>";
 		};
 		12E1F756112DE44400D24FA4 /* contrib */ = {
