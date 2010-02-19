@@ -10,6 +10,7 @@
 #include <jpeglib.h>
 
 // opencv (for cvWaitKey)
+#include "cv.h"
 #include "highgui.h"
 
 // JSON
@@ -94,12 +95,14 @@ public:
 bool ipl2jpeg(IplImage *frame, unsigned char **outbuffer, long unsigned int *outlen) {
 	unsigned char *outdata = (uchar *) frame->imageData;
 	struct jpeg_compress_struct cinfo = {0};
+	struct jpeg_error_mgr jerr;
 	JSAMPROW row_ptr[1];
 	int row_stride;
 
 	*outbuffer = NULL;
 	*outlen = 0;
 
+	cinfo.err = jpeg_std_error(&jerr);
 	jpeg_create_compress(&cinfo);
 	jpeg_mem_dest(&cinfo, outbuffer, outlen);
 
@@ -170,14 +173,54 @@ otModule *module_search(const std::string &id) {
 }
 
 
+struct chunk_req_state {
+	struct evhttp_request *req;
+	otStreamModule *stream;
+	int i;
+};
+
+static void web_pipeline_stream_trickle(int fd, short events, void *arg)
+{
+	struct evbuffer *evb = NULL;
+	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
+	struct timeval when = { 0, 0 };
+	long unsigned int outlen;
+	unsigned char *outbuf;
+
+	if ( state->stream->need_update == false ) {
+		event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
+		return;
+	}
+
+	state->stream->copy();
+	state->stream->need_update = false;
+	cvCvtColor(state->stream->output_buffer, state->stream->output_buffer, CV_BGR2RGB);
+
+	ipl2jpeg(state->stream->output_buffer, &outbuf, &outlen);
+
+	evb = evbuffer_new();
+	evbuffer_add_printf(evb, "--mjpegstream\r\n");
+	evbuffer_add_printf(evb, "Content-Type: image/jpeg\r\n");
+	evbuffer_add_printf(evb, "Content-Length: %lu\r\n\r\n", outlen);
+	evbuffer_add(evb, outbuf, outlen);
+	evhttp_send_reply_chunk(state->req, evb);
+	evbuffer_free(evb);
+
+	free(outbuf);
+
+	event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
+	/**
+		evhttp_send_reply_end(state->req);
+		free(state);
+	**/
+}
+
 void web_pipeline_stream(struct evhttp_request *req, void *arg) {
+	struct timeval when = { 0, 1 };
 	struct evkeyvalq headers;
 	const char *uri;
 	int	idx = 0;
 	otModule *module = NULL;
-	//long unsigned int outlen;
-	//unsigned char *outbuf;
-	//otStreamModule *stream = NULL;
 
 	uri = evhttp_request_uri(req);
 	evhttp_parse_query(uri, &headers);
@@ -196,33 +239,19 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 	if ( evhttp_find_header(&headers, "index") != NULL )
 		idx = atoi(evhttp_find_header(&headers, "index"));
 
+	struct chunk_req_state *state = (struct chunk_req_state*)malloc(sizeof(struct chunk_req_state));
+
+	memset(state, 0, sizeof(struct chunk_req_state));
+	state->req = req;
+	state->stream = new otStreamModule();
+
+	state->stream->setInput(module->getOutput(idx));
+
 	evhttp_add_header(req->output_headers, "Content-Type", "multipart/x-mixed-replace; boundary=mjpegstream");
+	evhttp_send_reply_start(req, HTTP_OK, "Everything is fine");
 
-#if 0
-	stream = new otStreamModule();
-	stream->setInput(module->getOutput(idx));
+	event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
 
-	printf("Content-type: multipart/x-mixed-replace; boundary=mjpegstream\r\n\r\n");
-
-	while ( true ) { // FIXME
-		pipeline->update();
-		if ( stream->need_update == false ) {
-			usleep(20);
-			continue;
-		}
-		stream->copy();
-		stream->need_update = false;
-
-		ipl2jpeg(stream->output_buffer, &outbuf, &outlen);
-
-		printf("--mjpegstream\r\n");
-		printf("Content-Type: image/jpeg\r\n");
-		printf("Content-Length: %lu\r\n\r\n", outlen);
-		fwrite(outbuf, outlen, 1, stdout);
-		free(outbuf);
-		fprintf(stderr, "PUSH %d\n", outlen);
-	}
-#endif
 }
 
 void web_pipeline_create(struct evhttp_request *req, void *arg) {
@@ -552,7 +581,7 @@ int main(int argc, char **argv) {
 		cvWaitKey(5);
 		if ( pipeline->isStarted() )
 			pipeline->update();
-		event_base_loop(base, EVLOOP_NONBLOCK);
+		event_base_loop(base, EVLOOP_ONCE|EVLOOP_NONBLOCK);
 	}
 
 	delete pipeline;
