@@ -55,9 +55,9 @@ static: ${BIN}
 	${AR} rcs ${LIBOT_STATIC} ${BIN}
 
 daemon: contribs static src/daemon.cpp
-	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DAEMON_BIN} src/daemon.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
-		${LIBEVENT_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBJPEG_CFLAGS} \
-		${LIBJPEG_LIBS} ${LIBEVENT_LIBS} \
+	${CXX}   -o ${DAEMON_BIN} src/daemon.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
+		${LIBEVENT_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBJPEG_CFLAGS} ${ALL_CFLAGS} \
+		${LIBJPEG_LIBS} ${LIBEVENT_LIBS} ${ALL_LIBS} \
 
 contribs:
 	${MAKE} -C contrib
