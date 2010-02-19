@@ -72,7 +72,7 @@ otModule *otDataStream::getObserver(unsigned int index) {
 void otDataStream::removeObservers() {
 	std::vector<otModule *>::iterator it;
 	for ( it = this->observers.begin(); it != this->observers.end(); it++ ) {
-		for ( unsigned int i = 0; i < (*it)->getInputCount(); i++ )
+		for ( int i = 0; i < (*it)->getInputCount(); i++ )
 			if ( (*it)->getInput(i) == this )
 				(*it)->setInput(NULL, i);
 	}
