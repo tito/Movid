@@ -15,8 +15,11 @@ otDumpModule::~otDumpModule() {
 }
 
 void otDumpModule::setInput(otDataStream *stream, int n) {
+	if ( this->stream != NULL )
+		this->stream->removeObserver(this);
 	this->stream = stream;
-	this->stream->addObserver(this);
+	if ( this->stream != NULL )
+		this->stream->addObserver(this);
 }
 
 otDataStream *otDumpModule::getInput(int n) {

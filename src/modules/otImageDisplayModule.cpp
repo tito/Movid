@@ -45,10 +45,12 @@ void otImageDisplayModule::notifyData(otDataStream *input) {
 }
 
 void otImageDisplayModule::setInput(otDataStream *input, int n) {
-	assert( input != NULL );
 	assert( n == 0 );
+	if ( this->input != NULL )
+		this->input->removeObserver(this);
 	this->input = input;
-	this->input->addObserver(this);
+	if ( this->input != NULL )
+		this->input->addObserver(this);
 }
 
 otDataStream* otImageDisplayModule::getInput(int n) {

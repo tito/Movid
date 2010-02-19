@@ -64,8 +64,11 @@ public:
 	}
 
 	void setInput(otDataStream* stream, int n=0) {
+		if ( this->input != NULL )
+			this->input->removeObserver(this);
 		this->input = stream;
-		stream->addObserver(this);
+		if ( this->input != NULL )
+			this->input->addObserver(this);
 	}
 
 	virtual otDataStream *getInput(int n=0) {
@@ -569,6 +572,59 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 	web_message(req, "ok");
 }
 
+void web_pipeline_remove(struct evhttp_request *req, void *arg) {
+	otModule *module;
+	otDataStream *ds;
+	struct evkeyvalq headers;
+	const char *uri;
+
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
+
+	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing objectname");
+	}
+
+	module = module_search(evhttp_find_header(&headers, "objectname"));
+	if ( module == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "object not found");
+	}
+
+	pipeline->stop();
+	module->stop();
+
+	// disconnect inputs
+	if ( module->getInputCount() ) {
+		for ( int i = 0; i < module->getInputCount(); i++ ) {
+			ds = module->getInput(i);
+			if ( ds == NULL )
+				continue;
+			ds->removeObserver(module);
+		}
+	}
+
+	// disconnect output
+	if ( module->getOutputCount() ) {
+		for ( int i = 0; i < module->getOutputCount(); i++ ) {
+			ds = module->getOutput(i);
+			if ( ds == NULL )
+				continue;
+			ds->removeObservers();
+		}
+	}
+
+	// remove element from pipeline
+	pipeline->removeElement(module);
+
+	delete module;
+
+	web_message(req, "ok");
+	evhttp_clear_headers(&headers);
+}
+
+
 void web_pipeline_start(struct evhttp_request *req, void *arg) {
 	pipeline->start();
 	web_message(req, "ok");
@@ -601,6 +657,7 @@ int main(int argc, char **argv) {
 	evhttp_set_cb(server, "/factory/list", web_factory_list, NULL);
 	evhttp_set_cb(server, "/factory/describe", web_factory_desribe, NULL);
 	evhttp_set_cb(server, "/pipeline/create", web_pipeline_create, NULL);
+	evhttp_set_cb(server, "/pipeline/remove", web_pipeline_remove, NULL);
 	evhttp_set_cb(server, "/pipeline/status", web_pipeline_status, NULL);
 	evhttp_set_cb(server, "/pipeline/connect", web_pipeline_connect, NULL);
 	evhttp_set_cb(server, "/pipeline/set", web_pipeline_set, NULL);

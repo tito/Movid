@@ -23,11 +23,12 @@ otImageFilterModule::~otImageFilterModule() {
 }
 
 void otImageFilterModule::setInput(otDataStream* stream, int n) {
-	assert( stream != NULL );
 	assert( n == 0 );
-
+	if ( this->input != NULL )
+		this->input->removeObserver(this);
 	this->input = stream;
-	this->input->addObserver(this);
+	if ( this->input != NULL )
+		this->input->addObserver(this);
 }
 
 otDataStream* otImageFilterModule::getInput(int n) {

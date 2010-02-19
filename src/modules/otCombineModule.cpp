@@ -87,11 +87,17 @@ void otCombineModule::update() {
 
 void otCombineModule::setInput(otDataStream *stream, int n) {
 	assert( n == 0 || n == 1 );
-	if ( n == 0 )
+	if ( n == 0 ) {
+		if ( this->input1 != NULL )
+			this->input1->removeObserver(this);
 		this->input1 = stream;
-	else
+	} else {
+		if ( this->input2 != NULL )
+			this->input2->removeObserver(this);
 		this->input2 = stream;
-	stream->addObserver(this);
+	}
+	if ( stream != NULL )
+		stream->addObserver(this);
 }
 
 otDataStream *otCombineModule::getInput(int n) {

@@ -14,6 +14,7 @@ public:
 	
 	void addObserver(otModule *module);
 	void removeObserver(otModule *module);
+	void removeObservers();
 	unsigned int getObserverCount();
 	otModule *getObserver(unsigned int index);
 
