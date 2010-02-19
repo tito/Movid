@@ -19,7 +19,7 @@ otImageFilterModule::otImageFilterModule() :
 	this->output_types[0] = std::string("IplImage");
 }
 
-otImageFilterModule::~otImageFilterModule(){
+otImageFilterModule::~otImageFilterModule() {
 }
 
 void otImageFilterModule::setInput(otDataStream* stream, int n) {
@@ -64,8 +64,10 @@ void otImageFilterModule::notifyData(otDataStream *input) {
 
 
 void otImageFilterModule::allocateBuffers() {
-	LOG(DEBUG) << "First time, allocating output buffer for image filter";
 	IplImage* src = (IplImage*)(this->input->getData());
+	if ( src == NULL )
+		return;
+	LOG(DEBUG) << "First time, allocating output buffer for image filter";
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
 }
 

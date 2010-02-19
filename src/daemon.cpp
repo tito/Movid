@@ -193,7 +193,7 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 		return web_error(req, "object not found");
 	}
 
-	if ( strlen(evhttp_find_header(&headers, "index")) != 0 )
+	if ( evhttp_find_header(&headers, "index") != NULL )
 		idx = atoi(evhttp_find_header(&headers, "index"));
 
 	evhttp_add_header(req->output_headers, "Content-Type", "multipart/x-mixed-replace; boundary=mjpegstream");
@@ -421,9 +421,9 @@ void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing in");
 	}
 
-	if ( evhttp_find_header(&headers, "outidx") != NULL );
+	if ( evhttp_find_header(&headers, "outidx") != NULL )
 		outidx = atoi(evhttp_find_header(&headers, "outidx"));
-	if ( evhttp_find_header(&headers, "inidx") != NULL );
+	if ( evhttp_find_header(&headers, "inidx") != NULL )
 		inidx = atoi(evhttp_find_header(&headers, "inidx"));
 
 	in = module_search(evhttp_find_header(&headers, "in"));
@@ -549,10 +549,10 @@ int main(int argc, char **argv) {
 	evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
 
 	while ( running ) {
-		cvWaitKey(2);
+		cvWaitKey(5);
 		if ( pipeline->isStarted() )
 			pipeline->update();
-		event_dispatch();
+		event_base_loop(base, EVLOOP_NONBLOCK);
 	}
 
 	delete pipeline;

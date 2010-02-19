@@ -18,7 +18,6 @@ LIBJPEG_CFLAGS = -I${LIBJPEG_PATH}
 LIBCJSON_CFLAGS = -I${LIBCJSON_PATH}
 
 LIBOT_STATIC = libot.a
-LIBOT_SHARED = libot.so
 
 OBJ = otDataStream.o otModule.o otPipeline.o otParser.o otFactory.o otProperty.o \
       otDaemon.o otLog.o otDataGenericContainer.o otDumpModule.o \
@@ -76,7 +75,7 @@ clean:
 	-rm ${TESTER_BIN} ${TRACKER_BIN} ${DESCRIBE_BIN} ${BLOB_BIN}
 	-rm ${DAEMON_BIN}
 	-rm -r *.dSYM build
-	-rm ${LIBOT_STATIC} ${LIBOT_SHARED}
+	-rm ${LIBOT_STATIC}
 
 distclean: clean
 	${MAKE} -C contrib clean
