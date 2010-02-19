@@ -1,6 +1,7 @@
 # contrib path
 CONTRIB_PATH = contrib
 LIBWEBSERVER_PATH = ${CONTRIB_PATH}/libwebserver-0.5.3
+LIBCJSON_PATH = ${CONTRIB_PATH}/cJSON
 
 #stuff we need to compile
 TRACKER_BIN = tracker
@@ -11,6 +12,7 @@ DAEMON_BIN = daemon
 
 LIBWEBSERVER_LIBS = ${LIBWEBSERVER_PATH}/bin/libwebserver.a
 LIBWEBSERVER_CFLAGS = -I${LIBWEBSERVER_PATH}/include
+LIBCJSON_CFLAGS = -I${LIBCJSON_PATH}
 
 LIBOT_STATIC = libot.a
 LIBOT_SHARED = libot.so
@@ -37,9 +39,9 @@ LIBS   ?=
 OPENCV_CFLAGS ?= `pkg-config --cflags opencv`
 OPENCV_LIBS   ?= `pkg-config --libs opencv`
 
-ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS} ${LIBWEBSERVER_CFLAGS}
-ALL_LIBS   = ${LIBS} ${OPENCV_LIBS} ${LIBWEBSERVER_LIBS}
-ALL_LIBS_STATIC = ${LIBOT_STATIC} ${LIBWEBSERVER_LIBS}
+ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS}
+ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}
+ALL_LIBS_STATIC = ${LIBOT_STATIC}
 
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
@@ -50,7 +52,6 @@ all: static libwebserver daemon
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${BLOB_BIN} src/blobtracker.cpp
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DESCRIBE_BIN} src/describe.cpp ${LIBOT_STATIC}
 	
-
 static: ${BIN}
 	${AR} rcs ${LIBOT_STATIC} ${BIN}
 
@@ -58,7 +59,8 @@ gui: static
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} ${SDLGUI_LIBS} -o ${SDLGUI_BIN} src/sdlgui.cpp ${LIBOT_STATIC}
 
 daemon: src/daemon.cpp static libwebserver
-	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DAEMON_BIN} src/daemon.cpp ${ALL_LIBS_STATIC} 
+	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DAEMON_BIN} src/daemon.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
+		${LIBWEBSERVER_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBWEBSERVER_LIBS}
 
 libwebserver:
 	cd ${LIBWEBSERVER_PATH}/src; make

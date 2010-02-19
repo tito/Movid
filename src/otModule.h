@@ -79,6 +79,7 @@ public:
 	
 	// FIXME protect it
 	otModule *owner;
+	std::map<std::string, otProperty*> properties;
 
 private:
 	unsigned int capabilities;
@@ -91,7 +92,6 @@ protected:
 	std::map<int, std::string> input_names;
 	std::map<int, std::string> output_types;
 	std::map<int, std::string> output_names;
-	std::map<std::string, otProperty*> properties;
 };
 
 #endif
