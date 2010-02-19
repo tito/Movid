@@ -26,6 +26,7 @@ void otFactory::init() {
 	REGISTER_MODULE(Smooth);
 	REGISTER_MODULE(Threshold);
 	REGISTER_MODULE(Video);
+	REGISTER_MODULE(MirrorImage);
 	LOG(INFO) << "register " << otFactory::getInstance()->list().size() << " modules";
 }
 
