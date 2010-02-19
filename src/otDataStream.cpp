@@ -40,12 +40,19 @@ void otDataStream::addObserver(otModule *module) {
 }
 
 void otDataStream::removeObserver(otModule *module) {
-	assert("unimplemented" && 0);
+	std::vector<otModule *>::iterator it;
+	// FIXME lock needed ?
+	for ( it = this->observers.begin(); it != this->observers.end(); it++ ) {
+		if ( *it != module )
+			continue;
+		this->observers.erase(it);
+		return;
+	}
 }
 
 void otDataStream::notifyObservers() {
 	std::vector<otModule *>::iterator it;
-	for (it = this->observers.begin(); it != this->observers.end(); it++ )
+	for ( it = this->observers.begin(); it != this->observers.end(); it++ )
 		(*it)->notifyData(this);
 }
 

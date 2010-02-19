@@ -3,6 +3,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/queue.h>
+#include <signal.h>
+
 #include <string>
 #include <map>
 
@@ -37,6 +39,7 @@ public:
 		this->input = new otDataStream("stream");
 		this->output_buffer = NULL;
 		this->need_update = false;
+		this->properties["scale"] = new otProperty(1);
 	}
 
 	void stop() {
@@ -51,8 +54,12 @@ public:
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL )
 			return;
-		if ( this->output_buffer == NULL )
-			this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
+		if ( this->output_buffer == NULL ) {
+			CvSize size = cvGetSize(src);
+			size.width /= this->property("scale").asInteger();
+			size.height /= this->property("scale").asInteger();
+			this->output_buffer = cvCreateImage(size, src->depth, src->nChannels);
+		}
 		this->need_update = true;
 	}
 
@@ -76,7 +83,10 @@ public:
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL )
 			return;
-		cvCopy(src, this->output_buffer);
+		if ( this->property("scale").asInteger() == 1 )
+			cvCopy(src, this->output_buffer);
+		else
+			cvResize(src, this->output_buffer);
 		this->input->unlock();
 	}
 
@@ -177,15 +187,29 @@ struct chunk_req_state {
 	struct evhttp_request *req;
 	otStreamModule *stream;
 	int i;
+	bool closed;
 };
+
+static void web_pipeline_stream_close(struct evhttp_connection *conn, void *arg) {
+	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
+	state->closed = true;
+}
 
 static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 {
 	struct evbuffer *evb = NULL;
 	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
-	struct timeval when = { 0, 0 };
+	struct timeval when = { 0, 20 };
 	long unsigned int outlen;
 	unsigned char *outbuf;
+
+	if ( state->closed ) {
+		// free !
+		state->stream->getInput(0)->removeObserver(state->stream);
+		delete state->stream;
+		free(state);
+		return;
+	}
 
 	if ( state->stream->need_update == false ) {
 		event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
@@ -216,7 +240,7 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 }
 
 void web_pipeline_stream(struct evhttp_request *req, void *arg) {
-	struct timeval when = { 0, 1 };
+	struct timeval when = { 0, 20 };
 	struct evkeyvalq headers;
 	const char *uri;
 	int	idx = 0;
@@ -243,12 +267,19 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 
 	memset(state, 0, sizeof(struct chunk_req_state));
 	state->req = req;
+	state->closed = false;
 	state->stream = new otStreamModule();
+
+	if ( evhttp_find_header(&headers, "scale") != NULL )
+		state->stream->property("scale").set(evhttp_find_header(&headers, "scale"));
+
 
 	state->stream->setInput(module->getOutput(idx));
 
 	evhttp_add_header(req->output_headers, "Content-Type", "multipart/x-mixed-replace; boundary=mjpegstream");
 	evhttp_send_reply_start(req, HTTP_OK, "Everything is fine");
+
+	evhttp_connection_set_closecb(req->evcon, web_pipeline_stream_close, state);
 
 	event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
 
@@ -555,6 +586,8 @@ void web_pipeline_quit(struct evhttp_request *req, void *arg) {
 
 int main(int argc, char **argv) {
 	struct evhttp *server;
+
+	signal(SIGPIPE, SIG_IGN);
 
 	otFactory::init();
 	pipeline = new otPipeline();

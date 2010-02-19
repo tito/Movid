@@ -1,0 +1,49 @@
+<html>
+<head>
+	<title>OpenTracker</title>
+</head>
+<body>
+	<script type="text/javascript">
+	<!--
+	var bootidx = 0;
+	var bootlist = [
+		'http://127.0.0.1:7500/pipeline/create?objectname=Camera',
+		'http://127.0.0.1:7500/pipeline/create?objectname=Invert',
+		'http://127.0.0.1:7500/pipeline/connect?out=Camera1&in=Invert2',
+		'http://127.0.0.1:7500/pipeline/start'
+		];
+
+	function plugStreams() {
+		imgs = document.getElementsByTagName("IMG");
+		imgs[0].src = 'http://127.0.0.1:7500/pipeline/stream?objectname=Camera1&scale=2'
+		imgs[1].src = 'http://127.0.0.1:7500/pipeline/stream?objectname=Invert2&scale=2'
+	}
+
+	function bootstrap() {
+		ifr = document.getElementsByTagName("IFRAME")[0];
+		ifr.src = bootlist[bootidx];
+		bootidx += 1;
+		if ( bootidx < bootlist.length )
+			setTimeout("bootstrap()", 100);
+		else
+			plugStreams();
+	}
+
+	function launch() {
+		setTimeout("bootstrap()", 100);
+	}
+
+	function stop() {
+		ifr = document.getElementsByTagName("IFRAME")[0];
+		ifr.src = 'http://127.0.0.1:7500/pipeline/stop';
+	}
+	-->
+	</script>
+	<a href="#" onclick="launch()">Start !</a>
+	<br/>
+	<img src="#"/>
+	<img src="#"/>
+	<br/>
+	<iframe src="#"></iframe>
+</body>
+</html>
