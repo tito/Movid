@@ -14,6 +14,8 @@ otImageDisplayModule::otImageDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
 
 	MODULE_INIT();
 
+	this->input = NULL;
+
 	// declare inputs
 	this->input_names[0] = std::string("image");
 	this->input_types[0] = std::string("IplImage");
