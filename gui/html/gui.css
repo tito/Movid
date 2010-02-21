@@ -1,0 +1,90 @@
+ body, html {
+background-color: #000000;
+font:100% "Trebuchet MS",Verdana,Helvetica,Arial,sans-serif;
+}
+
+.status,
+#startstop {
+color: #f0f0f0;
+background-color: #2A3139;
+padding: 4px;
+margin: 0px 10px;
+}
+
+#startstop {
+background-color: #f0f0f0;
+}
+
+#streamings,
+#modules,
+#instances,
+#properties,
+#ios {
+background-color: #2A3139;
+display: block;
+width: 180px;
+float: left;
+font-size: 90%;
+margin: 10px;
+}
+
+h1 {
+padding: 5px;
+margin: 0px;
+font-size: 100%;
+color: #eeeeee;
+}
+
+#streamings_content,
+#properties_content,
+#inputs_content,
+#outputs_content,
+#commands_content {
+background-color: #f0f0f0;
+padding: 5px 0px;
+}
+
+
+#streamings_content a,
+#commands_content a,
+#outputs_content a,
+#properties_content p {
+text-decoration: none;
+margin: 10px 0px 2px 0px;
+padding: 0px 4px;
+}
+
+#streamings_content a,
+#commands_content a,
+#outputs_content a,
+#startstop a {
+text-decoration: none;
+color: #ee4525;
+}
+
+select,
+input {
+display: block;
+margin: 5px 0px;
+border: 0px;
+width: 100%;
+background-color: #ffffff;
+}
+
+input {
+padding: 4px;
+}
+
+.module {
+display: block;
+padding: 5px;
+text-decoration: none;
+color: black;
+background-color: #f0f0f0;
+}
+
+.module:hover {
+background-color: #e0e5f0;
+}
+
+

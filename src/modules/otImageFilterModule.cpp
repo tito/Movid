@@ -8,6 +8,7 @@ LOG_DECLARE("ImageFilter");
 otImageFilterModule::otImageFilterModule() :
 	otModule(OT_MODULE_OUTPUT|OT_MODULE_INPUT, 1, 1)
 {
+	this->input = NULL;
 	this->output = new otDataStream("IplImage");
 	this->output_buffer = NULL;
 	this->need_update = false; //dont update until we get data
@@ -73,6 +74,8 @@ void otImageFilterModule::allocateBuffers() {
 }
 
 void otImageFilterModule::update() {
+	if ( this->input == NULL )
+		return;
 	if ( this->need_update ) {
 		this->input->lock();
 

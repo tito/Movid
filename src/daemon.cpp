@@ -39,6 +39,7 @@ public:
 		this->input = new otDataStream("stream");
 		this->output_buffer = NULL;
 		this->need_update = false;
+		this->properties["id"] = new otProperty(otModule::createId("WebStream"));
 		this->properties["scale"] = new otProperty(1);
 	}
 
@@ -80,11 +81,11 @@ public:
 	}
 
 	void copy() {
-		if ( this->output_buffer == NULL )
+		if ( this->output_buffer == NULL || this->input == NULL )
 			return;
 		this->input->lock();
 		IplImage* src = (IplImage*)(this->input->getData());
-		if ( src == NULL )
+		if ( src == NULL || src->imageData == NULL )
 			return;
 		if ( this->property("scale").asInteger() == 1 )
 			cvCopy(src, this->output_buffer);
@@ -93,10 +94,10 @@ public:
 		this->input->unlock();
 	}
 
-	void update() {}
-	std::string getName() { return "Stream"; }
-	std::string getDescription() { return ""; }
-	std::string getAuthor() { return ""; }
+	virtual void update() {}
+	virtual std::string getName() { return "Stream"; }
+	virtual std::string getDescription() { return ""; }
+	virtual std::string getAuthor() { return ""; }
 	bool need_update;
 
 	otDataStream *input;
@@ -153,7 +154,7 @@ void web_json(struct evhttp_request *req, cJSON *root) {
 	cJSON_Delete(root);
 
 	evbuffer_add(evb, out, strlen(out));
-	evhttp_add_header(req->output_headers, "Content-Type", "text/plain");
+	evhttp_add_header(req->output_headers, "Content-Type", "application/json");
 	evhttp_send_reply(req, HTTP_OK, "Everything is fine", evb);
 	evbuffer_free(evb);
 
@@ -208,7 +209,7 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 
 	if ( state->closed ) {
 		// free !
-		state->stream->getInput(0)->removeObserver(state->stream);
+		state->stream->setInput(NULL);
 		delete state->stream;
 		free(state);
 		return;
@@ -497,12 +498,15 @@ void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 		return web_error(req, "in object not found");
 	}
 
-	if ( out == NULL ) {
+	if ( out == NULL && strcmp(evhttp_find_header(&headers, "out"), "NULL") != 0 ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "out object not found");
 	}
 
-	in->setInput(out->getOutput(outidx), inidx);
+	if ( strcmp(evhttp_find_header(&headers, "out"), "NULL") == 0 )
+		in->setInput(NULL, inidx);
+	else
+		in->setInput(out->getOutput(outidx), inidx);
 
 	evhttp_clear_headers(&headers);
 	web_message(req, "ok");
@@ -624,7 +628,6 @@ void web_pipeline_remove(struct evhttp_request *req, void *arg) {
 	evhttp_clear_headers(&headers);
 }
 
-
 void web_pipeline_start(struct evhttp_request *req, void *arg) {
 	pipeline->start();
 	web_message(req, "ok");
@@ -638,6 +641,51 @@ void web_pipeline_stop(struct evhttp_request *req, void *arg) {
 void web_pipeline_quit(struct evhttp_request *req, void *arg) {
 	web_message(req, "bye");
 	running = false;
+}
+
+void web_file(struct evhttp_request *req, void *arg) {
+	assert( arg != NULL );
+	long filesize = 0;
+	struct evbuffer *evb;
+	char *filename = (char *)arg,
+		 *buf;
+	FILE *fd;
+
+	fd = fopen(filename, "r");
+	if ( fd == NULL ) {
+		web_error(req, "gui file not found");
+		return;
+	}
+
+	fseek(fd, 0, SEEK_END);
+	filesize = ftell(fd);
+	fseek(fd, 0, SEEK_SET);
+
+	buf = (char*)malloc(filesize);
+	if ( buf == NULL ) {
+		fclose(fd);
+		web_error(req, "memory error");
+		return;
+	}
+
+	fread(buf, filesize, 1, fd);
+	fclose(fd);
+
+	if ( strncmp(filename + strlen(filename) - 2, "js", 2) == 0 )
+		evhttp_add_header(req->output_headers, "Content-Type", "application/javascript");
+	else if ( strncmp(filename + strlen(filename) - 3, "css", 3) == 0 )
+		evhttp_add_header(req->output_headers, "Content-Type", "text/css");
+	else if ( strncmp(filename + strlen(filename) - 3, "png", 3) == 0 )
+		evhttp_add_header(req->output_headers, "Content-Type", "image/png");
+	else
+		evhttp_add_header(req->output_headers, "Content-Type", "text/html");
+
+	evb = evbuffer_new();
+	evbuffer_add(evb, buf, filesize);
+
+	evhttp_send_reply(req, HTTP_OK, "Everything is fine", evb);
+	evbuffer_free(evb);
+	free(buf);
 }
 
 int main(int argc, char **argv) {
@@ -666,6 +714,12 @@ int main(int argc, char **argv) {
 	evhttp_set_cb(server, "/pipeline/start", web_pipeline_start, NULL);
 	evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
 	evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
+
+	evhttp_set_cb(server, "/gui/index.html", web_file, (void*)"gui/html/index.html");
+	evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)"gui/html/jquery.js");
+	evhttp_set_cb(server, "/gui/ot.js", web_file, (void*)"gui/html/ot.js");
+	evhttp_set_cb(server, "/gui/gui.css", web_file, (void*)"gui/html/gui.css");
+	evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)"gui/html/nostream.png");
 
 	while ( running ) {
 		cvWaitKey(5);

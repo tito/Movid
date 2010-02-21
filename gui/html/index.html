@@ -1,0 +1,47 @@
+<html>
+<head>
+	<title>OpenTracker Web Admin</title>
+	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="ot.js"></script>
+	<link rel="stylesheet" type="text/css" href="gui.css"/>
+</head>
+<body>
+	<div id="wrapper">
+		<div id="commands">
+			<div class="status">Status: <span id="status">unknown</span></div>
+			<div id="startstop">
+				<a href="javascript:ot_start()">Start</a> -
+				<a href="javascript:ot_stop()">Stop</a> -
+				<a href="javascript:ot_quit()">Quit</a>
+			</div>
+		<div id="modules">
+			<h1>Create</h1>
+			<div id="modules_content"></div>
+		</div>
+		<div id="instances">
+			<h1>Instances</h1>
+			<div id="instances_content"></div>
+		</div>
+		<div id="properties">
+			<h1>Commands</h1>
+			<div id="commands_content"></div>
+			<h1>Properties</h1>
+			<div id="properties_content"></div>
+		</div>
+		<div id="ios">
+			<h1>Inputs</h1>
+			<div id="inputs_content"></div>
+
+			<h1>Outputs</h1>
+			<div id="outputs_content"></div>
+		</div>
+		<div id="streamings">
+			<h1>Streaming</h1>
+			<div id="streamings_content">
+				<p><span id="streamid">-</span> <a href="javascript:ot_stream('')">Stop</a></p>
+				<img id="stream" src="/gui/nostream.png"/>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

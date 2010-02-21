@@ -10,8 +10,8 @@ MODULE_DECLARE(Combine, "native", "Take the maximum color from 2 image");
 otCombineModule::otCombineModule() : otModule(OT_MODULE_INPUT|OT_MODULE_OUTPUT, 2, 1) {
 	MODULE_INIT();
 
-	this->input1 = new otDataStream("IplImage");
-	this->input2 = new otDataStream("IplImage");
+	this->input1 = NULL;
+	this->input2 = NULL;
 	this->output = new otDataStream("IplImage");
 	this->output_buffer = NULL;
 	this->need_update = false;
