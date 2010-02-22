@@ -1,0 +1,7 @@
+#
+# Simple pipeline that show camera to a window
+#
+
+pipeline create Camera camera
+pipeline create ImageDisplay window
+pipeline connect camera:0 window:0

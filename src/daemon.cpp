@@ -5,6 +5,11 @@
 #include <sys/queue.h>
 #include <signal.h>
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 #include <string>
 #include <map>
 
@@ -29,9 +34,15 @@
 #include "event.h"
 #include "evhttp.h"
 
+#define OT_DAEMON "daemon"
+
 static otPipeline *pipeline = NULL;
 static bool running = true;
 static struct event_base *base = NULL;
+static bool config_httpserver = true;
+static std::string config_pipelinefn = "";
+static struct evhttp *server = NULL;
+
 
 class otStreamModule : public otModule {
 public:
@@ -176,7 +187,7 @@ void web_status(struct evhttp_request *req, void *arg) {
 	web_message(req, "ok");
 }
 
-otModule *module_search(const std::string &id) {
+otModule *module_search(const std::string &id, otPipeline *pipeline) {
 	otModule *module;
 	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
 		module = pipeline->getModule(i);
@@ -258,7 +269,7 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"));
+	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -490,8 +501,8 @@ void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 	if ( evhttp_find_header(&headers, "inidx") != NULL )
 		inidx = atoi(evhttp_find_header(&headers, "inidx"));
 
-	in = module_search(evhttp_find_header(&headers, "in"));
-	out = module_search(evhttp_find_header(&headers, "out"));
+	in = module_search(evhttp_find_header(&headers, "in"), pipeline);
+	out = module_search(evhttp_find_header(&headers, "out"), pipeline);
 
 	if ( in == NULL ) {
 		evhttp_clear_headers(&headers);
@@ -530,7 +541,7 @@ void web_pipeline_get(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing name");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"));
+	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -563,7 +574,7 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing value");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"));
+	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -590,7 +601,7 @@ void web_pipeline_remove(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"));
+	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -688,44 +699,220 @@ void web_file(struct evhttp_request *req, void *arg) {
 	free(buf);
 }
 
-int main(int argc, char **argv) {
-	struct evhttp *server;
+// pipeline create objectname id
+// pipeline set id key value
+// pipeline connect out_id out_idx in_id in_idx
+otPipeline *pipeline_parse_file(const std::string &filename) {
+	otPipeline *pipeline = NULL;
+	otModule *module1, *module2;
+	std::string line;
+	int ln = 0;
+	int inidx, outidx;
+	std::ifstream f(filename.c_str());
 
-	signal(SIGPIPE, SIG_IGN);
+	if ( !f.is_open() )
+		return NULL;
 
-	otFactory::init();
 	pipeline = new otPipeline();
 
-	base = event_init();
+	while ( !f.eof() )
+	{
+		ln ++;
+		getline(f, line);
+		if ( line == "" )
+			continue;
+		if ( line[0] == '#' )
+			continue;
 
-	server = evhttp_new(NULL);
+		std::istringstream iss(line);
+		std::vector<std::string> tokens;
 
-	evhttp_bind_socket(server, "127.0.0.1", 7500);
+		std::copy(std::istream_iterator<std::string>(iss),
+				std::istream_iterator<std::string>(),
+				std::back_inserter<std::vector<std::string> >(tokens));
 
-	evhttp_set_cb(server, "/factory/list", web_factory_list, NULL);
-	evhttp_set_cb(server, "/factory/describe", web_factory_desribe, NULL);
-	evhttp_set_cb(server, "/pipeline/create", web_pipeline_create, NULL);
-	evhttp_set_cb(server, "/pipeline/remove", web_pipeline_remove, NULL);
-	evhttp_set_cb(server, "/pipeline/status", web_pipeline_status, NULL);
-	evhttp_set_cb(server, "/pipeline/connect", web_pipeline_connect, NULL);
-	evhttp_set_cb(server, "/pipeline/set", web_pipeline_set, NULL);
-	evhttp_set_cb(server, "/pipeline/get", web_pipeline_get, NULL);
-	evhttp_set_cb(server, "/pipeline/stream", web_pipeline_stream, NULL);
-	evhttp_set_cb(server, "/pipeline/start", web_pipeline_start, NULL);
-	evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
-	evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
+		std::cout << "LINE: tokens=" << tokens.size() << ", line=<" << line << ">" << std::endl;
 
-	evhttp_set_cb(server, "/gui/index.html", web_file, (void*)"gui/html/index.html");
-	evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)"gui/html/jquery.js");
-	evhttp_set_cb(server, "/gui/ot.js", web_file, (void*)"gui/html/ot.js");
-	evhttp_set_cb(server, "/gui/gui.css", web_file, (void*)"gui/html/gui.css");
-	evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)"gui/html/nostream.png");
+		if ( tokens.size() <= 1 ) {
+			std::cerr << "Error at line " << ln << ": invalid line command" << std::endl;
+			goto parse_error;
+		}
+		if ( tokens[0] == "pipeline" ) {
+			if ( tokens.size() < 2 ) {
+				std::cerr << "Error at line " << ln << ": not enough parameters" << std::endl;
+				goto parse_error;
+			}
+
+			if ( tokens[1] == "create" ) {
+				if ( tokens.size() != 4 ) {
+					std::cerr << "Error at line " << ln << ": not enough parameters" << std::endl;
+					goto parse_error;
+				}
+
+				module1 = module_search(tokens[3], pipeline);
+				if ( module1 != NULL ) {
+					std::cerr << "Error at line " << ln << ": id already used" << std::endl;
+					goto parse_error;
+				}
+
+				module1 = otFactory::getInstance()->create(tokens[2]);
+				if ( module1 == NULL ) {
+					std::cerr << "Error at line " << ln << ": unknown module " << tokens[2] << std::endl;
+					goto parse_error;
+				}
+
+				module1->property("id").set(tokens[3]);
+
+				pipeline->addElement(module1);
+
+			} else if ( tokens[1] == "set" ) {
+				if ( tokens.size() != 5 ) {
+					std::cerr << "Error at line " << ln << ": not enough parameters" << std::endl;
+					goto parse_error;
+				}
+
+				module1 = module_search(tokens[2], pipeline);
+				if ( module1 == NULL ) {
+					std::cerr << "Error at line " << ln << ": unable to found module with id " << tokens[2] << std::endl;
+					goto parse_error;
+				}
+
+				module1->property(tokens[3]).set(tokens[4]);
+
+			} else if ( tokens[1] == "connect" ) {
+				if ( tokens.size() != 6 ) {
+					std::cerr << "Error at line " << ln << ": not enough parameters" << std::endl;
+					goto parse_error;
+				}
+
+				module1 = module_search(tokens[2], pipeline);
+				if ( module1 == NULL ) {
+					std::cerr << "Error at line " << ln << ": unable to found module with id " << tokens[2] << std::endl;
+					goto parse_error;
+				}
+
+				module2 = module_search(tokens[4], pipeline);
+				if ( module2 == NULL ) {
+					std::cerr << "Error at line " << ln << ": unable to found module with id " << tokens[4] << std::endl;
+					goto parse_error;
+				}
+
+				outidx = atoi(tokens[3].c_str());
+				inidx = atoi(tokens[5].c_str());
+
+				module2->setInput(module1->getOutput(outidx), inidx);
+
+			} else {
+				std::cerr << "Error at line " << ln << ": unknown pipeline subcommand: " << tokens[1] << std::endl;
+				goto parse_error;
+			}
+		} else {
+			std::cerr << "Error at line " << ln << ": unknown keyword: " << tokens[0] << std::endl;
+			goto parse_error;
+		}
+	}
+
+	pipeline->start();
+	return pipeline;
+
+parse_error:;
+	delete pipeline;
+	return NULL;
+}
+
+void usage(void) {
+	printf("Usage: %s [options...]                                \n" \
+		   "                                                      \n" \
+		   "  -n                     No webserver                 \n" \
+		   "  -l <filename>          Read a pipeline from filename\n",
+		   OT_DAEMON
+	);
+}
+
+int parse_options(int *argc, char ***argv) {
+	int ch;
+	while ( (ch = getopt(*argc, *argv, "l:n")) != -1 ) {
+		switch ( ch ) {
+			case 'n':
+				config_httpserver = false;
+				break;
+			case 'l':
+				config_pipelinefn = std::string(optarg);
+				break;
+			case '?':
+			default:
+				usage();
+				break;
+		}
+	}
+
+	(*argc) -= optind;
+	(*argv) -= optind;
+
+	return 0;
+}
+
+int main(int argc, char **argv) {
+
+	if ( parse_options(&argc, &argv) < 0 )
+		return 1;
+
+	otFactory::init();
+
+	if ( config_pipelinefn != "" ) {
+		pipeline = pipeline_parse_file(config_pipelinefn);
+		if ( pipeline == NULL ) {
+			return 2;
+		}
+	} else if ( config_httpserver == false ) {
+		std::cerr << "ERROR : no pipeline or webserver to start !" << std::endl;
+		return 3;
+	}
+
+	// no default pipeline ? create one !
+	if ( pipeline == NULL )
+		pipeline = new otPipeline();
+
+	if ( config_httpserver ) {
+
+		signal(SIGPIPE, SIG_IGN);
+
+		base = event_init();
+		server = evhttp_new(NULL);
+
+		evhttp_bind_socket(server, "127.0.0.1", 7500);
+
+		evhttp_set_cb(server, "/factory/list", web_factory_list, NULL);
+		evhttp_set_cb(server, "/factory/describe", web_factory_desribe, NULL);
+		evhttp_set_cb(server, "/pipeline/create", web_pipeline_create, NULL);
+		evhttp_set_cb(server, "/pipeline/remove", web_pipeline_remove, NULL);
+		evhttp_set_cb(server, "/pipeline/status", web_pipeline_status, NULL);
+		evhttp_set_cb(server, "/pipeline/connect", web_pipeline_connect, NULL);
+		evhttp_set_cb(server, "/pipeline/set", web_pipeline_set, NULL);
+		evhttp_set_cb(server, "/pipeline/get", web_pipeline_get, NULL);
+		evhttp_set_cb(server, "/pipeline/stream", web_pipeline_stream, NULL);
+		evhttp_set_cb(server, "/pipeline/start", web_pipeline_start, NULL);
+		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
+		evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
+
+		evhttp_set_cb(server, "/gui/index.html", web_file, (void*)"gui/html/index.html");
+		evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)"gui/html/jquery.js");
+		evhttp_set_cb(server, "/gui/ot.js", web_file, (void*)"gui/html/ot.js");
+		evhttp_set_cb(server, "/gui/gui.css", web_file, (void*)"gui/html/gui.css");
+		evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)"gui/html/nostream.png");
+	}
 
 	while ( running ) {
+		// FIXME remove this hack !!!
 		cvWaitKey(5);
+
+		// update pipeline
 		if ( pipeline->isStarted() )
 			pipeline->update();
-		event_base_loop(base, EVLOOP_ONCE|EVLOOP_NONBLOCK);
+
+		// got a server, update
+		if ( server != NULL )
+			event_base_loop(base, EVLOOP_ONCE|EVLOOP_NONBLOCK);
 	}
 
 	delete pipeline;

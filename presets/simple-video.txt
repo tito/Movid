@@ -1,0 +1,4 @@
+pipeline create Video video
+pipeline set video filename media/blob.avi
+pipeline create ImageDisplay window
+pipeline connect video 0 window 0
