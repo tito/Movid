@@ -4,4 +4,4 @@
 
 pipeline create Camera camera
 pipeline create ImageDisplay window
-pipeline connect camera:0 window:0
+pipeline connect camera 0 window 0
