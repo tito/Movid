@@ -12,3 +12,5 @@ pipeline connect threshold 0 tracker 0
 # debug
 #pipeline create ImageDisplay display
 #pipeline connect threshold 0 display 0
+pipeline create Dump dump
+pipeline connect tracker 1 dump 0
