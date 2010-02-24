@@ -24,6 +24,7 @@ static int mirror_axis(std::string axis){
 		return -1;
 	std::cout << axis << std::endl;
 	assert( "Unsupported mirror axis for MirrorImage module!!" && 0 );
+	return 0;
 }
 
 void otMirrorImageModule::applyFilter(){
