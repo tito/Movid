@@ -70,20 +70,31 @@ void otFiducialTrackerModule::allocateBuffers() {
 void otFiducialTrackerModule::applyFilter() {
 	IplImage* src = (IplImage*)(this->input->getData());
 	fiducials_data_t *fids = (fiducials_data_t *)this->internal;
-	otDataGenericContainer *fiducial = NULL;
-	FiducialX *fdx = NULL;
+	otDataGenericContainer *fiducial;
+	FiducialX *fdx;
+	int fid_count, valid_fiducials = 0;
+	bool do_image = this->output->getObserverCount() > 0 ? true : false;
+
+	CvFont font;
+	cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 1.0, 1.0, 0, 2);
 
 	assert( src != NULL );
 	assert( fids != NULL );
 	assert( src->imageData != NULL );
 	assert( "fiducial tracker needs single channel input" && (src->nChannels == 1) );
 
-	step_segmenter(&fids->segmenter, (const unsigned char*)src->imageData);
-	int fid_count = find_fiducialsX(fids->fiducials, MAX_FIDUCIALS,  &fids->fidtrackerx, &fids->segmenter, src->width, src->height);
+	// prepare image if we have listener on output
+	if ( do_image )
+		cvSet(this->output_buffer, CV_RGB(0, 0, 0));
 
+	// libfidtrack
+	step_segmenter(&fids->segmenter, (const unsigned char*)src->imageData);
+	fid_count = find_fiducialsX(fids->fiducials, MAX_FIDUCIALS,
+			&fids->fidtrackerx, &fids->segmenter, src->width, src->height);
+
+	// prepare to refill fiducials
 	this->clearFiducials();
 
-	int valid_fiducials = 0;;
 	for ( int i = 0; i < fid_count; i++ ) {
 		fdx = &fids->fiducials[i];
 
@@ -91,6 +102,7 @@ void otFiducialTrackerModule::applyFilter() {
 		if ( fdx->id < 0 )
 			continue;
 
+		// got a valid fiducial ! process...
 		valid_fiducials++;
 
 		LOGM(DEBUG) << "fid:" << i << " id=" << fdx->id << " pos=" \
@@ -105,6 +117,14 @@ void otFiducialTrackerModule::applyFilter() {
 		fiducial->properties["leaf_size"] = new otProperty(fdx->leaf_size);
 		fiducial->properties["root_size"] = new otProperty(fdx->root_size);
 		this->fiducials.push_back(fiducial);
+
+		// draw on output image
+		if ( do_image ) {
+			std::ostringstream oss;
+			oss << fdx->id;
+			cvPutText (this->output_buffer, oss.str().c_str(),
+				cvPoint(fdx->x, fdx->y), &font, cvScalar(20, 255, 20));
+		}
 	}
 
 	LOGM(DEBUG) << "-> Found " << valid_fiducials << " fiducials";
