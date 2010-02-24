@@ -39,9 +39,10 @@ void otCombineModule::notifyData(otDataStream *input) {
 	if ( src == NULL )
 		return;
 
-	if ( this->output_buffer == NULL )
+	if ( this->output_buffer == NULL ) {
 		this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
-	else {
+		this->split = cvCreateImage(cvGetSize(src), src->depth, 1);
+	} else {
 		if ( this->output_buffer->width != src->width ||
 			 this->output_buffer->height != src->height ) {
 			LOG(CRITICAL) << "cannot combine image with different size";
@@ -75,7 +76,9 @@ void otCombineModule::update() {
 			this->input1->unlock();
 			return;
 		}
-		cvMax(d1, d2, this->output_buffer);
+		cvSplit(d2, this->split, NULL, NULL, NULL);
+		cvCopy(d1, this->output_buffer);
+		cvCopy(d2, this->output_buffer, this->split);
 		this->input2->unlock();
 	}
 

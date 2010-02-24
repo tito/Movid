@@ -24,6 +24,7 @@ private:
 	otDataStream *input2;
 	otDataStream *output;
 	IplImage *output_buffer;
+	IplImage *split;
 	bool need_update;
 
 	MODULE_INTERNALS();
