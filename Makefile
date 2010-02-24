@@ -52,10 +52,10 @@ all: tracker describe daemon
 static: ${BIN}
 	${AR} rcs ${LIBOT_STATIC} ${BIN}
 
-tracker: static src/tracker.cpp
+tracker: contribs static src/tracker.cpp
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${ALL_LIBS_STATIC}
 
-describe: static src/describe.cpp
+describe: contribs static src/describe.cpp
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DESCRIBE_BIN} src/describe.cpp ${ALL_LIBS_STATIC}
 
 blobtrack: static src/blobtracker.cpp
