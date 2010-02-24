@@ -14,19 +14,21 @@ static otFactory *instance = NULL;
 
 void otFactory::init() {
 	REGISTER_MODULE(Amplify);
-	REGISTER_MODULE(BlobTracker)
 	REGISTER_MODULE(BackgroundSubtract);
+	REGISTER_MODULE(BlobTracker)
 	REGISTER_MODULE(Camera);
 	REGISTER_MODULE(Combine);
 	REGISTER_MODULE(Dump);
+	REGISTER_MODULE(FiducialTracker);
 	REGISTER_MODULE(GrayScale);
 	REGISTER_MODULE(Highpass);
+	REGISTER_MODULE(Image);
 	REGISTER_MODULE(ImageDisplay);
 	REGISTER_MODULE(Invert);
+	REGISTER_MODULE(MirrorImage);
 	REGISTER_MODULE(Smooth);
 	REGISTER_MODULE(Threshold);
 	REGISTER_MODULE(Video);
-	REGISTER_MODULE(MirrorImage);
 	LOG(INFO) << "register " << otFactory::getInstance()->list().size() << " modules";
 }
 

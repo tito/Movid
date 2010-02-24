@@ -1,0 +1,14 @@
+pipeline create Image image
+pipeline set image filename media/fidtest1.jpg
+pipeline create GrayScale gray
+pipeline create Threshold threshold
+pipeline create FiducialTracker tracker
+
+# do connections
+pipeline connect image 0 gray 0
+pipeline connect gray 0 threshold 0
+pipeline connect threshold 0 tracker 0
+
+# debug
+#pipeline create ImageDisplay display
+#pipeline connect threshold 0 display 0

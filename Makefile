@@ -16,6 +16,7 @@ LIBEVENT_CFLAGS = -I${LIBEVENT_PATH}
 LIBJPEG_LIBS = ${LIBJPEG_PATH}/.libs/libjpeg.a
 LIBJPEG_CFLAGS = -I${LIBJPEG_PATH}
 LIBCJSON_CFLAGS = -I${LIBCJSON_PATH}
+LIBFIDTRACK_LIBS = ${CONTRIB_PATH}/libfidtrack/libfidtrack.a
 
 LIBOT_STATIC = libot.a
 
@@ -41,7 +42,7 @@ OPENCV_LIBS   ?= `pkg-config --libs opencv`
 
 ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS}
 ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}
-ALL_LIBS_STATIC = ${LIBOT_STATIC}
+ALL_LIBS_STATIC = ${LIBOT_STATIC} ${LIBFIDTRACK_LIBS}
 
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
@@ -52,10 +53,10 @@ static: ${BIN}
 	${AR} rcs ${LIBOT_STATIC} ${BIN}
 
 tracker: static src/tracker.cpp
-	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${LIBOT_STATIC}
+	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${ALL_LIBS_STATIC}
 
 describe: static src/describe.cpp
-	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DESCRIBE_BIN} src/describe.cpp ${LIBOT_STATIC}
+	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DESCRIBE_BIN} src/describe.cpp ${ALL_LIBS_STATIC}
 
 blobtrack: static src/blobtracker.cpp
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${BLOB_BIN} src/blobtracker.cpp
@@ -63,7 +64,7 @@ blobtrack: static src/blobtracker.cpp
 daemon: contribs static src/daemon.cpp
 	${CXX}   -o ${DAEMON_BIN} src/daemon.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
 		${LIBEVENT_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBJPEG_CFLAGS} ${ALL_CFLAGS} \
-		${LIBJPEG_LIBS} ${LIBEVENT_LIBS} ${ALL_LIBS} \
+		${LIBJPEG_LIBS} ${LIBEVENT_LIBS} ${ALL_LIBS}
 
 contribs:
 	${MAKE} -C contrib

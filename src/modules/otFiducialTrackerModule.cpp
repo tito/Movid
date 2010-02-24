@@ -70,15 +70,44 @@ void otFiducialTrackerModule::allocateBuffers() {
 void otFiducialTrackerModule::applyFilter() {
 	IplImage* src = (IplImage*)(this->input->getData());
 	fiducials_data_t *fids = (fiducials_data_t *)this->internal;
+	otDataGenericContainer *fiducial = NULL;
+	FiducialX *fdx = NULL;
 
 	assert( src != NULL );
 	assert( fids != NULL );
 	assert( src->imageData != NULL );
-	assert( "threshold filter needs single channel input" && (src->nChannels == 1) );
+	assert( "fiducial tracker needs single channel input" && (src->nChannels == 1) );
 
-	step_segmenter( &fids->segmenter, (const unsigned char*)src->imageData );
-	int fid_count = find_fiducialsX( fids->fiducials, MAX_FIDUCIALS,  &fids->fidtrackerx, &fids->segmenter, src->width, src->height);
-	LOG(DEBUG) << "Found " << fid_count << " fiducials";
+	step_segmenter(&fids->segmenter, (const unsigned char*)src->imageData);
+	int fid_count = find_fiducialsX(fids->fiducials, MAX_FIDUCIALS,  &fids->fidtrackerx, &fids->segmenter, src->width, src->height);
+
+	this->clearFiducials();
+
+	int valid_fiducials = 0;;
+	for ( int i = 0; i < fid_count; i++ ) {
+		fdx = &fids->fiducials[i];
+
+		// invalid id (INVALID_FIDUCIAL_ID)
+		if ( fdx->id < 0 )
+			continue;
+
+		valid_fiducials++;
+
+		LOGM(DEBUG) << "fid:" << i << " id=" << fdx->id << " pos=" \
+			<< fdx->x << "," << fdx->y << " angle=" << fdx->angle;
+
+		fiducial = new otDataGenericContainer();
+		fiducial->properties["type"] = new otProperty("fiducial");
+		fiducial->properties["id"] = new otProperty(fdx->id);
+		fiducial->properties["x"] = new otProperty(fdx->x);
+		fiducial->properties["y"] = new otProperty(fdx->y);
+		fiducial->properties["angle"] = new otProperty(fdx->angle);
+		fiducial->properties["leaf_size"] = new otProperty(fdx->leaf_size);
+		fiducial->properties["root_size"] = new otProperty(fdx->root_size);
+		this->fiducials.push_back(fiducial);
+	}
+
+	LOGM(DEBUG) << "-> Found " << valid_fiducials << " fiducials";
 }
 
 otDataStream* otFiducialTrackerModule::getOutput(int n) {
