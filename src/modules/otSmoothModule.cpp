@@ -25,7 +25,9 @@ static int cv_smooth_type(std::string filter){
 		return CV_BLUR;
 	if ( filter == "blur_no_scale" )
 		return CV_BLUR_NO_SCALE;
+
 	assert( "unsupported filter type for Smooth module!!" && 0 );
+	return 0;
 }
 
 void otSmoothModule::applyFilter(){

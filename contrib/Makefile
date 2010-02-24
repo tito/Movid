@@ -6,11 +6,15 @@ LIBEVENT_ARCHIVE = libevent-1.4.13-stable.tar.gz
 LIBEVENT_PATH = libevent-1.4.13-stable
 LIBEVENT_LIB = ${LIBEVENT_PATH}/.libs/libevent.a
 
-all: libevent jpeglib
+LIBFIDTRACK_PATH = libfidtrack
+LIBFIDTRACK_LIB = ${LIBFIDTRACK_PATH}/libfidtrack.a
+
+all: libevent jpeglib fidtrack
 
 clean:
 	-rm -rf ${LIBEVENT_PATH}
 	-rm -rf ${JPEG_PATH}
+	${MAKE} -C ${LIBFIDTRACK_PATH} clean
 
 libevent: ${LIBEVENT_LIB}
 
@@ -19,6 +23,9 @@ ${LIBEVENT_LIB}:
 	cd ${LIBEVENT_PATH} && ./configure --disable-shared && ${MAKE}
 
 jpeglib: ${JPEG_LIB}
+
+fidtrack:
+	${MAKE} -C ${LIBFIDTRACK_PATH}
 
 ${JPEG_LIB}:
 	tar xzf ${JPEG_ARCHIVE}
