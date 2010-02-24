@@ -108,6 +108,7 @@ void otFiducialTrackerModule::applyFilter() {
 	}
 
 	LOGM(DEBUG) << "-> Found " << valid_fiducials << " fiducials";
+	this->output_data->push(&this->fiducials);
 }
 
 otDataStream* otFiducialTrackerModule::getOutput(int n) {

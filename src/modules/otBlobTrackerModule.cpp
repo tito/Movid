@@ -127,6 +127,7 @@ void otBlobTrackerModule::applyFilter() {
 		this->blobs.push_back(touch);
 	}   /* Next blob. */;
 
+	this->output_data->push(&this->blobs);
 }
 
 otDataStream* otBlobTrackerModule::getOutput(int n) {
