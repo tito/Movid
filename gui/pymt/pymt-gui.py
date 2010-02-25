@@ -33,12 +33,12 @@ class Singleton(type):
             cls.instance = super(Singleton, cls).__call__(*args, **kw)
         return cls.instance
 
-class OpenTrackerGUI(MTScatterPlane):
+class MovidGUI(MTScatterPlane):
     
     __metaclass__ = Singleton
     
     def __init__(self, daemon):
-        super(OpenTrackerGUI, self).__init__()
+        super(MovidGUI, self).__init__()
         self.daemon = daemon
 
         for module in daemon.modules.values():
@@ -194,7 +194,7 @@ class ModuleNode(MTScatterWidget):
 
     
 
-daemon = OpenTrackerDaemon()
+daemon = MovidDaemon()
 
 if not len(daemon.modules):
     daemon.add_module("Camera", "cam")
@@ -203,7 +203,7 @@ if not len(daemon.modules):
 
 
 root = MTWidget()
-gui = OpenTrackerGUI(daemon)
+gui = MovidGUI(daemon)
 toolbar = MTBoxLayout(orientation='vertical')
 
 for m in daemon.available_modules:

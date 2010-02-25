@@ -1,7 +1,4 @@
-OpenTracker's make file will automatically build the dependencies in this directory.  To clean teh dependencies, do "make distclean" in teh OpenTracker directory
-
-
-
+Movid's make file will automatically build the dependencies in this directory.  To clean teh dependencies, do "make distclean" in teh Movid directory
 
 changes to prevent warning:
 cJSON/cJSON.c:330 : add (char*) cast

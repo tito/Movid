@@ -18,15 +18,15 @@ LIBJPEG_CFLAGS = -I${LIBJPEG_PATH}
 LIBCJSON_CFLAGS = -I${LIBCJSON_PATH}
 LIBFIDTRACK_LIBS = ${CONTRIB_PATH}/libfidtrack/libfidtrack.a
 
-LIBOT_STATIC = libot.a
+LIBMOVID_STATIC = libmovid.a
 
-OBJ = otDataStream.o otModule.o otPipeline.o otFactory.o otProperty.o \
-      otDaemon.o otLog.o otDataGenericContainer.o otDumpModule.o \
-	  otCameraModule.o otImageDisplayModule.o otSmoothModule.o \
-	  otImageFilterModule.o otInvertModule.o otVideoModule.o otBackgroundSubtractModule.o \
-	  otGrayScaleModule.o otThresholdModule.o otAmplifyModule.o otHighpassModule.o \
-	  otBlobTrackerModule.o otCombineModule.o otMirrorImageModule.o otFiducialTrackerModule.o \
-	  otImageModule.o
+OBJ = moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
+      moDaemon.o moLog.o moDataGenericContainer.o moDumpModule.o \
+	  moCameraModule.o moImageDisplayModule.o moSmoothModule.o \
+	  moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \
+	  moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
+	  moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
+	  moImageModule.o
 
 #where the source is, and where to put the object files
 SRC_DIR = src
@@ -42,7 +42,7 @@ OPENCV_LIBS   ?= `pkg-config --libs opencv`
 
 ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS}
 ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}
-ALL_LIBS_STATIC = ${LIBOT_STATIC} ${LIBFIDTRACK_LIBS}
+ALL_LIBS_STATIC = ${LIBMOVID_STATIC} ${LIBFIDTRACK_LIBS}
 
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
@@ -50,7 +50,7 @@ all: tracker describe daemon
 
 #rules for building targets
 static: ${BIN}
-	${AR} rcs ${LIBOT_STATIC} ${BIN}
+	${AR} rcs ${LIBMOVID_STATIC} ${BIN}
 
 tracker: contribs static src/tracker.cpp
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${ALL_LIBS_STATIC}
@@ -82,7 +82,7 @@ clean:
 	-rm ${TRACKER_BIN} ${DESCRIBE_BIN} ${BLOB_BIN}
 	-rm ${DAEMON_BIN}
 	-rm -r *.dSYM build
-	-rm ${LIBOT_STATIC}
+	-rm ${LIBMOVID_STATIC}
 
 distclean: clean
 	${MAKE} -C contrib clean

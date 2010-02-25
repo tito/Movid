@@ -4,13 +4,13 @@
 
 
 ==================================================
-To build OpenTracker on OSX:
+To build Movid on OSX:
 ==================================================
-The included XCode project should be set up for you to just build and run OpenTracker
-The Xcode project is set up to use the regular Makefile to build OpenTracker.  
+The included XCode project should be set up for you to just build and run Movid
+The Xcode project is set up to use the regular Makefile to build Movid.  
 
 The XCode project has some environment variables defined for the Makefile build configuraton.  
-(To see or change the build variables: double click the OpenTracker Tagrget in XCode and see the Build Setting section)
+(To see or change the build variables: double click the Movid Tagrget in XCode and see the Build Setting section)
 
 The custom setting that have been changed from the default Makefile XCode are:
 	CXX = g++-4.0
@@ -19,7 +19,7 @@ The custom setting that have been changed from the default Makefile XCode are:
 	
 
 The only reason why you would have to change these, is if you istalled openCV or pkg-config to non standard locations on your system. 
-Here is what they are set to in the OpenTracker Project, and why:
+Here is what they are set to in the Movid Project, and why:
 
 CXX: 
     is set to g++-4.0, because OpenCV has to be compiled with that on OSX, 

@@ -19,20 +19,20 @@
 // JSON
 #include "cJSON.h"
 
-// opentracker
-#include "otPipeline.h"
-#include "otModule.h"
-#include "otFactory.h"
-#include "otProperty.h"
-#include "otDataStream.h"
+// Movid
+#include "moPipeline.h"
+#include "moModule.h"
+#include "moFactory.h"
+#include "moProperty.h"
+#include "moDataStream.h"
 
 // libevent
 #include "event.h"
 #include "evhttp.h"
 
-#define OT_DAEMON "daemon"
+#define MO_DAEMON "daemon"
 
-static otPipeline *pipeline = NULL;
+static moPipeline *pipeline = NULL;
 static bool running = true;
 static struct event_base *base = NULL;
 static bool config_httpserver = true;
@@ -40,14 +40,14 @@ static std::string config_pipelinefn = "";
 static struct evhttp *server = NULL;
 
 
-class otStreamModule : public otModule {
+class otStreamModule : public moModule {
 public:
-	otStreamModule() : otModule(OT_MODULE_INPUT, 1, 0) {
-		this->input = new otDataStream("stream");
+	otStreamModule() : moModule(MO_MODULE_INPUT, 1, 0) {
+		this->input = new moDataStream("stream");
 		this->output_buffer = NULL;
 		this->need_update = false;
-		this->properties["id"] = new otProperty(otModule::createId("WebStream"));
-		this->properties["scale"] = new otProperty(1);
+		this->properties["id"] = new moProperty(moModule::createId("WebStream"));
+		this->properties["scale"] = new moProperty(1);
 	}
 
 	void stop() {
@@ -55,10 +55,10 @@ public:
 			cvReleaseImage(&this->output_buffer);
 			this->output_buffer = NULL;
 		}
-		otModule::stop();
+		moModule::stop();
 	}
 
-	void notifyData(otDataStream *source) {
+	void notifyData(moDataStream *source) {
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL )
 			return;
@@ -71,7 +71,7 @@ public:
 		this->need_update = true;
 	}
 
-	void setInput(otDataStream* stream, int n=0) {
+	void setInput(moDataStream* stream, int n=0) {
 		if ( this->input != NULL )
 			this->input->removeObserver(this);
 		this->input = stream;
@@ -79,11 +79,11 @@ public:
 			this->input->addObserver(this);
 	}
 
-	virtual otDataStream *getInput(int n=0) {
+	virtual moDataStream *getInput(int n=0) {
 		return this->input;
 	}
 
-	virtual otDataStream *getOutput(int n=0) {
+	virtual moDataStream *getOutput(int n=0) {
 		return NULL;
 	}
 
@@ -107,7 +107,7 @@ public:
 	virtual std::string getAuthor() { return ""; }
 	bool need_update;
 
-	otDataStream *input;
+	moDataStream *input;
 	IplImage* output_buffer;
 };
 
@@ -183,8 +183,8 @@ void web_status(struct evhttp_request *req, void *arg) {
 	web_message(req, "ok");
 }
 
-otModule *module_search(const std::string &id, otPipeline *pipeline) {
-	otModule *module;
+moModule *module_search(const std::string &id, moPipeline *pipeline) {
+	moModule *module;
 	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
 		module = pipeline->getModule(i);
 		if ( module->property("id").asString() == id )
@@ -255,7 +255,7 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 	struct evkeyvalq headers;
 	const char *uri;
 	int	idx = 0;
-	otModule *module = NULL;
+	moModule *module = NULL;
 
 	uri = evhttp_request_uri(req);
 	evhttp_parse_query(uri, &headers);
@@ -297,7 +297,7 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 }
 
 void web_pipeline_create(struct evhttp_request *req, void *arg) {
-	otModule *module;
+	moModule *module;
 	struct evkeyvalq headers;
 	const char *uri;
 
@@ -309,7 +309,7 @@ void web_pipeline_create(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	module = otFactory::getInstance()->create(evhttp_find_header(&headers, "objectname"));
+	module = moFactory::getInstance()->create(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "invalid objectname");
@@ -322,10 +322,10 @@ void web_pipeline_create(struct evhttp_request *req, void *arg) {
 }
 
 void web_pipeline_status(struct evhttp_request *req, void *arg) {
-	std::map<std::string, otProperty*>::iterator it;
+	std::map<std::string, moProperty*>::iterator it;
 	char buffer[64];
 	cJSON *root, *data, *modules, *mod, *properties, *io, *observers, *array;
-	otDataStream *ds;
+	moDataStream *ds;
 
 	root = cJSON_CreateObject();
 	cJSON_AddNumberToObject(root, "success", 1);
@@ -336,7 +336,7 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	cJSON_AddItemToObject(data, "modules", modules=cJSON_CreateObject());
 
 	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
-		otModule *module = pipeline->getModule(i);
+		moModule *module = pipeline->getModule(i);
 		assert( module != NULL );
 
 		cJSON_AddItemToObject(modules,
@@ -392,7 +392,7 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 
 void web_factory_list(struct evhttp_request *req, void *arg) {
 	std::vector<std::string>::iterator it;
-	std::vector<std::string> list = otFactory::getInstance()->list();
+	std::vector<std::string> list = moFactory::getInstance()->list();
 	cJSON *root, *data;
 
 	root = cJSON_CreateObject();
@@ -408,10 +408,10 @@ void web_factory_list(struct evhttp_request *req, void *arg) {
 }
 
 void web_factory_desribe(struct evhttp_request *req, void *arg) {
-	std::map<std::string, otProperty*>::iterator it;
+	std::map<std::string, moProperty*>::iterator it;
 	cJSON *root, *mod, *properties, *io, *array;
-	otDataStream *ds;
-	otModule *module;
+	moDataStream *ds;
+	moModule *module;
 	struct evkeyvalq headers;
 	const char *uri;
 
@@ -423,7 +423,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing name");
 	}
 
-	module = otFactory::getInstance()->create(evhttp_find_header(&headers, "name"));
+	module = moFactory::getInstance()->create(evhttp_find_header(&headers, "name"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "invalid name");
@@ -474,7 +474,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 }
 
 void web_pipeline_connect(struct evhttp_request *req, void *arg) {
-	otModule *in, *out;
+	moModule *in, *out;
 	int inidx = 0, outidx = 0;
 	struct evkeyvalq headers;
 	const char *uri;
@@ -520,7 +520,7 @@ void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 }
 
 void web_pipeline_get(struct evhttp_request *req, void *arg) {
-	otModule *module;
+	moModule *module;
 	struct evkeyvalq headers;
 	const char *uri;
 
@@ -548,7 +548,7 @@ void web_pipeline_get(struct evhttp_request *req, void *arg) {
 }
 
 void web_pipeline_set(struct evhttp_request *req, void *arg) {
-	otModule *module;
+	moModule *module;
 	struct evkeyvalq headers;
 	const char *uri;
 
@@ -584,8 +584,8 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 }
 
 void web_pipeline_remove(struct evhttp_request *req, void *arg) {
-	otModule *module;
-	otDataStream *ds;
+	moModule *module;
+	moDataStream *ds;
 	struct evkeyvalq headers;
 	const char *uri;
 
@@ -698,9 +698,9 @@ void web_file(struct evhttp_request *req, void *arg) {
 // pipeline create objectname id
 // pipeline set id key value
 // pipeline connect out_id out_idx in_id in_idx
-otPipeline *pipeline_parse_file(const std::string &filename) {
-	otPipeline *pipeline = NULL;
-	otModule *module1, *module2;
+moPipeline *pipeline_parse_file(const std::string &filename) {
+	moPipeline *pipeline = NULL;
+	moModule *module1, *module2;
 	std::string line;
 	int ln = 0;
 	int inidx, outidx;
@@ -709,7 +709,7 @@ otPipeline *pipeline_parse_file(const std::string &filename) {
 	if ( !f.is_open() )
 		return NULL;
 
-	pipeline = new otPipeline();
+	pipeline = new moPipeline();
 
 	while ( !f.eof() )
 	{
@@ -751,7 +751,7 @@ otPipeline *pipeline_parse_file(const std::string &filename) {
 					goto parse_error;
 				}
 
-				module1 = otFactory::getInstance()->create(tokens[2]);
+				module1 = moFactory::getInstance()->create(tokens[2]);
 				if ( module1 == NULL ) {
 					std::cerr << "Error at line " << ln << ": unknown module " << tokens[2] << std::endl;
 					goto parse_error;
@@ -821,7 +821,7 @@ void usage(void) {
 		   "                                                      \n" \
 		   "  -n                     No webserver                 \n" \
 		   "  -l <filename>          Read a pipeline from filename\n",
-		   OT_DAEMON
+		   MO_DAEMON
 	);
 }
 
@@ -853,7 +853,7 @@ int main(int argc, char **argv) {
 	if ( parse_options(&argc, &argv) < 0 )
 		return 1;
 
-	otFactory::init();
+	moFactory::init();
 
 	if ( config_pipelinefn != "" ) {
 		pipeline = pipeline_parse_file(config_pipelinefn);
@@ -867,7 +867,7 @@ int main(int argc, char **argv) {
 
 	// no default pipeline ? create one !
 	if ( pipeline == NULL )
-		pipeline = new otPipeline();
+		pipeline = new moPipeline();
 
 	if ( config_httpserver ) {
 

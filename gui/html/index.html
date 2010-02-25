@@ -1,8 +1,8 @@
 <html>
 <head>
-	<title>OpenTracker Web Admin</title>
+	<title>Movid Web Admin</title>
 	<script type="text/javascript" src="jquery.js"></script>
-	<script type="text/javascript" src="ot.js"></script>
+	<script type="text/javascript" src="mo.js"></script>
 	<link rel="stylesheet" type="text/css" href="gui.css"/>
 </head>
 <body>
@@ -10,9 +10,9 @@
 		<div id="commands">
 			<div class="status">Status: <span id="status">unknown</span></div>
 			<div id="startstop">
-				<a href="javascript:ot_start()">Start</a> -
-				<a href="javascript:ot_stop()">Stop</a> -
-				<a href="javascript:ot_quit()">Quit</a>
+				<a href="javascript:mo_start()">Start</a> -
+				<a href="javascript:mo_stop()">Stop</a> -
+				<a href="javascript:mo_quit()">Quit</a>
 			</div>
 		<div id="modules">
 			<h1>Create</h1>
@@ -38,7 +38,7 @@
 		<div id="streamings">
 			<h1>Streaming</h1>
 			<div id="streamings_content">
-				<p><span id="streamid">-</span> <a href="javascript:ot_stream('')">Stop</a></p>
+				<p><span id="streamid">-</span> <a href="javascript:mo_stream('')">Stop</a></p>
 				<img id="stream" src="/gui/nostream.png"/>
 			</div>
 		</div>

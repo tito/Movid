@@ -3,11 +3,11 @@
 
 #include "highgui.h"
 
-#include "otModule.h"
-#include "otDataStream.h"
-#include "otFactory.h"
-#include "otProperty.h"
-#include "otPipeline.h"
+#include "moModule.h"
+#include "moDataStream.h"
+#include "moFactory.h"
+#include "moProperty.h"
+#include "moPipeline.h"
 
 static bool want_quit = false;
 
@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 	int key = 0x0;
 	std::string testname = "default";
 
-	otFactory::init();
+	moFactory::init();
 
 	if ( argc > 1 )
 		testname = argv[1];
@@ -27,20 +27,20 @@ int main(int argc, char **argv) {
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
 
-	otPipeline *pipeline = new otPipeline();
+	moPipeline *pipeline = new moPipeline();
 
 	if ( testname == "default" ) {
 
 		// Camera input stream
-		otModule* cam = otFactory::getInstance()->create("Video");
+		moModule* cam = moFactory::getInstance()->create("Video");
 
-		otModule* gray = otFactory::getInstance()->create("GrayScale");
+		moModule* gray = moFactory::getInstance()->create("GrayScale");
 		gray->setInput(cam->getOutput());
 		
-		otModule* gauss = otFactory::getInstance()->create("Smooth");
+		moModule* gauss = moFactory::getInstance()->create("Smooth");
 		gauss->setInput(cam->getOutput());
 		
-		otModule* display = otFactory::getInstance()->create("ImageDisplay");
+		moModule* display = moFactory::getInstance()->create("ImageDisplay");
 		display->setInput(gauss->getOutput());
 		
 
@@ -52,35 +52,35 @@ int main(int argc, char **argv) {
 
 	} else if ( testname == "video" ) {
 
-		otModule* video  = otFactory::getInstance()->create("Video");
+		moModule* video  = moFactory::getInstance()->create("Video");
 		video->property("filename").set("media/blob2.avi");
 
-		otModule* gray = otFactory::getInstance()->create("GrayScale");
+		moModule* gray = moFactory::getInstance()->create("GrayScale");
 		gray->setInput(video->getOutput());
 		
-		otModule* bg = otFactory::getInstance()->create("BackgroundSubtract");
+		moModule* bg = moFactory::getInstance()->create("BackgroundSubtract");
 		bg->setInput(gray->getOutput());
 		
-		otModule* smooth = otFactory::getInstance()->create("Smooth");
+		moModule* smooth = moFactory::getInstance()->create("Smooth");
 		smooth->setInput(bg->getOutput());
 		
-		otModule* thresh = otFactory::getInstance()->create("Threshold");
+		moModule* thresh = moFactory::getInstance()->create("Threshold");
 		thresh->setInput(smooth->getOutput());	
 
 		
-		otModule* blob = otFactory::getInstance()->create("BlobTracker");
+		moModule* blob = moFactory::getInstance()->create("BlobTracker");
 		blob->setInput(thresh->getOutput());
 
-		// otImageDisplayModule opens a window and displays an Image in it
-		otModule* display = otFactory::getInstance()->create("ImageDisplay");
+		// moImageDisplayModule opens a window and displays an Image in it
+		moModule* display = moFactory::getInstance()->create("ImageDisplay");
 		display->property("name").set("GrayScale");
 		display->setInput(smooth->getOutput());
 
-		otModule* display2 = otFactory::getInstance()->create("ImageDisplay");
+		moModule* display2 = moFactory::getInstance()->create("ImageDisplay");
 		display2->property("name").set("Threshold");
 		display2->setInput(thresh->getOutput());
 		
-		otModule* display3 = otFactory::getInstance()->create("ImageDisplay");
+		moModule* display3 = moFactory::getInstance()->create("ImageDisplay");
 		display3->property("name").set("Blobs");
 		display3->setInput(blob->getOutput());
 

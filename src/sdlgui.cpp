@@ -10,10 +10,10 @@
 
 #include "highgui.h"
 
-#include "otFactory.h"
-#include "otModule.h"
-#include "otPipeline.h"
-#include "otDataStream.h"
+#include "moFactory.h"
+#include "moModule.h"
+#include "moPipeline.h"
+#include "moDataStream.h"
 
 #define COLOR_WHITE		0xffffffff
 #define COLOR_BLACK		0x000000ff
@@ -102,7 +102,7 @@ public:
 		const SDL_VideoInfo *info = SDL_GetVideoInfo();
 		this->w = info->current_w;
 		this->h = info->current_h;
-		this->pipeline = new otPipeline();
+		this->pipeline = new moPipeline();
 		this->frametime = 0;
 		this->framecount = 0;
 		this->fps = 0;
@@ -201,9 +201,9 @@ public:
 		this->widgets_to_remove.push_back(widget);
 	}
 
-	otPipeline *pipeline;
+	moPipeline *pipeline;
 	std::vector<Widget *> widgets;
-	std::map<otModule *, Module*> mapping;
+	std::map<moModule *, Module*> mapping;
 	std::vector<Widget *> widgets_to_add;
 	std::vector<Widget *> widgets_to_remove;
 	int w;
@@ -245,10 +245,10 @@ public:
 
 };
 
-class otGuiDisplayModule : public otModule {
+class otGuiDisplayModule : public moModule {
 public:
-	otGuiDisplayModule() : otModule(OT_MODULE_INPUT, 1, 0) {
-		this->input = new otDataStream("stream");
+	otGuiDisplayModule() : moModule(MO_MODULE_INPUT, 1, 0) {
+		this->input = new moDataStream("stream");
 		this->output_buffer = NULL;
 	}
 
@@ -257,10 +257,10 @@ public:
 			cvReleaseImage(&this->output_buffer);
 			this->output_buffer = NULL;
 		}
-		otModule::stop();
+		moModule::stop();
 	}
 
-	void notifyData(otDataStream *source) {
+	void notifyData(moDataStream *source) {
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL )
 			return;
@@ -268,16 +268,16 @@ public:
 			this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
 	}
 
-	void setInput(otDataStream* stream, int n=0) {
+	void setInput(moDataStream* stream, int n=0) {
 		this->input = stream;
 		stream->addObserver(this);
 	}
 
-	virtual otDataStream *getInput(int n=0) {
+	virtual moDataStream *getInput(int n=0) {
 		return this->input;
 	}
 
-	virtual otDataStream *getOutput(int n=0) {
+	virtual moDataStream *getOutput(int n=0) {
 		return NULL;
 	}
 
@@ -297,7 +297,7 @@ public:
 	std::string getDescription() { return "Get image from an output for GUI"; }
 	std::string getAuthor() { return "sdlgui"; }
 
-	otDataStream *input;
+	moDataStream *input;
 	IplImage* output_buffer;
 };
 
@@ -305,7 +305,7 @@ class Module : public Widget {
 public:
 	Module(std::string name) {
 		this->name = name;
-		this->module = otFactory::getInstance()->create(name.c_str());
+		this->module = moFactory::getInstance()->create(name.c_str());
 
 		world->pipeline->addElement(this->module);
 		world->mapping[this->module] = this;
@@ -402,8 +402,8 @@ public:
 	}
 
 	virtual void draw_after() {
-		otDataStream *stream;
-		otModule *module;
+		moDataStream *stream;
+		moModule *module;
 		Module *g_module;
 		int k;
 		bool found;
@@ -547,7 +547,7 @@ public:
 
 
 	std::string name;
-	otModule *module;
+	moModule *module;
 	int input_selected;
 	int output_selected;
 	std::map<int, otGuiDisplayModule *> output_video;
@@ -594,7 +594,7 @@ void gui_createWorld() {
 	world->addWidget(bstart);
 
 	// ask factory availables 
-	std::vector<std::string> l = otFactory::getInstance()->list();
+	std::vector<std::string> l = moFactory::getInstance()->list();
 	std::vector<std::string>::iterator it;
 
 	y += 40;
@@ -629,7 +629,7 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	otFactory::init();
+	moFactory::init();
 
 	gui_createWorld();
 

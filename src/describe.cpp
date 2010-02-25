@@ -1,12 +1,12 @@
 #include <iostream>
 
-#include "otModule.h"
-#include "otFactory.h"
+#include "moModule.h"
+#include "moFactory.h"
 
 void describe(const char *name) {
-	otModule *module;
+	moModule *module;
 
-	module = otFactory::getInstance()->create(name);
+	module = moFactory::getInstance()->create(name);
 	if ( module == NULL ) {
 		std::cerr << "Error: unable to found object named <" << name << ">" << std::endl;
 		return;
@@ -19,7 +19,7 @@ void describe(const char *name) {
 
 int main(int argc, char **argv) {
 
-	otFactory::init();
+	moFactory::init();
 
 	if ( argc > 2 ) {
 		std::cout << "Usage: " << argv[0] << " [objectname]" << std::endl;
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 
 	if ( argc == 1 ) {
 		std::vector<std::string>::iterator it;
-		std::vector<std::string> list = otFactory::getInstance()->list();
+		std::vector<std::string> list = moFactory::getInstance()->list();
 		for ( it = list.begin(); it != list.end(); it++ )
 			describe(it->c_str());
 	} else {

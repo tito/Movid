@@ -73,7 +73,7 @@ class otModuleProxy(object):
         return "<"+self.type + "Module  properties=" + str(self.properties)+">"
 
 
-class OpenTrackerDaemon(object):
+class MovidDaemon(object):
 
     def __init__(self, daemon="http://127.0.0.1:7500"):
         self.daemon = daemon
@@ -94,7 +94,7 @@ class OpenTrackerDaemon(object):
         result =  json.loads( response )
         
         if result['success'] == 0:
-            raise Exception("OpenTracker Error: \n Message: %s"% result['message'])
+            raise Exception("Movid Error: \n Message: %s"% result['message'])
         
         if selection:
             return result[selection]
