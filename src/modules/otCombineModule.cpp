@@ -17,12 +17,12 @@ otCombineModule::otCombineModule() : otModule(OT_MODULE_INPUT|OT_MODULE_OUTPUT, 
 	this->need_update = false;
 
 	// declare outputs
-	this->output_names[0] = std::string("combine");
-	this->output_types[0] = std::string("IplImage");
-	this->input_names[0] = std::string("image1");
-	this->input_types[0] = std::string("IplImage");
-	this->input_names[1] = std::string("image2");
-	this->input_types[1] = std::string("IplImage");
+	this->input_infos[0] = new otDataStreamInfo(
+			"image1", "IplImage", "Background image");
+	this->input_infos[1] = new otDataStreamInfo(
+			"image2", "IplImage", "Image to combine to background (black is transparent)");
+	this->output_infos[1] = new otDataStreamInfo(
+			"combine", "IplImage", "Result of the combine");
 }
 
 otCombineModule::~otCombineModule() {

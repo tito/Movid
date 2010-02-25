@@ -72,45 +72,34 @@ bool otModule::isStarted() {
 	return this->is_started;
 }
 
-std::string otModule::getInputName(int n) {
-	std::map<int, std::string>::iterator it;
-	it = this->input_names.find(n);
-	if ( it == this->input_names.end() )
-		return "unamed";
+otDataStreamInfo *otModule::getInputInfos(int n) {
+	std::map<int, otDataStreamInfo*>::iterator it;
+	it = this->input_infos.find(n);
+	if ( it == this->input_infos.end() )
+		return NULL;
 	return it->second;
 }
 
-std::string otModule::getOutputName(int n) {
-	std::map<int, std::string>::iterator it;
-	it = this->output_names.find(n);
-	if ( it == this->output_names.end() )
-		return "unamed";
-	return it->second;
-}
-
-std::string otModule::getInputType(int n) {
-	std::map<int, std::string>::iterator it;
-	it = this->input_types.find(n);
-	if ( it == this->input_types.end() )
-		return "unamed";
-	return it->second;
-}
-
-std::string otModule::getOutputType(int n) {
-	std::map<int, std::string>::iterator it;
-	it = this->output_types.find(n);
-	if ( it == this->output_types.end() )
-		return "unamed";
+otDataStreamInfo *otModule::getOutputInfos(int n) {
+	std::map<int, otDataStreamInfo*>::iterator it;
+	it = this->output_infos.find(n);
+	if ( it == this->output_infos.end() )
+		return NULL;
 	return it->second;
 }
 
 otProperty &otModule::property(std::string str) {
-	static otProperty invalid(0);
 	std::map<std::string, otProperty*>::iterator it;
 	it = this->properties.find(str);
-	if ( it == this->properties.end() )
-		return invalid;
+	if ( it == this->properties.end() ) {
+		this->properties[str] = new otProperty("", "?? auto created ??");
+		return *(this->properties[str]);
+	}
 	return *it->second;
+}
+
+std::map<std::string, otProperty*> &otModule::getProperties() {
+	return this->properties;
 }
 
 void otModule::describe() {
@@ -143,8 +132,8 @@ void otModule::describe() {
 		std::cout << "Input :" << std::endl;
 		for ( int i = 0; i < this->getInputCount(); i++ ) {
 			std::cout << " " << i << ": name=" \
-				<< this->getInputName(i) << ", type=" \
-				<< this->getInputType(i) << std::endl;
+				<< this->getInputInfos(i)->getName() << ", type=" \
+				<< this->getInputInfos(i)->getType() << std::endl;
 		}
 	}
 
@@ -153,8 +142,8 @@ void otModule::describe() {
 		std::cout << "Output :" << std::endl;
 		for ( int i = 0; i < this->getOutputCount(); i++ ) {
 			std::cout << " " << i << ": name=" \
-				<< this->getOutputName(i) << ", type=" \
-				<< this->getOutputType(i) << std::endl;
+				<< this->getOutputInfos(i)->getName() << ", type=" \
+				<< this->getOutputInfos(i)->getType() << std::endl;
 		}
 	}
 

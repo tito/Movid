@@ -16,8 +16,8 @@ otImageModule::otImageModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 	this->stream = new otDataStream("IplImage");
 
 	// declare outputs
-	this->output_names[0] = std::string("Image");
-	this->output_types[0] = std::string("IplImage");
+	this->output_infos[1] = new otDataStreamInfo(
+			"image", "IplImage", "Image stream on a static image");
 
 	// declare properties
 	this->properties["filename"] = new otProperty("");

@@ -32,6 +32,8 @@
 	virtual std::string getAuthor();
 
 class otDataStream;
+class otDataStreamInfo;
+class otPipeline;
 
 enum {
 	OT_MODULE_NONE		= 0x00000000,
@@ -50,10 +52,8 @@ public:
 
 	virtual int getInputCount();
 	virtual int getOutputCount();
-	virtual std::string getInputName(int n=0);
-	virtual std::string getOutputName(int n=0);
-	virtual std::string getInputType(int n=0);
-	virtual std::string getOutputType(int n=0);
+	virtual otDataStreamInfo *getInputInfos(int n=0);
+	virtual otDataStreamInfo *getOutputInfos(int n=0);
 
 	virtual void notifyData(otDataStream *source);
 
@@ -65,6 +65,7 @@ public:
 	virtual bool isStarted();
 
 	otProperty &property(std::string name);
+	std::map<std::string, otProperty*> &getProperties();
 
 	unsigned int getCapabilities();
 
@@ -77,21 +78,20 @@ public:
 	void describe();
 	virtual bool isPipeline();
 	
-	// FIXME protect it
-	otModule *owner;
-	std::map<std::string, otProperty*> properties;
-
 private:
 	unsigned int capabilities;
 	bool is_started;
 
 protected:
+	otModule *owner;
 	int	input_count;
 	int	output_count;
-	std::map<int, std::string> input_types;
-	std::map<int, std::string> input_names;
-	std::map<int, std::string> output_types;
-	std::map<int, std::string> output_names;
+	std::map<int, otDataStreamInfo*> input_infos;
+	std::map<int, otDataStreamInfo*> output_infos;
+
+	std::map<std::string, otProperty*> properties;
+
+	friend class otPipeline;
 };
 
 #endif

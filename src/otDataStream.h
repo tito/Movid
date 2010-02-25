@@ -6,6 +6,34 @@
 
 class otModule;
 
+class otDataStreamInfo {
+public:
+	otDataStreamInfo(const std::string &name,
+					 const std::string &type,
+					 const std::string &description = "") {
+		this->name = name;
+		this->type = type;
+		this->description = description;
+	};
+
+	std::string getName() {
+		return this->name;
+	}
+
+	std::string getType() {
+		return this->type;
+	}
+
+	std::string getDescription() {
+		return this->description;
+	}
+
+protected:
+	std::string name;
+	std::string type;
+	std::string description;
+};
+
 class otDataStream {
 	
 public:

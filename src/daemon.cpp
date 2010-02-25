@@ -349,7 +349,7 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 		cJSON_AddNumberToObject(mod, "running", module->isStarted() ? 1 : 0);
 		cJSON_AddItemToObject(mod, "properties", properties=cJSON_CreateObject());
 
-		for ( it = module->properties.begin(); it != module->properties.end(); it++ ) {
+		for ( it = module->getProperties().begin(); it != module->getProperties().end(); it++ ) {
 			cJSON_AddStringToObject(properties, it->first.c_str(),
 					it->second->asString().c_str());
 		}
@@ -360,8 +360,8 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 				ds = module->getInput(i);
 				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 				cJSON_AddNumberToObject(io, "index", i);
-				cJSON_AddStringToObject(io, "name", module->getInputName(i).c_str());
-				cJSON_AddStringToObject(io, "type", module->getInputType(i).c_str());
+				cJSON_AddStringToObject(io, "name", module->getInputInfos(i)->getName().c_str());
+				cJSON_AddStringToObject(io, "type", module->getInputInfos(i)->getType().c_str());
 				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
 			}
 		}
@@ -372,8 +372,8 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 				ds = module->getOutput(i);
 				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 				cJSON_AddNumberToObject(io, "index", i);
-				cJSON_AddStringToObject(io, "name", module->getOutputName(i).c_str());
-				cJSON_AddStringToObject(io, "type", module->getOutputType(i).c_str());
+				cJSON_AddStringToObject(io, "name", module->getOutputInfos(i)->getName().c_str());
+				cJSON_AddStringToObject(io, "type", module->getOutputInfos(i)->getType().c_str());
 				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
 				cJSON_AddItemToObject(io, "observers", observers=cJSON_CreateObject());
 				if ( ds != NULL ) {
@@ -440,7 +440,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 	cJSON_AddNumberToObject(mod, "running", module->isStarted() ? 1 : 0);
 	cJSON_AddItemToObject(mod, "properties", properties=cJSON_CreateObject());
 
-	for ( it = module->properties.begin(); it != module->properties.end(); it++ ) {
+	for ( it = module->getProperties().begin(); it != module->getProperties().end(); it++ ) {
 		cJSON_AddStringToObject(properties, it->first.c_str(),
 				it->second->asString().c_str());
 	}
@@ -451,8 +451,8 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 			ds = module->getInput(i);
 			cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 			cJSON_AddNumberToObject(io, "index", i);
-			cJSON_AddStringToObject(io, "name", module->getInputName(i).c_str());
-			cJSON_AddStringToObject(io, "type", module->getInputType(i).c_str());
+			cJSON_AddStringToObject(io, "name", module->getInputInfos(i)->getName().c_str());
+			cJSON_AddStringToObject(io, "type", module->getInputInfos(i)->getType().c_str());
 		}
 	}
 
@@ -462,8 +462,8 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 			ds = module->getOutput(i);
 			cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 			cJSON_AddNumberToObject(io, "index", i);
-			cJSON_AddStringToObject(io, "name", module->getOutputName(i).c_str());
-			cJSON_AddStringToObject(io, "type", module->getOutputType(i).c_str());
+			cJSON_AddStringToObject(io, "name", module->getOutputInfos(i)->getName().c_str());
+			cJSON_AddStringToObject(io, "type", module->getOutputInfos(i)->getType().c_str());
 		}
 	}
 

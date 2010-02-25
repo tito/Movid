@@ -14,10 +14,8 @@ otImageFilterModule::otImageFilterModule() :
 	this->need_update = false; //dont update until we get data
 
 	// declare input/output
-	this->input_names[0] = std::string("image");
-	this->input_types[0] = std::string("IplImage");
-	this->output_names[0] = std::string("image");
-	this->output_types[0] = std::string("IplImage");
+	this->input_infos[0] = new otDataStreamInfo("image", "IplImage", "Input image stream");
+	this->output_infos[0] = new otDataStreamInfo("image", "IplImage", "Output image stream");
 }
 
 otImageFilterModule::~otImageFilterModule() {

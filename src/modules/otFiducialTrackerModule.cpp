@@ -28,8 +28,7 @@ otFiducialTrackerModule::otFiducialTrackerModule() : otImageFilterModule() {
 
 	this->output_data = new otDataStream("otDataGenericList");
 	this->output_count = 2;
-	this->output_names[1] = std::string("data");
-	this->output_types[1] = std::string("otDataGenericList");
+	this->output_infos[1] = new otDataStreamInfo("data", "otDataGenericList", "Data stream with touch container");
 
 	this->internal = malloc(sizeof(fiducials_data_t));
 }

@@ -69,20 +69,12 @@ int otPipeline::getOutputCount() {
 	return this->lastModule()->getOutputCount();
 }
 
-std::string otPipeline::getInputName(int n) {
-	return this->firstModule()->getInputName(n);
+otDataStreamInfo *otPipeline::getInputInfos(int n) {
+	return this->firstModule()->getInputInfos(n);
 }
 
-std::string otPipeline::getOutputName(int n) {
-	return this->lastModule()->getOutputName(n);
-}
-
-std::string otPipeline::getInputType(int n) {
-	return this->firstModule()->getInputType(n);
-}
-
-std::string otPipeline::getOutputType(int n) {
-	return this->lastModule()->getOutputType(n);
+otDataStreamInfo *otPipeline::getOutputInfos(int n) {
+	return this->lastModule()->getOutputInfos(n);
 }
 
 void otPipeline::start() {

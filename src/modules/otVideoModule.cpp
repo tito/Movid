@@ -14,8 +14,7 @@ otVideoModule::otVideoModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 	this->stream = new otDataStream("IplImage");
 
 	// declare outputs
-	this->output_names[0] = std::string("video");
-	this->output_types[0] = std::string("IplImage");
+	this->output_infos[0] = new otDataStreamInfo("video", "IplImage", "Video image stream");
 
 	// declare properties
 	this->properties["filename"] = new otProperty("");

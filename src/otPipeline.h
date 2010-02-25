@@ -19,10 +19,8 @@ public:
 
 	virtual int getInputCount();
 	virtual int getOutputCount();
-	virtual std::string getInputName(int n=0);
-	virtual std::string getOutputName(int n=0);
-	virtual std::string getInputType(int n=0);
-	virtual std::string getOutputType(int n=0);
+	virtual otDataStreamInfo *getInputInfos(int n=0);
+	virtual otDataStreamInfo *getOutputInfos(int n=0);
 
 	virtual void start();
 	virtual void stop();

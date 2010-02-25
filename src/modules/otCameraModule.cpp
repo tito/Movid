@@ -16,8 +16,8 @@ otCameraModule::otCameraModule() : otModule(OT_MODULE_OUTPUT, 0, 1) {
 	this->stream = new otDataStream("IplImage");
 
 	// declare outputs
-	this->output_names[0] = std::string("camera");
-	this->output_types[0] = std::string("IplImage");
+	this->output_infos[0] = new otDataStreamInfo(
+			"camera", "IplImage", "Image stream of the camera");
 
 	// declare properties
 	this->properties["index"] = new otProperty(0);
