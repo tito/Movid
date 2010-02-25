@@ -1,0 +1,28 @@
+#
+# Fiducial test on camera
+#
+
+# create defaults objects
+pipeline create Camera camera
+pipeline create GrayScale gray
+pipeline create Threshold threshold
+pipeline create Smooth smooth
+pipeline create FiducialTracker tracker
+
+# do connections
+pipeline connect camera 0 smooth 0
+pipeline connect smooth 0 gray 0
+pipeline connect gray 0 threshold 0
+pipeline connect threshold 0 tracker 0
+
+# debug
+#pipeline create Dump dump
+#pipeline connect tracker 1 dump 0
+
+# combine image source with image from tracker
+# and show in a window
+pipeline create ImageDisplay display
+pipeline create Combine combine
+pipeline connect camera 0 combine 0
+pipeline connect tracker 0 combine 1
+pipeline connect combine 0 display 0
