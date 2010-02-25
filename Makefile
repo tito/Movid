@@ -69,6 +69,9 @@ daemon: contribs static src/daemon.cpp
 contribs:
 	${MAKE} -C contrib
 
+doc:
+	${MAKE} -C docs
+
 # how to build stuff in SRC_DIR
 ${BIN_DIR}/%.o : ${SRC_DIR}/%.cpp
 	${CXX} ${ALL_CFLAGS} -c $< -o $@
