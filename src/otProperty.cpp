@@ -5,64 +5,85 @@
 
 #define CASTEDGET(x) x value = *(static_cast<x*>(this->val));
 
-otProperty::otProperty(bool value) {
-	this->val = NULL;
+otProperty::otProperty(bool value, const std::string &description) {
+	this->init(description);
 	this->type = OT_PROPERTY_NONE;
 	this->set(value);
 }
 
-otProperty::otProperty(const char* value) {
-	this->val = NULL;
+otProperty::otProperty(const char* value, const std::string &description) {
+	this->init(description);
 	this->type = OT_PROPERTY_NONE;
 	this->set(value);
 }
 
-otProperty::otProperty(std::string value) {
-	this->val = NULL;
+otProperty::otProperty(std::string value, const std::string &description) {
+	this->init(description);
 	this->type = OT_PROPERTY_NONE;
 	this->set(value);
 }
 
-otProperty::otProperty(int value) {
-	this->val = NULL;
+otProperty::otProperty(int value, const std::string &description) {
+	this->init(description);
 	this->type = OT_PROPERTY_NONE;
 	this->set(value);
 }
 
-otProperty::otProperty(double value) {
-	this->val = NULL;
+otProperty::otProperty(double value, const std::string &description) {
+	this->init(description);
 	this->type = OT_PROPERTY_NONE;
 	this->set(value);
+}
+
+void otProperty::init(const std::string &description) {
+	this->readonly = false;
+	this->val = NULL;
+	this->setDescription(description);
 }
 
 void otProperty::set(bool value) {
+	if ( this->isReadOnly() )
+		return;
 	this->free();
 	this->type = OT_PROPERTY_BOOL;
 	this->val = new bool(value);
+	this->setDescription(description);
 }
 
 void otProperty::set(const char* value) {
+	if ( this->isReadOnly() )
+		return;
 	this->free();
 	this->type = OT_PROPERTY_STRING;
 	this->val = new std::string(value);
+	this->setDescription(description);
 }
 
 void otProperty::set(std::string value) {
+	if ( this->isReadOnly() )
+		return;
 	this->free();
 	this->type = OT_PROPERTY_STRING;
 	this->val = new std::string(value);
+	this->setDescription(description);
 }
 
 void otProperty::set(int value) {
+	if ( this->isReadOnly() )
+		return;
 	this->free();
 	this->type = OT_PROPERTY_INTEGER;
 	this->val = new int(value);
+	this->setDescription(description);
 }
 
 void otProperty::set(double value) {
+	if ( this->isReadOnly() )
+		return;
 	this->free();
 	this->type = OT_PROPERTY_DOUBLE;
 	this->val = new double(value);
+	this->setDescription(description);
 }
 
 otProperty::~otProperty() {
@@ -241,3 +262,18 @@ std::ostream& operator<< (std::ostream& o, const otProperty& p) {
 	return o;
 }
 
+std::string otProperty::getDescription() {
+	return this->description;
+}
+
+void otProperty::setDescription(const std::string& description) {
+	this->description = description;
+}
+
+bool otProperty::isReadOnly() {
+	return this->readonly;
+}
+
+void otProperty::setReadOnly(bool ro) {
+	this->readonly = ro;
+}

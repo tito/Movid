@@ -14,14 +14,20 @@ typedef enum _otPropertyType {
 
 class otProperty {
 public:
-	otProperty(bool value);
-	otProperty(const char* value);
-	otProperty(std::string value);
-	otProperty(int value);
-	otProperty(double value);
+	otProperty(bool value, const std::string &description = "");
+	otProperty(const char* value, const std::string &description = "");
+	otProperty(std::string value, const std::string &description = "");
+	otProperty(int value, const std::string &description = "");
+	otProperty(double value, const std::string &description = "");
 	~otProperty();
 	
 	otPropertyType getType();
+
+	void setDescription(const std::string& desc);
+	std::string getDescription();
+
+	void setReadOnly(bool);
+	bool isReadOnly();
 	
 	bool asBool();
 	std::string asString();
@@ -41,9 +47,12 @@ public:
 private:
 	otProperty(const otProperty& property);
 	otPropertyType type;
+	std::string description;
 	void* val;
+	bool readonly;
 	
 	void free();
+	void init(const std::string& description);
 };
 
 #endif
