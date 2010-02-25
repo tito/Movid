@@ -16,7 +16,7 @@ moImageModule::moImageModule() : moModule(MO_MODULE_OUTPUT, 0, 1) {
 	this->stream = new moDataStream("IplImage");
 
 	// declare outputs
-	this->output_infos[1] = new moDataStreamInfo(
+	this->output_infos[0] = new moDataStreamInfo(
 			"image", "IplImage", "Image stream on a static image");
 
 	// declare properties

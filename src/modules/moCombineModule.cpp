@@ -21,7 +21,7 @@ moCombineModule::moCombineModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT, 
 			"image1", "IplImage", "Background image");
 	this->input_infos[1] = new moDataStreamInfo(
 			"image2", "IplImage", "Image to combine to background (black is transparent)");
-	this->output_infos[1] = new moDataStreamInfo(
+	this->output_infos[0] = new moDataStreamInfo(
 			"combine", "IplImage", "Result of the combine");
 }
 

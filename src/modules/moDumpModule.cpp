@@ -9,6 +9,7 @@ MODULE_DECLARE(Dump, "native", "Dump all data informations in console");
 
 moDumpModule::moDumpModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 	this->stream = NULL;
+	this->input_infos[0] = new moDataStreamInfo("data", "*", "Show any data input in text format");
 }
 
 moDumpModule::~moDumpModule() {

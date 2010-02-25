@@ -133,7 +133,8 @@ void moModule::describe() {
 		for ( int i = 0; i < this->getInputCount(); i++ ) {
 			std::cout << " " << i << ": name=" \
 				<< this->getInputInfos(i)->getName() << ", type=" \
-				<< this->getInputInfos(i)->getType() << std::endl;
+				<< this->getInputInfos(i)->getType() << ", desc=" \
+				<< this->getInputInfos(i)->getDescription() << std::endl;
 		}
 	}
 
@@ -143,7 +144,8 @@ void moModule::describe() {
 		for ( int i = 0; i < this->getOutputCount(); i++ ) {
 			std::cout << " " << i << ": name=" \
 				<< this->getOutputInfos(i)->getName() << ", type=" \
-				<< this->getOutputInfos(i)->getType() << std::endl;
+				<< this->getOutputInfos(i)->getType() << ", desc=" \
+				<< this->getOutputInfos(i)->getDescription() << std::endl;
 		}
 	}
 
