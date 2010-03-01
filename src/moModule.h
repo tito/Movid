@@ -240,7 +240,7 @@ protected:
 	static std::string createId(std::string base);
 
 
-
+	friend class moDataStream;
 	friend class moPipeline;
 };
 

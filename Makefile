@@ -4,6 +4,7 @@ LIBEVENT_PATH = ${CONTRIB_PATH}/libevent-1.4.13-stable
 LIBCJSON_PATH = ${CONTRIB_PATH}/cJSON
 LIBJPEG_PATH = ${CONTRIB_PATH}/jpeg-8
 LIBFIDTRACK_PATH = ${CONTRIB_PATH}/libfidtrack
+WOSCLIB_PATH = ${CONTRIB_PATH}/WOscLib-00.09
 
 #stuff we need to compile
 TRACKER_BIN = tracker
@@ -16,7 +17,9 @@ LIBEVENT_CFLAGS = -I${LIBEVENT_PATH}
 LIBJPEG_LIBS = ${LIBJPEG_PATH}/.libs/libjpeg.a
 LIBJPEG_CFLAGS = -I${LIBJPEG_PATH}
 LIBCJSON_CFLAGS = -I${LIBCJSON_PATH}
-LIBFIDTRACK_LIBS = ${CONTRIB_PATH}/libfidtrack/libfidtrack.a
+LIBFIDTRACK_LIBS = ${LIBFIDTRACK_PATH}/libfidtrack.a
+WOSCLIB_CFLAGS = -I${WOSCLIB_PATH}
+WOSCLIB_LIBS = ${WOSCLIB_PATH}/libwosclib.a
 
 LIBMOVID_STATIC = libmovid.a
 
@@ -26,7 +29,7 @@ OBJ = moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
 	  moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \
 	  moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
 	  moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
-	  moImageModule.o
+	  moImageModule.o moOSC.o
 
 #where the source is, and where to put the object files
 SRC_DIR = src
@@ -40,9 +43,9 @@ LIBS   ?=
 OPENCV_CFLAGS ?= `pkg-config --cflags opencv`
 OPENCV_LIBS   ?= `pkg-config --libs opencv`
 
-ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS}
+ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS} ${WOSCLIB_CFLAGS}
 ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}
-ALL_LIBS_STATIC = ${LIBMOVID_STATIC} ${LIBFIDTRACK_LIBS}
+ALL_LIBS_STATIC = ${LIBMOVID_STATIC} ${LIBFIDTRACK_LIBS} ${WOSCLIB_LIBS}
 
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
