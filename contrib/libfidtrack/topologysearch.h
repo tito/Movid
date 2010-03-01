@@ -33,7 +33,7 @@ extern "C"
 
 #define LEAF_LEVEL              (0)
 #define LEAF_CONTAINER_LEVEL    (1)
-#define ROMO_LEVEL              (2)     /* container of leaf containers */
+#define ROOT_LEVEL              (2)     /* container of leaf containers */
 #define UNKNOWN_LEVEL           (-1)
 #define DISCARDED_LEVEL         (-2)    /* sentinel level for leafs we want to ignore */
 

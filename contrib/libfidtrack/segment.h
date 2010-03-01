@@ -49,7 +49,7 @@ extern "C"
 
 #define FREE_REGION_FLAG                (1)
 
-#define ADJACENT_TO_ROMO_REGION_FLAG    (2)
+#define ADJACENT_TO_ROOT_REGION_FLAG    (2)
 
 /*
     saturated regions are those whose adjacency list became full and other nodes
