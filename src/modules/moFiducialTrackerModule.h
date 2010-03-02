@@ -11,7 +11,7 @@ public:
 	virtual moDataStream *getOutput(int n=0);
 	
 protected:
-	otDataGenericList fiducials;
+	moDataGenericList fiducials;
 	moDataStream *output_data;
 	
 	void applyFilter();	

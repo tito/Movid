@@ -29,7 +29,7 @@ OBJ = moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
 	  moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \
 	  moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
 	  moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
-	  moImageModule.o moOSC.o
+	  moImageModule.o moOSC.o moTuioModule.o
 
 #where the source is, and where to put the object files
 SRC_DIR = src

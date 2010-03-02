@@ -16,7 +16,7 @@ protected:
 	CvBlobSeq* new_blobs;
 	CvBlobSeq* old_blobs;
 	CvBlobTrackerAuto* tracker;	
-	otDataGenericList blobs;
+	moDataGenericList blobs;
 	moDataStream *output_data;
 	
 	void applyFilter();	

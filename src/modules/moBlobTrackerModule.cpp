@@ -57,9 +57,9 @@ MODULE_DECLARE(BlobTracker, "native", "Tracks Blobs");
 moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	MODULE_INIT();
 
-	this->output_data = new moDataStream("otDataGenericList");
+	this->output_data = new moDataStream("moDataGenericList");
 	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "otDataGenericList", "Data stream with touch container");
+	this->output_infos[1] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with touch container");
 
 	this->next_id = 1;
 	this->new_blobs = new CvBlobSeq();
@@ -77,7 +77,7 @@ moBlobTrackerModule::~moBlobTrackerModule() {
 }
 
 void moBlobTrackerModule::clearBlobs() {
-	otDataGenericList::iterator it;
+	moDataGenericList::iterator it;
 	for ( it = this->blobs.begin(); it != this->blobs.end(); it++ )
 		delete (*it);
 	this->blobs.clear();

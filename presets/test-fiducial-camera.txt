@@ -26,3 +26,6 @@ pipeline create Combine combine
 pipeline connect camera 0 combine 0
 pipeline connect tracker 0 combine 1
 pipeline connect combine 0 display 0
+
+pipeline create Tuio tuio
+pipeline connect tracker 1 tuio 0

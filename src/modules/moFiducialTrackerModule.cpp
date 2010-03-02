@@ -26,9 +26,9 @@ typedef struct {
 moFiducialTrackerModule::moFiducialTrackerModule() : moImageFilterModule() {
 	MODULE_INIT();
 
-	this->output_data = new moDataStream("otDataGenericList");
+	this->output_data = new moDataStream("moDataGenericList");
 	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "otDataGenericList", "Data stream with touch container");
+	this->output_infos[1] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with touch container");
 
 	this->internal = malloc(sizeof(fiducials_data_t));
 }
@@ -37,7 +37,7 @@ moFiducialTrackerModule::~moFiducialTrackerModule() {
 }
 
 void moFiducialTrackerModule::clearFiducials() {
-	otDataGenericList::iterator it;
+	moDataGenericList::iterator it;
 	for ( it = this->fiducials.begin(); it != this->fiducials.end(); it++ )
 		delete (*it);
 	this->fiducials.clear();
@@ -73,6 +73,7 @@ void moFiducialTrackerModule::applyFilter() {
 	FiducialX *fdx;
 	int fid_count, valid_fiducials = 0;
 	bool do_image = this->output->getObserverCount() > 0 ? true : false;
+	CvSize size = cvGetSize(src);
 
 	CvFont font;
 	cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 1.0, 1.0, 0, 2);
@@ -110,8 +111,8 @@ void moFiducialTrackerModule::applyFilter() {
 		fiducial = new moDataGenericContainer();
 		fiducial->properties["type"] = new moProperty("fiducial");
 		fiducial->properties["id"] = new moProperty(fdx->id);
-		fiducial->properties["x"] = new moProperty(fdx->x);
-		fiducial->properties["y"] = new moProperty(fdx->y);
+		fiducial->properties["x"] = new moProperty(fdx->x / size.width);
+		fiducial->properties["y"] = new moProperty(fdx->y / size.height);
 		fiducial->properties["angle"] = new moProperty(fdx->angle);
 		fiducial->properties["leaf_size"] = new moProperty(fdx->leaf_size);
 		fiducial->properties["root_size"] = new moProperty(fdx->root_size);
