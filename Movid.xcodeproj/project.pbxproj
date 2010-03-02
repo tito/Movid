@@ -18,6 +18,17 @@
 
 /* Begin PBXFileReference section */
 		0156A990112AAA8B00E6063F /* describe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = describe.cpp; sourceTree = "<group>"; };
+		1215EEAC113DCCB200AF1E5B /* gui.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = gui.css; sourceTree = "<group>"; };
+		1215EEAD113DCCB200AF1E5B /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		1215EEAE113DCCB200AF1E5B /* jquery.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.js; sourceTree = "<group>"; };
+		1215EEAF113DCCB200AF1E5B /* mo.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = mo.js; sourceTree = "<group>"; };
+		1215EEB0113DCCB200AF1E5B /* nostream.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nostream.png; sourceTree = "<group>"; };
+		1215EEB1113DCCB200AF1E5B /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
+		1215EEB2113DCCB200AF1E5B /* test-stream.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = "test-stream.html"; sourceTree = "<group>"; };
+		1215EEB4113DCCB200AF1E5B /* arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow.png; sourceTree = "<group>"; };
+		1215EEB5113DCCB200AF1E5B /* pymt-gui.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = "pymt-gui.py"; sourceTree = "<group>"; };
+		1215EEB6113DCCB200AF1E5B /* pyot.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = pyot.py; sourceTree = "<group>"; };
+		1215EEB7113DCCB200AF1E5B /* pyot.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = pyot.pyc; sourceTree = "<group>"; };
 		128298C9112AA57C0078B03F /* blobtracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = blobtracker.cpp; sourceTree = "<group>"; };
 		12AF438E112A5ED0001C2529 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		12C74398113C7C4C00BC55DF /* moDaemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moDaemon.cpp; sourceTree = "<group>"; };
@@ -769,8 +780,6 @@
 		12C746A4113C7E6D00BC55DF /* doxygen.config */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = doxygen.config; sourceTree = "<group>"; };
 		12C746A5113C7E6D00BC55DF /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		12C746D8113C833500BC55DF /* dsi.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = dsi.txt; sourceTree = "<group>"; };
-		12D789B9112E46BE0051E2CA /* pymt-gui.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = "pymt-gui.py"; path = "gui/pymt-gui.py"; sourceTree = "<group>"; };
-		12D78A08112E688F0051E2CA /* pyot.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; name = pyot.py; path = gui/pyot.py; sourceTree = "<group>"; };
 		12E1F755112DE43500D24FA4 /* daemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = daemon.cpp; sourceTree = "<group>"; };
 		12E1F81F112DE9DB00D24FA4 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		12F6728F112F000500456186 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
@@ -793,6 +802,40 @@
 				12F85BC911274A9900C13390 /* src */,
 			);
 			name = Movid;
+			sourceTree = "<group>";
+		};
+		1215EEAA113DCCB200AF1E5B /* gui */ = {
+			isa = PBXGroup;
+			children = (
+				1215EEAB113DCCB200AF1E5B /* html */,
+				1215EEB3113DCCB200AF1E5B /* pymt */,
+			);
+			path = gui;
+			sourceTree = "<group>";
+		};
+		1215EEAB113DCCB200AF1E5B /* html */ = {
+			isa = PBXGroup;
+			children = (
+				1215EEAC113DCCB200AF1E5B /* gui.css */,
+				1215EEAD113DCCB200AF1E5B /* index.html */,
+				1215EEAE113DCCB200AF1E5B /* jquery.js */,
+				1215EEAF113DCCB200AF1E5B /* mo.js */,
+				1215EEB0113DCCB200AF1E5B /* nostream.png */,
+				1215EEB1113DCCB200AF1E5B /* README */,
+				1215EEB2113DCCB200AF1E5B /* test-stream.html */,
+			);
+			path = html;
+			sourceTree = "<group>";
+		};
+		1215EEB3113DCCB200AF1E5B /* pymt */ = {
+			isa = PBXGroup;
+			children = (
+				1215EEB4113DCCB200AF1E5B /* arrow.png */,
+				1215EEB5113DCCB200AF1E5B /* pymt-gui.py */,
+				1215EEB6113DCCB200AF1E5B /* pyot.py */,
+				1215EEB7113DCCB200AF1E5B /* pyot.pyc */,
+			);
+			path = pymt;
 			sourceTree = "<group>";
 		};
 		12C7439E113C7C4C00BC55DF /* modules */ = {
@@ -1737,8 +1780,7 @@
 		12D789DC112E49770051E2CA /* gui */ = {
 			isa = PBXGroup;
 			children = (
-				12D78A08112E688F0051E2CA /* pyot.py */,
-				12D789B9112E46BE0051E2CA /* pymt-gui.py */,
+				1215EEAA113DCCB200AF1E5B /* gui */,
 			);
 			name = gui;
 			sourceTree = "<group>";
