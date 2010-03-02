@@ -17,7 +17,7 @@ public:
 	std::map<std::string, moProperty*> properties;
 };
 
-typedef std::vector<moDataGenericContainer *> otDataGenericList;
+typedef std::vector<moDataGenericContainer *> moDataGenericList;
 
 #endif
 

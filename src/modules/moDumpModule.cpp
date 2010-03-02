@@ -44,8 +44,8 @@ void moDumpModule::notifyData(moDataStream *stream) {
 		return;
 	}
 
-	if ( stream->getFormat() == "otDataGenericList" ) {
-		otDataGenericList *list = static_cast<otDataGenericList*>(stream->getData());
+	if ( stream->getFormat() == "moDataGenericList" ) {
+		moDataGenericList *list = static_cast<moDataGenericList*>(stream->getData());
 		LOG(INFO) << " `- DataGenericList size=" << list->size();
 	}
 }

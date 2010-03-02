@@ -28,6 +28,7 @@ void moFactory::init() {
 	REGISTER_MODULE(MirrorImage);
 	REGISTER_MODULE(Smooth);
 	REGISTER_MODULE(Threshold);
+	REGISTER_MODULE(Tuio);
 	REGISTER_MODULE(Video);
 	LOG(INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }
