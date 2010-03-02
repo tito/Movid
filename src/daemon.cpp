@@ -893,7 +893,7 @@ int main(int argc, char **argv) {
 
 		evhttp_set_cb(server, "/gui/index.html", web_file, (void*)"gui/html/index.html");
 		evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)"gui/html/jquery.js");
-		evhttp_set_cb(server, "/gui/ot.js", web_file, (void*)"gui/html/ot.js");
+		evhttp_set_cb(server, "/gui/mo.js", web_file, (void*)"gui/html/mo.js");
 		evhttp_set_cb(server, "/gui/gui.css", web_file, (void*)"gui/html/gui.css");
 		evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)"gui/html/nostream.png");
 	}
