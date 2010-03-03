@@ -26,9 +26,9 @@ typedef struct {
 moFiducialTrackerModule::moFiducialTrackerModule() : moImageFilterModule() {
 	MODULE_INIT();
 
-	this->output_data = new moDataStream("moDataGenericList");
+	this->output_data = new moDataStream("GenericFiducial");
 	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with touch container");
+	this->output_infos[1] = new moDataStreamInfo("data", "GenericFiducial", "Data stream with fiducial info");
 
 	this->internal = malloc(sizeof(fiducials_data_t));
 }

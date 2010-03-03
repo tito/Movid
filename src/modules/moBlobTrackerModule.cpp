@@ -57,9 +57,9 @@ MODULE_DECLARE(BlobTracker, "native", "Tracks Blobs");
 moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	MODULE_INIT();
 
-	this->output_data = new moDataStream("moDataGenericList");
+	this->output_data = new moDataStream("GenericTouch");
 	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with touch container");
+	this->output_infos[1] = new moDataStreamInfo("data", "GenericTouch", "Data stream with touch info");
 
 	this->next_id = 1;
 	this->new_blobs = new CvBlobSeq();
@@ -94,6 +94,7 @@ void moBlobTrackerModule::applyFilter() {
 	IplImage* src = (IplImage*)(this->input->getData());
 	IplImage* fg_map = NULL;
 	assert( src != NULL );
+	CvSize size = cvGetSize(src);
 
 	this->tracker->Process(src, fg_map);
 	
@@ -119,8 +120,8 @@ void moBlobTrackerModule::applyFilter() {
 		moDataGenericContainer *touch = new moDataGenericContainer();
 		touch->properties["type"] = new moProperty("touch");
 		touch->properties["id"] = new moProperty(pB->ID);
-		touch->properties["x"] = new moProperty(pB->x);
-		touch->properties["y"] = new moProperty(pB->y);
+		touch->properties["x"] = new moProperty(pB->x / size.width);
+		touch->properties["y"] = new moProperty(pB->y / size.height);
 		touch->properties["w"] = new moProperty(pB->w);
 		touch->properties["h"] = new moProperty(pB->h);
 		this->blobs.push_back(touch);
