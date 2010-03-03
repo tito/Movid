@@ -1,19 +1,16 @@
 #include <iostream>
 #include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#ifdef WIN32
-// TODO
-#else
-#ifdef LINUX
-// TODO
-#else
-// OTHERS
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#endif // ifdef LINUX
+
+#ifdef _WIN32
+	#include <WinSock2.h>
+	#include <ws2ipdef.h>
+	#define ssize_t SSIZE_T
+	#define close(s) shutdown(s, SD_BOTH)
+#else // OTHERS
+   #include <sys/types.h>
+   #include <sys/socket.h>
+   #include <netinet/in.h>
+   #include <arpa/inet.h>
 #endif // ifdef WIN32
 
 #include "moOSC.h"

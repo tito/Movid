@@ -8,6 +8,7 @@
 #define LOG_DECLARE(x) \
 	static char log_name[] = x;
 
+#define MO_0 MO_ERROR //wtf windows?
 #define LOG(x) moLogMessage(log_name, __FILE__, __LINE__, MO_##x).get()
 #define LOGX(x) moLogMessage(this->getName(), __FILE__, __LINE__, MO_##x).get()
 #define LOGM(x) LOG(x) << "<" << this->property("id").asString() << "> "

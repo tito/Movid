@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include "moProperty.h"
 
+#ifdef _WIN32
+	#define snprintf _snprintf
+#endif
+
 #define CASTEDGET(x) x value = *(static_cast<x*>(this->val));
 
 moProperty::moProperty(bool value, const std::string &description) {

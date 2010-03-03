@@ -27,7 +27,7 @@ extern "C"
 #endif /* __cplusplus */
 
 const int default_tree_length = 216;
-const char* default_tree[default_tree_length] = {
+const char* default_tree[216] = {
 "w0122222212212121111",
 "w0122212221222121111",
 "w0122212221221221111",

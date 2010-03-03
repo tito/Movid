@@ -33,7 +33,7 @@ void dump_graph( const char *fileName, Segmenter *s )
     // we depend on the segmenter initializing certain region fields for us
     // check that here
 #ifndef NDEBUG
-    sanity_check_region_initial_values( s );
+//    sanity_check_region_initial_values( s );
 #endif
 
     // find fiducial roots beginning at leafs
