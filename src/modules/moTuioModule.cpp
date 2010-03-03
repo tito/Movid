@@ -1,3 +1,29 @@
+//
+// TUIO Module, supporting GenericTouch and GenericFiducial 
+//
+// Specifications : http://tuio.org/?specification
+//
+// Currently implemented :
+// 2D Interactive Surface
+//
+//  /tuio/2Dobj set s i x y a X Y A m r
+//  /tuio/2Dcur set s x y X Y m
+//
+// Table 1: semantic types of set messages
+// s 		Session ID (temporary object ID) 	int32
+// i 		Class ID (e.g. marker ID) 			int32
+// x, y, z 	Position 							float32, range 0...1
+// a, b, c 	Angle 								float32, range 0..2PI
+// w, h, d 	Dimension 							float32, range 0..1
+// f, v 	Area, Volume 						float32, range 0..1
+// X, Y ,Z 	Velocity vector (motion speed & direction) 	float32
+// A, B, C 	Rotation velocity vector (rotation speed & direction) 	float32
+// m 		Motion acceleration 				float32
+// r 		Rotation acceleration 				float32
+// P 		Free parameter 						type defined by OSC message header
+
+
+
 #include <sstream>
 #include <assert.h>
 
@@ -6,7 +32,7 @@
 #include "../moDataStream.h"
 #include "../moOSC.h"
 
-MODULE_DECLARE(Tuio, "native", "Convert stream to TUIO format (touch & objects)");
+MODULE_DECLARE(Tuio, "native", "Convert stream to TUIO format (touch & fiducial)");
 
 moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 
@@ -41,61 +67,93 @@ void moTuioModule::stop() {
 }
 
 void moTuioModule::notifyData(moDataStream *input) {
-	// ensure that input data is IfiImage
+	WOscBundle	*bundle = NULL;
+
 	assert( input != NULL );
 	assert( input == this->input );
-	assert( input->getFormat() == "moDataGenericList" );
 
 	// out input have been updated !
 	this->input->lock();
 
-	WOscBundle	*bundle = new WOscBundle();
+	if ( input->getFormat() == "GenericFiducial" ) {
 
-	// TODO OPTIMIZE PROCESS !!!
-	//
-	// PHASE 1: objects
-	//
+		bundle = new WOscBundle();
+		WOscMessage *msg = new WOscMessage("/tuio/2Dobj");
+		msg->Add("alive");
 
-	WOscMessage *msg = new WOscMessage("/tuio/2Dobj");
-	msg->Add("alive");
+		moDataGenericList::iterator it;
+		moDataGenericList *list = (moDataGenericList *)this->input->getData();
+		for ( it = list->begin(); it != list->end(); it++ ) {
+			assert((*it)->properties["type"]->asString() == "fiducial");
+			msg->Add((*it)->properties["id"]->asString().c_str());
+		}
 
-	moDataGenericList::iterator it;
-	moDataGenericList *list = (moDataGenericList *)this->input->getData();
-	for ( it = list->begin(); it != list->end(); it++ ) {
-		if ( (*it)->properties["type"]->asString() != "fiducial" )
-			continue;
-		msg->Add((*it)->properties["id"]->asString().c_str());
-	}
-
-	bundle->Add(msg);
-
-	for ( it = list->begin(); it != list->end(); it++ ) {
-		if ( (*it)->properties["type"]->asString() != "fiducial" )
-			continue;
-		msg = new WOscMessage("/tuio/2Dobj");
-		msg->Add("set");
-		msg->Add(9843); // session id
-		msg->Add((*it)->properties["id"]->asInteger()); // class id
-		msg->Add((float)(*it)->properties["x"]->asDouble()); // x
-		msg->Add((float)(*it)->properties["y"]->asDouble()); // y
-		msg->Add((float)(*it)->properties["angle"]->asDouble()); // a
-		msg->Add((float)0.); // X
-		msg->Add((float)0.); // Y
-		msg->Add((float)0.); // A
-		msg->Add((float)0.); // m
-		msg->Add((float)0.); // r
 		bundle->Add(msg);
+
+		for ( it = list->begin(); it != list->end(); it++ ) {
+			assert((*it)->properties["type"]->asString() == "fiducial");
+			msg = new WOscMessage("/tuio/2Dobj");
+			msg->Add("set");
+			msg->Add(9843); // session id
+			msg->Add((*it)->properties["id"]->asInteger()); // class id
+			msg->Add((float)(*it)->properties["x"]->asDouble()); // x
+			msg->Add((float)(*it)->properties["y"]->asDouble()); // y
+			msg->Add((float)(*it)->properties["angle"]->asDouble()); // a
+			msg->Add((float)0.); // X
+			msg->Add((float)0.); // Y
+			msg->Add((float)0.); // A
+			msg->Add((float)0.); // m
+			msg->Add((float)0.); // r
+			bundle->Add(msg);
+		}
+
+		msg = new WOscMessage("/tuio/2Dobj");
+		msg->Add("fseq");
+		msg->Add(this->fseq++);
+		bundle->Add(msg);
+
+
+	} else if ( input->getFormat() == "GenericTouch" ) {
+		// /tuio/2Dcur set s x y X Y m
+
+
+		bundle = new WOscBundle();
+		WOscMessage *msg = new WOscMessage("/tuio/2Dcur");
+		msg->Add("alive");
+
+		moDataGenericList::iterator it;
+		moDataGenericList *list = (moDataGenericList *)this->input->getData();
+		for ( it = list->begin(); it != list->end(); it++ ) {
+			assert((*it)->properties["type"]->asString() == "touch");
+			msg->Add((*it)->properties["id"]->asString().c_str());
+		}
+
+		bundle->Add(msg);
+
+		for ( it = list->begin(); it != list->end(); it++ ) {
+			assert((*it)->properties["type"]->asString() == "touch");
+
+			msg = new WOscMessage("/tuio/2Dcur");
+			msg->Add("set");
+			msg->Add((*it)->properties["id"]->asInteger()); // class id
+			msg->Add((float)(*it)->properties["x"]->asDouble()); // x
+			msg->Add((float)(*it)->properties["y"]->asDouble()); // y
+			msg->Add((float)0.); // X
+			msg->Add((float)0.); // Y
+			msg->Add((float)0.); // m
+			msg->Add((float)(*it)->properties["w"]->asDouble()); // w
+			msg->Add((float)(*it)->properties["h"]->asDouble()); // h
+			bundle->Add(msg);
+		}
+
+		msg = new WOscMessage("/tuio/2Dcur");
+		msg->Add("fseq");
+		msg->Add(this->fseq++);
+		bundle->Add(msg);
+
+	} else {
+		assert("Unsupported input type" && 0);
 	}
-
-	msg = new WOscMessage("/tuio/2Dobj");
-	msg->Add("fseq");
-	msg->Add(this->fseq++);
-	bundle->Add(msg);
-
-	//
-	// PHASE 2: touches
-	//
-	// TODO
 
 	this->osc->send(bundle);
 
