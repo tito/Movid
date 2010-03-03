@@ -33,12 +33,11 @@
 #define MO_DAEMON "daemon"
 
 static moPipeline *pipeline = NULL;
-static bool running = true;
+static bool want_quit = false;
 static struct event_base *base = NULL;
 static bool config_httpserver = true;
 static std::string config_pipelinefn = "";
 static struct evhttp *server = NULL;
-
 
 class otStreamModule : public moModule {
 public:
@@ -111,9 +110,11 @@ public:
 	IplImage* output_buffer;
 };
 
+static void signal_term(int signal) {
+	want_quit = true;
+}
 
-
-bool ipl2jpeg(IplImage *frame, unsigned char **outbuffer, long unsigned int *outlen) {
+static bool ipl2jpeg(IplImage *frame, unsigned char **outbuffer, long unsigned int *outlen) {
 	unsigned char *outdata = (uchar *) frame->imageData;
 	struct jpeg_compress_struct cinfo = {0};
 	struct jpeg_error_mgr jerr;
@@ -647,7 +648,7 @@ void web_pipeline_stop(struct evhttp_request *req, void *arg) {
 
 void web_pipeline_quit(struct evhttp_request *req, void *arg) {
 	web_message(req, "bye");
-	running = false;
+	want_quit = false;
 }
 
 void web_file(struct evhttp_request *req, void *arg) {
@@ -853,6 +854,9 @@ int main(int argc, char **argv) {
 	if ( parse_options(&argc, &argv) < 0 )
 		return 1;
 
+	signal(SIGTERM, signal_term);
+	signal(SIGINT, signal_term);
+
 	moFactory::init();
 
 	if ( config_pipelinefn != "" ) {
@@ -898,7 +902,7 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)"gui/html/nostream.png");
 	}
 
-	while ( running ) {
+	while ( want_quit == false ) {
 		// FIXME remove this hack !!!
 		cvWaitKey(5);
 
@@ -911,5 +915,12 @@ int main(int argc, char **argv) {
 			event_base_loop(base, EVLOOP_ONCE|EVLOOP_NONBLOCK);
 	}
 
+	if ( server != NULL )
+		evhttp_free(server);
+	if ( base != NULL )
+		event_base_free(base);
+
 	delete pipeline;
+
+	moFactory::cleanup();
 }

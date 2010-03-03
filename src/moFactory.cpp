@@ -33,6 +33,10 @@ void moFactory::init() {
 	LOG(INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }
 
+void moFactory::cleanup() {
+	delete instance;
+}
+
 moFactory::moFactory() {
 }
 

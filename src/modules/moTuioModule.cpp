@@ -52,6 +52,8 @@ moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 }
 
 moTuioModule::~moTuioModule(){
+	if ( this->osc != NULL )
+		delete this->osc;
 }
 
 void moTuioModule::start() {

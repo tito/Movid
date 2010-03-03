@@ -22,6 +22,8 @@ moVideoModule::moVideoModule() : moModule(MO_MODULE_OUTPUT, 0, 1) {
 }
 
 moVideoModule::~moVideoModule() {
+	if ( this->stream != NULL )
+		delete this->stream;
 }
 
 void moVideoModule::start() {

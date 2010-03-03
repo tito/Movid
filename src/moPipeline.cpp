@@ -17,6 +17,11 @@ moPipeline::moPipeline() : moModule(MO_MODULE_NONE, 0, 0) {
 }
 
 moPipeline::~moPipeline() {
+	std::vector<moModule *>::iterator it = this->modules.begin();
+	while ( it != this->modules.end() ) {
+		delete *it;
+		this->modules.erase(it);
+	}
 }
 
 moModule *moPipeline::firstModule() {

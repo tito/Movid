@@ -65,15 +65,26 @@ moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	this->new_blobs = new CvBlobSeq();
 	this->old_blobs = new CvBlobSeq();
 
-	CvBlobTrackerAutoParam1 param = {0};
-	param.FGTrainFrames = 0;
-	param.pFG       = new otFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
-	param.pBT       = cvCreateBlobTrackerCCMSPF();
-	param.pBTPP     = cvCreateModuleBlobTrackPostProcKalman();
-	this->tracker = cvCreateBlobTrackerAuto1(&param);
+	bzero(&this->param, sizeof(CvBlobTrackerAutoParam1));
+	this->param.FGTrainFrames = 0;
+	this->param.pFG       = new otFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
+	this->param.pBT       = cvCreateBlobTrackerCCMSPF();
+	this->param.pBTPP     = cvCreateModuleBlobTrackPostProcKalman();
+	this->tracker = cvCreateBlobTrackerAuto1(&this->param);
 }
 
 moBlobTrackerModule::~moBlobTrackerModule() {
+	this->clearBlobs();
+	delete this->output_data;
+	delete this->new_blobs;
+	delete this->old_blobs;
+
+	// blob track release ?
+	delete this->param.pFG;
+	cvReleaseBlobTrackPostProc(&this->param.pBTPP);
+	cvReleaseBlobTracker(&this->param.pBT);
+	cvReleaseBlobTrackerAuto(&this->tracker);
+	delete this->tracker;
 }
 
 void moBlobTrackerModule::clearBlobs() {

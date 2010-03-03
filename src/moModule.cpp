@@ -20,6 +20,18 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 moModule::~moModule() {
 	this->stop();
 
+	if ( this->output_infos.size() > 0 ) {
+		std::map<int, moDataStreamInfo*>::iterator it;
+		for ( it = this->output_infos.begin(); it != this->output_infos.end(); it++ )
+			delete it->second;
+	}
+
+	if ( this->input_infos.size() > 0 ) {
+		std::map<int, moDataStreamInfo*>::iterator it;
+		for ( it = this->input_infos.begin(); it != this->input_infos.end(); it++ )
+			delete it->second;
+	}
+
 	if ( this->properties.size() > 0 ) {
 		std::map<std::string, moProperty*>::iterator it;
 		for ( it = this->properties.begin(); it != this->properties.end(); it++ ) {

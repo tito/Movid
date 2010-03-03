@@ -18,6 +18,7 @@ protected:
 	CvBlobTrackerAuto* tracker;	
 	moDataGenericList blobs;
 	moDataStream *output_data;
+	CvBlobTrackerAutoParam1 param;
 	
 	void applyFilter();	
 	void allocateBuffers();

@@ -15,6 +15,7 @@ public:
 
 	static moFactory *getInstance();
 	static void init();
+	static void cleanup();
 
 	void registerModule(const std::string &name, moFactoryCreateCallback callback);
 

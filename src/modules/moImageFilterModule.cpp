@@ -19,6 +19,9 @@ moImageFilterModule::moImageFilterModule() :
 }
 
 moImageFilterModule::~moImageFilterModule() {
+	delete this->output;
+	if ( this->output_buffer != NULL )
+		cvReleaseImage(&this->output_buffer);
 }
 
 void moImageFilterModule::setInput(moDataStream* stream, int n) {
