@@ -7,10 +7,8 @@ LIBFIDTRACK_PATH = ${CONTRIB_PATH}/libfidtrack
 WOSCLIB_PATH = ${CONTRIB_PATH}/WOscLib-00.09
 
 #stuff we need to compile
-TRACKER_BIN = tracker
 BLOB_BIN = blobtrack
-DESCRIBE_BIN = describe
-DAEMON_BIN = daemon
+MOVID_BIN = movid
 
 LIBEVENT_LIBS = ${LIBEVENT_PATH}/.libs/libevent.a
 LIBEVENT_CFLAGS = -I${LIBEVENT_PATH}
@@ -49,23 +47,17 @@ ALL_LIBS_STATIC = ${LIBMOVID_STATIC} ${LIBFIDTRACK_LIBS} ${WOSCLIB_LIBS}
 
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
-all: tracker describe daemon
+all: movid
 
 #rules for building targets
 static: ${BIN}
 	${AR} rcs ${LIBMOVID_STATIC} ${BIN}
 
-tracker: contribs static src/tracker.cpp
-	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${TRACKER_BIN} src/tracker.cpp ${ALL_LIBS_STATIC}
-
-describe: contribs static src/describe.cpp
-	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${DESCRIBE_BIN} src/describe.cpp ${ALL_LIBS_STATIC}
-
 blobtrack: static src/blobtracker.cpp
 	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${BLOB_BIN} src/blobtracker.cpp
 	
-daemon: contribs static src/daemon.cpp
-	${CXX}   -o ${DAEMON_BIN} src/daemon.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
+movid: contribs static src/movid.cpp
+	${CXX} -o ${MOVID_BIN} src/movid.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
 		${LIBEVENT_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBJPEG_CFLAGS} ${ALL_CFLAGS} \
 		${LIBJPEG_LIBS} ${LIBEVENT_LIBS} ${ALL_LIBS}
 
@@ -85,8 +77,8 @@ ${BIN_DIR}/%.o : ${MOD_DIR}/%.cpp
 
 clean:
 	-rm ${BIN_DIR}/*.o
-	-rm ${TRACKER_BIN} ${DESCRIBE_BIN} ${BLOB_BIN}
-	-rm ${DAEMON_BIN}
+	-rm ${BLOB_BIN}
+	-rm ${MOVID_BIN}
 	-rm -r *.dSYM build
 	-rm ${LIBMOVID_STATIC}
 

@@ -30,7 +30,7 @@
 #include "event.h"
 #include "evhttp.h"
 
-#define MO_DAEMON "daemon"
+#define MO_DAEMON "movid"
 
 static moPipeline *pipeline = NULL;
 static bool want_quit = false;
@@ -820,15 +820,27 @@ parse_error:;
 void usage(void) {
 	printf("Usage: %s [options...]                                \n" \
 		   "                                                      \n" \
+		   "  -i <modulename>        Show infos on a module       \n" \
 		   "  -n                     No webserver                 \n" \
 		   "  -l <filename>          Read a pipeline from filename\n",
 		   MO_DAEMON
 	);
 }
 
+void describe(const char *name) {
+	moModule *module;
+	module = moFactory::getInstance()->create(name);
+	if ( module == NULL ) {
+		std::cerr << "Error: unable to found object named <" << name << ">" << std::endl;
+		return;
+	}
+	module->describe();
+	delete module;
+}
+
 int parse_options(int *argc, char ***argv) {
 	int ch;
-	while ( (ch = getopt(*argc, *argv, "l:n")) != -1 ) {
+	while ( (ch = getopt(*argc, *argv, "hl:ni:")) != -1 ) {
 		switch ( ch ) {
 			case 'n':
 				config_httpserver = false;
@@ -836,28 +848,36 @@ int parse_options(int *argc, char ***argv) {
 			case 'l':
 				config_pipelinefn = std::string(optarg);
 				break;
+			case 'i':
+				moFactory::init();
+				describe(optarg);
+				moFactory::cleanup();
+				return 0; /* leave properly */
+			case 'h':
 			case '?':
 			default:
 				usage();
-				break;
+				return 0;
 		}
 	}
 
 	(*argc) -= optind;
 	(*argv) -= optind;
 
-	return 0;
+	return -1; /* no error */
 }
 
 int main(int argc, char **argv) {
+	int ret;
 
-	if ( parse_options(&argc, &argv) < 0 )
-		return 1;
+	ret = parse_options(&argc, &argv);
+	if ( ret >= 0 )
+		return ret;
+
+	moFactory::init();
 
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
-
-	moFactory::init();
 
 	if ( config_pipelinefn != "" ) {
 		pipeline = pipeline_parse_file(config_pipelinefn);
