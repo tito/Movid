@@ -13,12 +13,17 @@ WOSCLIB_ARCHIVE = WOscLib-00.09.zip
 WOSCLIB_PATH = WOscLib-00.09
 WOSCLIB_LIB = ${WOSCLIB_PATH}/libwosclib.a
 
-all: libevent jpeglib fidtrack wosclib
+PTYPES_ARCHIVE = ptypes-2.1.1.tar.gz
+PTYPES_PATH = ptypes-2.1.1
+PTYPES_LIB = ${PTYPES_PATH}/lib/libptypes.a
+
+all: ptypes libevent jpeglib fidtrack wosclib
 
 clean:
 	-rm -rf ${LIBEVENT_PATH}
 	-rm -rf ${JPEG_PATH}
 	-rm -rf ${WOSCLIB_PATH}
+	-rm -rf ${PTYPES_PATH}
 	${MAKE} -C ${LIBFIDTRACK_PATH} clean
 
 #
@@ -57,4 +62,14 @@ wosclib: ${WOSCLIB_LIB}
 ${WOSCLIB_LIB}:
 	unzip ${WOSCLIB_ARCHIVE}
 	cd ${WOSCLIB_PATH} && ./configure && ${MAKE} libwosclib.a
+
+#
+# PTYPES
+#
+
+ptypes: ${PTYPES_LIB}
+
+${PTYPES_LIB}:
+	tar xzf ${PTYPES_ARCHIVE}
+	cd ${PTYPES_PATH} && make
 

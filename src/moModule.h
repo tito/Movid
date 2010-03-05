@@ -5,15 +5,7 @@
 #include <map>
 
 #include "moProperty.h"
-
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <pthread.h>
-#ifndef __bsdi__
-#include <semaphore.h>
-#endif
-#endif
+#include "pasync.h"
 
 class moThread;
 class moDataStream;
@@ -238,7 +230,7 @@ private:
 
 	/*! \brief Semaphore to release when update need a refresh
 	 */
-	sem_t sem_need_update;
+	pt::semaphore *sem_need_update;
 
 	/*! \brief Boolean to known if we need to call update or not
 	 */

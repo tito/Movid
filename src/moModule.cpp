@@ -23,6 +23,7 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->thread		= NULL;
 	this->use_thread	= false;
 	this->need_update	= false;
+	this->sem_need_update = NULL;
 
 	this->properties["use_thread"] = new moProperty(false);
 }
@@ -84,12 +85,7 @@ void moModule::start() {
 	this->use_thread = this->property("use_thread").asBool();
 	if ( this->use_thread ) {
 		LOGM(TRACE) << "create semaphore";
-
-		if ( sem_init(&this->sem_need_update, 0, 0) != 0 ) {
-			LOGM(ERROR) << "unable to init semaphore";
-			this->setError("unable to init semaphore");
-			this->use_thread = false;
-		}
+		this->sem_need_update = new pt::semaphore(0);
 
 		LOGM(TRACE) << "start thread";
 		this->thread = new moThread(_thread_process, this);
@@ -107,13 +103,15 @@ void moModule::start() {
 }
 
 void moModule::stop() {
-	if ( this->use_thread ) {
-		if ( this->thread != NULL ) {
-			this->thread->cleanup();
-			delete this->thread;
+	if ( this->use_thread &&  this->thread != NULL ) {
+		this->thread->stop();
+		delete this->thread;
+		this->thread = NULL;
 
-			sem_destroy(&this->sem_need_update);
-		}
+		delete this->sem_need_update;
+		this->sem_need_update = NULL;
+
+		this->use_thread = false;
 	}
 
 	this->is_started = false;
@@ -241,25 +239,16 @@ void moModule::poll() {
 
 void moModule::notifyUpdate() {
 	if ( this->use_thread ) {
-		if ( sem_post(&this->sem_need_update) != 0 ) {
-			LOGM(ERROR) << "unable to post semaphore";
-			this->setError("unable to post semaphore");
-		}
+		this->sem_need_update->post();
 	} else {
 		this->need_update = true;
 	}
 }
 
 bool moModule::needUpdate(bool lock) {
-	int err;
-
 	// call from a thread
 	if ( lock ) {
-		do {
-			err = sem_wait(&this->sem_need_update);
-		} while ( err == -1 && errno == EINTR );
-		if ( err != 0 )
-			return false;
+		this->sem_need_update->wait();
 		return true;
 	}
 
