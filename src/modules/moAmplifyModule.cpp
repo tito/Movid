@@ -1,5 +1,5 @@
-#include <assert.h>
 #include "moAmplifyModule.h"
+#include "../moLog.h"
 #include "cv.h"
 
 MODULE_DECLARE(Amplify, "native", "Amplifies input image (for every pixel: p = p^amp, so larger values get larger quicker");

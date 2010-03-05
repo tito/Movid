@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "moGrayScaleModule.h"
+#include "../moLog.h"
 #include "cv.h"
 
 MODULE_DECLARE(GrayScale, "native", "Converts input image to a one bit channel image");

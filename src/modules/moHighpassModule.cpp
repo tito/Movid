@@ -1,5 +1,5 @@
-#include <assert.h>
 #include "moHighpassModule.h"
+#include "../moLog.h"
 #include "cv.h"
 
 MODULE_DECLARE(Highpass, "native", "Highpass filter");

@@ -11,7 +11,6 @@ moImageFilterModule::moImageFilterModule() :
 	this->input = NULL;
 	this->output = new moDataStream("IplImage");
 	this->output_buffer = NULL;
-	this->need_update = false; //dont update until we get data
 
 	// declare input/output
 	this->input_infos[0] = new moDataStreamInfo("image", "IplImage", "Input image stream");
@@ -68,7 +67,6 @@ void moImageFilterModule::stop() {
 		cvReleaseImage(&this->output_buffer);
 		this->output_buffer = NULL;
 	}
-	this->need_update = false;
 	moModule::stop();
 }
 
@@ -85,7 +83,7 @@ void moImageFilterModule::notifyData(moDataStream *input) {
 		input->unlock();
 	}
 
-	this->need_update = true;
+	this->notifyUpdate();
 }
 
 
@@ -101,16 +99,13 @@ void moImageFilterModule::update() {
 	if ( this->input == NULL )
 		return;
 
-	if ( this->need_update ) {
-		this->input->lock();
+	this->input->lock();
 
-		// don't pass data to filter if source is NULL
-		if ( this->input->getData() != NULL ) {
-			this->applyFilter();
-			this->output->push(this->output_buffer);
-		}
-
-		this->input->unlock();
+	// don't pass data to filter if source is NULL
+	if ( this->input->getData() != NULL ) {
+		this->applyFilter();
+		this->output->push(this->output_buffer);
 	}
-}
 
+	this->input->unlock();
+}

@@ -1,7 +1,6 @@
-#include <assert.h>
 #include "moMirrorImageModule.h"
+#include "../moLog.h"
 #include "cv.h"
-#include <stdio.h>
 
 MODULE_DECLARE(MirrorImage, "native", "Mirror an image. Flip it around x or y axis or both.");
 

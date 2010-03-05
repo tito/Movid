@@ -21,7 +21,7 @@ WOSCLIB_LIBS = ${WOSCLIB_PATH}/libwosclib.a
 
 LIBMOVID_STATIC = libmovid.a
 
-OBJ = moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
+OBJ = moThread.o moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
       moDaemon.o moLog.o moDataGenericContainer.o moDumpModule.o \
 	  moCameraModule.o moImageDisplayModule.o moSmoothModule.o \
 	  moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \

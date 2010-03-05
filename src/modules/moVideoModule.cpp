@@ -74,3 +74,8 @@ moDataStream* moVideoModule::getOutput(int n) {
 	return this->stream;
 }
 
+void moVideoModule::poll() {
+	this->notifyUpdate();
+	moModule::poll();
+}
+

@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "moBackgroundSubtractModule.h"
+#include "../moLog.h"
 #include "cv.h"
 
 MODULE_DECLARE(BackgroundSubtract, "native",
@@ -29,7 +30,6 @@ void moBackgroundSubtractModule::stop() {
 	}
 
 	// reset state
-	this->need_update = false;
 	this->property("recapture").set(true);
 
 	moImageFilterModule::stop();

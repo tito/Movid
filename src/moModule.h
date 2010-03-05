@@ -4,9 +4,18 @@
 #include <string>
 #include <map>
 
-#include "moLog.h"
 #include "moProperty.h"
 
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <pthread.h>
+#ifndef __bsdi__
+#include <semaphore.h>
+#endif
+#endif
+
+class moThread;
 class moDataStream;
 class moDataStreamInfo;
 class moPipeline;
@@ -138,6 +147,10 @@ public:
 	 */
 	virtual void update() = 0;
 
+	/*! \brief Poll the module (usually, update() is called if it's not threaded.
+	 */
+	virtual void poll();
+
 	/*! \brief Lock access to the module data
 	 */
 	virtual void lock();
@@ -193,6 +206,10 @@ public:
 	 */
 	virtual bool haveError();
 
+	/*! \brief Check if the module need to be updated
+	 */
+	bool needUpdate(bool lock=false);
+
 	
 private:
 	/*! \brief Capabilities flags
@@ -211,11 +228,31 @@ private:
 	 */
 	std::string error_msg;
 
+	/*! \brief Store the thread instance if it's used
+	 */
+	moThread *thread;
+
+	/*! \brief Boolean to indicate if we use thread or not
+	 */
+	bool use_thread;
+
+	/*! \brief Semaphore to release when update need a refresh
+	 */
+	sem_t sem_need_update;
+
+	/*! \brief Boolean to known if we need to call update or not
+	 */
+	bool need_update;
+
 protected:
 
 	/*! \brief Pipeline that own the module
 	 */
 	moModule *owner;
+
+	/*! \brief Call it if you want to notify to call update()
+	 */
+	virtual void notifyUpdate();
 
 	/*! \brief Number of input
 	 */

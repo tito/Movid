@@ -55,6 +55,11 @@ void moCameraModule::update() {
 	}
 }
 
+void moCameraModule::poll() {
+	this->notifyUpdate();
+	moModule::poll();
+}
+
 void moCameraModule::setInput(moDataStream* input, int n) {
 	this->setError("no input supported");
 }

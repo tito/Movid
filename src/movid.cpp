@@ -45,7 +45,6 @@ public:
 	otStreamModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 		this->input = new moDataStream("stream");
 		this->output_buffer = NULL;
-		this->need_update = false;
 		this->properties["id"] = new moProperty(moModule::createId("WebStream"));
 		this->properties["scale"] = new moProperty(1);
 	}
@@ -68,7 +67,7 @@ public:
 			size.height /= this->property("scale").asInteger();
 			this->output_buffer = cvCreateImage(size, src->depth, src->nChannels);
 		}
-		this->need_update = true;
+		this->notifyUpdate();
 	}
 
 	void setInput(moDataStream* stream, int n=0) {
@@ -105,7 +104,6 @@ public:
 	virtual std::string getName() { return "Stream"; }
 	virtual std::string getDescription() { return ""; }
 	virtual std::string getAuthor() { return ""; }
-	bool need_update;
 
 	moDataStream *input;
 	IplImage* output_buffer;
@@ -224,13 +222,12 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 		return;
 	}
 
-	if ( state->stream->need_update == false ) {
+	if ( state->stream->needUpdate() ) {
 		event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
 		return;
 	}
 
 	state->stream->copy();
-	state->stream->need_update = false;
 	cvCvtColor(state->stream->output_buffer, state->stream->output_buffer, CV_BGR2RGB);
 
 	ipl2jpeg(state->stream->output_buffer, &outbuf, &outlen);
@@ -961,7 +958,7 @@ int main(int argc, char **argv) {
 
 		// update pipeline
 		if ( pipeline->isStarted() ) {
-			pipeline->update();
+			pipeline->poll();
 
 			// check for error in pipeline
 			while ( pipeline->haveError() ) {

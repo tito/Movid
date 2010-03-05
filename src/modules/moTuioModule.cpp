@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "moTuioModule.h"
+#include "../moLog.h"
 #include "../moDataGenericContainer.h"
 #include "../moDataStream.h"
 #include "../moOSC.h"
@@ -174,8 +175,8 @@ void moTuioModule::setInput(moDataStream *stream, int n) {
 		this->input->removeObserver(this);
 	this->input = stream;
 	if ( stream != NULL ) {
-		if ( stream->getFormat() != "touch" &&
-			 stream->getFormat() != "fiducial" ) {
+		if ( stream->getFormat() != "GenericTouch" &&
+			 stream->getFormat() != "GenericFiducial" ) {
 			this->setError("Input 0 accept only touch or fiducial");
 			this->input = NULL;
 			return;

@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "moBlobTrackerModule.h"
+#include "../moLog.h"
 #include "cv.h"
 #include "cvaux.h"
 

@@ -1,9 +1,12 @@
 #include <assert.h>
 #include <sstream>
 #include <iostream>
+#include <errno.h>
 
 #include "moModule.h"
 #include "moDataStream.h"
+#include "moLog.h"
+#include "moThread.h"
 
 LOG_DECLARE("Module");
 
@@ -17,6 +20,12 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->owner			= NULL;
 	this->is_error		= false;
 	this->error_msg		= "";
+	this->thread		= NULL;
+	this->use_thread	= false;
+	this->need_update	= false;
+	this->sem_need_update = 0;
+
+	this->properties["use_thread"] = new moProperty(false);
 }
 
 moModule::~moModule() {
@@ -64,12 +73,50 @@ int moModule::getOutputCount() {
 void moModule::notifyData(moDataStream *source) {
 }
 
+void _thread_process(moThread *thread) {
+	moModule *module = (moModule *)thread->getUserData();
+	while ( !thread->wantQuit() ) {
+		module->needUpdate(true);
+		module->update();
+	}
+}
+
 void moModule::start() {
+	this->use_thread = this->property("use_thread").asBool();
+	if ( this->use_thread ) {
+		LOGM(TRACE) << "create semaphore";
+
+		if ( sem_init(&this->sem_need_update, 0, 0) != 0 ) {
+			LOGM(ERROR) << "unable to init semaphore";
+			this->setError("unable to init semaphore");
+			this->use_thread = false;
+		}
+
+		LOGM(TRACE) << "start thread";
+		this->thread = new moThread(_thread_process, this);
+		if ( this->thread == NULL ) {
+			LOGM(ERROR) << "unable to create thread";
+			this->setError("Error while creating thread");
+			this->use_thread = false;
+		} else {
+			this->thread->start();
+		}
+	}
+
 	this->is_started = true;
-	LOG(DEBUG) << "start <" << this->property("id").asString() << ">";
+	LOGM(DEBUG) << "start";
 }
 
 void moModule::stop() {
+	if ( this->use_thread ) {
+		if ( this->thread != NULL ) {
+			this->thread->cleanup();
+			delete this->thread;
+
+			sem_destroy(&this->sem_need_update);
+		}
+	}
+
 	this->is_started = false;
 	LOG(DEBUG) << "stop <" << this->property("id").asString() << ">";
 }
@@ -180,6 +227,45 @@ void moModule::setError(const std::string& msg) {
 }
 
 std::string moModule::getLastError() {
+	std::ostringstream oss;
 	this->is_error = false;
-	return this->error_msg;
+	oss << "<" << this->property("id").asString() << "> " << this->error_msg;
+	return oss.str();
+}
+
+void moModule::poll() {
+	if ( this->use_thread )
+		return;
+	if ( this->needUpdate() )
+		this->update();
+}
+
+void moModule::notifyUpdate() {
+	if ( this->use_thread ) {
+		if ( sem_post(&this->sem_need_update) != 0 ) {
+			LOGM(ERROR) << "unable to post semaphore";
+			this->setError("unable to post semaphore");
+		}
+	} else {
+		this->need_update = true;
+	}
+}
+
+bool moModule::needUpdate(bool lock) {
+	int err;
+
+	// call from a thread
+	if ( lock ) {
+		do {
+			err = sem_wait(&this->sem_need_update);
+		} while ( err == -1 && errno == EINTR );
+		if ( err != 0 )
+			return false;
+		return true;
+	}
+
+	// call not from a thread;
+	bool b = this->need_update;
+	this->need_update = false;
+	return b;
 }

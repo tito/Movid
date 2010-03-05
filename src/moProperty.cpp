@@ -107,7 +107,7 @@ bool moProperty::asBool() {
 
 		case MO_PROPERTY_STRING: {
 			CASTEDGET(std::string);
-			if ( value == "True" || value == "true" || value == "TRUE" )
+			if ( value == "True" || value == "true" || value == "TRUE" || value == "1" )
 				return true;
 			return false;
 		}

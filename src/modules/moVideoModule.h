@@ -12,9 +12,10 @@ public:
 	virtual moDataStream *getInput(int n=0);
 	virtual moDataStream *getOutput(int n=0);
 
-	void start();
-	void stop();
-	void update();
+	virtual void start();
+	virtual void stop();
+	virtual void update();
+	virtual void poll();
 
 private:
 	moDataStream *stream;

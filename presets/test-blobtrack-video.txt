@@ -19,3 +19,7 @@ pipeline connect threshold 0 tracker 0
 # tuio
 pipeline create Tuio tuio
 pipeline connect tracker 1 tuio 0
+
+# thread ?
+pipeline set video use_thread 1
+pipeline set tracker use_thread 1

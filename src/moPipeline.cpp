@@ -103,12 +103,17 @@ void moPipeline::stop() {
 }
 
 void moPipeline::update() {
+	// nothing done in pipeline
+	return;
+}
+
+void moPipeline::poll() {
 	std::vector<moModule *>::iterator it;
 
-	LOGM(TRACE) << "update";
+	LOGM(TRACE) << "poll";
 
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
-		(*it)->update();
+		(*it)->poll();
 	}
 }
 

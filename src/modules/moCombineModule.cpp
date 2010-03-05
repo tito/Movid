@@ -14,7 +14,6 @@ moCombineModule::moCombineModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT, 
 	this->input2 = NULL;
 	this->output = new moDataStream("IplImage");
 	this->output_buffer = NULL;
-	this->need_update = false;
 
 	// declare outputs
 	this->input_infos[0] = new moDataStreamInfo(
@@ -47,13 +46,11 @@ void moCombineModule::notifyData(moDataStream *input) {
 		}
 	}
 
-	this->need_update = true;
+	this->needUpdate();
 }
 
 void moCombineModule::update() {
 	IplImage *d1 = NULL, *d2 = NULL;
-	if ( this->need_update == false )
-		return;
 	if ( this->input1 == NULL || this->output_buffer == NULL )
 		return;
 
@@ -82,8 +79,6 @@ void moCombineModule::update() {
 
 	this->output->push(this->output_buffer);
 	this->input1->unlock();
-
-	this->need_update = false;
 }
 
 void moCombineModule::setInput(moDataStream *stream, int n) {

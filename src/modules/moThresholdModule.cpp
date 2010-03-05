@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "moThresholdModule.h"
+#include "../moLog.h"
 #include "cv.h"
 
 MODULE_DECLARE(Threshold, "native", "Thresholding to throw away all values below or above certain threshold");

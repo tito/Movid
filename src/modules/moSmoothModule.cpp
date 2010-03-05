@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "moSmoothModule.h"
+#include "../moLog.h"
 #include "cv.h"
 
 MODULE_DECLARE(Smooth, "native", "Smooth an image with one of several filters");

@@ -5,6 +5,7 @@
 
 #include "moImageDisplayModule.h"
 #include "../moDataStream.h"
+#include "../moLog.h"
 
 MODULE_DECLARE(ImageDisplay, "native", "Display image on a window");
 

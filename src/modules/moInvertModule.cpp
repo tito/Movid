@@ -1,4 +1,5 @@
 #include "moInvertModule.h"
+#include "../moLog.h"
 #include "cv.h"
 
 MODULE_DECLARE(Invert, "native", "Calculate the invert of an image");

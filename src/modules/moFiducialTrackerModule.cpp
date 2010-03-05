@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "moFiducialTrackerModule.h"
+#include "../moLog.h"
 #include "cv.h"
 #include "cvaux.h"
 

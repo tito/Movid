@@ -25,6 +25,7 @@ public:
 	virtual void start();
 	virtual void stop();
 	virtual void update();
+	virtual void poll();
 
 	moModule *firstModule();
 	moModule *lastModule();
