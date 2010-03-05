@@ -954,7 +954,7 @@ int main(int argc, char **argv) {
 
 	while ( want_quit == false ) {
 		// FIXME remove this hack !!!
-		cvWaitKey(500);
+		cvWaitKey(5);
 
 		// update pipeline
 		if ( pipeline->isStarted() ) {
