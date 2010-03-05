@@ -23,7 +23,6 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->thread		= NULL;
 	this->use_thread	= false;
 	this->need_update	= false;
-	this->sem_need_update = 0;
 
 	this->properties["use_thread"] = new moProperty(false);
 }

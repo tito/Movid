@@ -52,6 +52,7 @@ void moCameraModule::update() {
 		// push a new image on the stream
 		LOGM(TRACE) << "push a new image on the stream";
 		this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->camera)));
+		this->notifyUpdate();
 	}
 }
 
