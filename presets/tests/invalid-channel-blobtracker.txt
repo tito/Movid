@@ -1,0 +1,4 @@
+pipeline create Video video
+pipeline set video filename media/blob.avi
+pipeline create BlobTracker tracker
+pipeline connect video 0 tracker 0

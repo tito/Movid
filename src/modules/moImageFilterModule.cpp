@@ -25,21 +25,41 @@ moImageFilterModule::~moImageFilterModule() {
 }
 
 void moImageFilterModule::setInput(moDataStream* stream, int n) {
-	assert( n == 0 );
+	if ( n != 0 ) {
+		this->setError("Invalid input index");
+		return;
+	}
+
 	if ( this->input != NULL )
 		this->input->removeObserver(this);
+
 	this->input = stream;
+
+	if ( stream != NULL ) {
+		if ( stream->getFormat() != "IplImage" ) {
+			this->setError("Input 0 accept only IplImage");
+			this->input = NULL;
+			return;
+		}
+	}
+
 	if ( this->input != NULL )
 		this->input->addObserver(this);
 }
 
 moDataStream* moImageFilterModule::getInput(int n) {
-	assert(n == 0);
+	if ( n != 0 ) {
+		this->setError("Invalid input index");
+		return NULL;
+	}
 	return this->input;
 }
 
 moDataStream* moImageFilterModule::getOutput(int n) {
-	assert(n == 0);
+	if ( n != 0 ) {
+		this->setError("Invalid output index");
+		return NULL;
+	}
 	return this->output;
 }
 
@@ -58,9 +78,12 @@ void moImageFilterModule::notifyData(moDataStream *input) {
 	assert( input == this->input );
 	assert( input->getFormat() == "IplImage" );
 
-	//FIXME  also do if size, nChannles or depth has changed
-	if ( this->output_buffer == NULL )
+	// FIXME  also do if size, nChannles or depth has changed
+	if ( this->output_buffer == NULL ) {
+		input->lock();
 		this->allocateBuffers();
+		input->unlock();
+	}
 
 	this->need_update = true;
 }
@@ -77,6 +100,7 @@ void moImageFilterModule::allocateBuffers() {
 void moImageFilterModule::update() {
 	if ( this->input == NULL )
 		return;
+
 	if ( this->need_update ) {
 		this->input->lock();
 

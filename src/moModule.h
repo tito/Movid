@@ -187,11 +187,11 @@ public:
 
 	/*! \brief Get last error message, once called, it will reset the error state
 	 */
-	std::string getLastError();
+	virtual std::string getLastError();
 
 	/*! \brief Indicate if the module have an error
 	 */
-	bool haveError();
+	virtual bool haveError();
 
 	
 private:

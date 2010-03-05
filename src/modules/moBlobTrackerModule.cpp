@@ -95,20 +95,28 @@ void moBlobTrackerModule::clearBlobs() {
 }
 
 
-void moBlobTrackerModule::allocateBuffers(){
-	IplImage* src = (IplImage*)(this->input->getData());
+void moBlobTrackerModule::allocateBuffers() {
+	IplImage* src = static_cast<IplImage*>(this->input->getData());
+	if ( src == NULL )
+		return;
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, 3);	//only one channel
-	LOG(DEBUG) << "allocated output buffer for BlobTracker module.";
+	LOGM(TRACE) << "allocated output buffer for BlobTracker module.";
 }
 
 void moBlobTrackerModule::applyFilter() {
-	IplImage* src = (IplImage*)(this->input->getData());
+	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	IplImage* fg_map = NULL;
 	assert( src != NULL );
 	CvSize size = cvGetSize(src);
 
+	if ( src->nChannels != 1 ) {
+		this->setError("BlobTracker input image must be a single channel binary image.");
+		this->stop();
+		return;
+	}
+
 	this->tracker->Process(src, fg_map);
-	
+
 	cvSet(this->output_buffer, CV_RGB(0,0,0));
 	this->clearBlobs();
 
@@ -125,7 +133,7 @@ void moBlobTrackerModule::applyFilter() {
 				  0, 0, 360,
 				  CV_RGB(c,255-c,0), cvRound(1+(3*0)/255), CV_AA, 8 );
 
-		LOG(INFO) << "<Blob>:  id="<<pB->ID<<"  pos=" <<pB->x <<","<< pB->y <<"size="<<pB->w <<","<< pB->h;
+		LOGM(INFO) << "<Blob>:  id="<<pB->ID<<"  pos=" <<pB->x <<","<< pB->y <<"size="<<pB->w <<","<< pB->h;
 
 		// Not optimized, but will not care for today.
 		moDataGenericContainer *touch = new moDataGenericContainer();

@@ -135,3 +135,20 @@ bool moPipeline::isPipeline() {
 	return true;
 }
 
+bool moPipeline::haveError() {
+	std::vector<moModule *>::iterator it;
+	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
+		if ( (*it)->haveError() )
+			return true;
+	}
+	return false;
+}
+
+std::string moPipeline::getLastError() {
+	std::vector<moModule *>::iterator it;
+	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
+		if ( (*it)->haveError() )
+			return (*it)->getLastError();
+	}
+	return "";
+}

@@ -36,6 +36,7 @@ static moPipeline *pipeline = NULL;
 static bool want_quit = false;
 static struct event_base *base = NULL;
 static bool config_httpserver = true;
+static bool test_mode = false;
 static std::string config_pipelinefn = "";
 static struct evhttp *server = NULL;
 
@@ -699,7 +700,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 // pipeline create objectname id
 // pipeline set id key value
 // pipeline connect out_id out_idx in_id in_idx
-#define WRITE_ERROR std::cerr << "Error at line " << ln << ":"
+#define WRITE_ERROR std::cerr << __LINE__ << "] Error at line " << ln << ": "
 #define LN std::endl
 moPipeline *pipeline_parse_file(const std::string &filename) {
 	moPipeline *pipeline = NULL;
@@ -848,6 +849,7 @@ parse_error:;
 void usage(void) {
 	printf("Usage: %s [options...]                                \n" \
 		   "                                                      \n" \
+		   "  -t                     Test mode, stop on the first error\n" \
 		   "  -i <modulename>        Show infos on a module       \n" \
 		   "  -n                     No webserver                 \n" \
 		   "  -l <filename>          Read a pipeline from filename\n",
@@ -868,7 +870,7 @@ void describe(const char *name) {
 
 int parse_options(int *argc, char ***argv) {
 	int ch;
-	while ( (ch = getopt(*argc, *argv, "hl:ni:")) != -1 ) {
+	while ( (ch = getopt(*argc, *argv, "hl:ni:t")) != -1 ) {
 		switch ( ch ) {
 			case 'n':
 				config_httpserver = false;
@@ -881,6 +883,9 @@ int parse_options(int *argc, char ***argv) {
 				describe(optarg);
 				moFactory::cleanup();
 				return 0; /* leave properly */
+			case 't':
+				test_mode = true;
+				break;
 			case 'h':
 			case '?':
 			default:
@@ -955,8 +960,16 @@ int main(int argc, char **argv) {
 		cvWaitKey(5);
 
 		// update pipeline
-		if ( pipeline->isStarted() )
+		if ( pipeline->isStarted() ) {
 			pipeline->update();
+
+			// check for error in pipeline
+			while ( pipeline->haveError() ) {
+				std::cerr << "Pipeline error: " << pipeline->getLastError() << std::endl;
+				if ( test_mode )
+					want_quit = true;
+			}
+		}
 
 		// got a server, update
 		if ( server != NULL )

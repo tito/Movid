@@ -35,6 +35,14 @@ public:
 	virtual bool isGroup();
 	virtual bool isPipeline();
 
+	/*! \brief Get last error message, once called, it will reset the error state
+	 */
+	virtual std::string getLastError();
+
+	/*! \brief Indicate if the module have an error
+	 */
+	virtual bool haveError();
+
 private:
 	std::vector<moModule *> modules;
 	bool is_group;

@@ -181,5 +181,5 @@ void moModule::setError(const std::string& msg) {
 
 std::string moModule::getLastError() {
 	this->is_error = false;
-	this->error_msg = "";
+	return this->error_msg;
 }
