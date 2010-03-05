@@ -15,6 +15,8 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->output_count	= output_count;
 	this->is_started	= false;
 	this->owner			= NULL;
+	this->is_error		= false;
+	this->error_msg		= "";
 }
 
 moModule::~moModule() {
@@ -168,3 +170,16 @@ bool moModule::isPipeline() {
 	return false;
 }
 
+bool moModule::haveError() {
+	return this->is_error;
+}
+
+void moModule::setError(const std::string& msg) {
+	this->error_msg = msg;
+	this->is_error = true;
+}
+
+std::string moModule::getLastError() {
+	this->is_error = false;
+	this->error_msg = "";
+}

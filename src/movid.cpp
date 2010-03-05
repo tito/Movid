@@ -699,6 +699,8 @@ void web_file(struct evhttp_request *req, void *arg) {
 // pipeline create objectname id
 // pipeline set id key value
 // pipeline connect out_id out_idx in_id in_idx
+#define WRITE_ERROR std::cerr << "Error at line " << ln << ":"
+#define LN std::endl
 moPipeline *pipeline_parse_file(const std::string &filename) {
 	moPipeline *pipeline = NULL;
 	moModule *module1, *module2;
@@ -728,69 +730,85 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 				std::istream_iterator<std::string>(),
 				std::back_inserter<std::vector<std::string> >(tokens));
 
-		std::cout << "LINE: tokens=" << tokens.size() << ", line=<" << line << ">" << std::endl;
+		//std::cout << "LINE: tokens=" << tokens.size() << ", line=<" << line << ">" << std::endl;
 
 		if ( tokens.size() <= 1 ) {
-			std::cerr << "Error at line " << ln << ": invalid line command" << std::endl;
+			WRITE_ERROR << "invalid line command" << LN;
 			goto parse_error;
 		}
 		if ( tokens[0] == "pipeline" ) {
 			if ( tokens.size() < 2 ) {
-				std::cerr << "Error at line " << ln << ": not enough parameters" << std::endl;
+				WRITE_ERROR << "not enough parameters" << LN;
 				goto parse_error;
 			}
 
 			if ( tokens[1] == "create" ) {
 				if ( tokens.size() != 4 ) {
-					std::cerr << "Error at line " << ln << ": not enough parameters" << std::endl;
+					WRITE_ERROR << "not enough parameters" << LN;
 					goto parse_error;
 				}
 
 				module1 = module_search(tokens[3], pipeline);
 				if ( module1 != NULL ) {
-					std::cerr << "Error at line " << ln << ": id already used" << std::endl;
+					WRITE_ERROR << "id already used" << LN;
 					goto parse_error;
 				}
 
 				module1 = moFactory::getInstance()->create(tokens[2]);
 				if ( module1 == NULL ) {
-					std::cerr << "Error at line " << ln << ": unknown module " << tokens[2] << std::endl;
+					WRITE_ERROR << "unknown module " << tokens[2] << LN;
+					goto parse_error;
+				}
+
+				if ( module1->haveError() ) {
+					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
 					goto parse_error;
 				}
 
 				module1->property("id").set(tokens[3]);
 
+				if ( module1->haveError() ) {
+					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
+					goto parse_error;
+				}
+
 				pipeline->addElement(module1);
 
 			} else if ( tokens[1] == "set" ) {
 				if ( tokens.size() != 5 ) {
-					std::cerr << "Error at line " << ln << ": not enough parameters" << std::endl;
+					WRITE_ERROR << "not enough parameters" << LN;
 					goto parse_error;
 				}
 
 				module1 = module_search(tokens[2], pipeline);
 				if ( module1 == NULL ) {
-					std::cerr << "Error at line " << ln << ": unable to found module with id " << tokens[2] << std::endl;
+					WRITE_ERROR << "unable to found module with id " << tokens[2] << LN;
 					goto parse_error;
 				}
 
 				module1->property(tokens[3]).set(tokens[4]);
 
+				if ( module1->haveError() ) {
+					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
+					goto parse_error;
+				}
+
+
 			} else if ( tokens[1] == "connect" ) {
 				if ( tokens.size() != 6 ) {
-					std::cerr << "Error at line " << ln << ": not enough parameters" << std::endl;
+					WRITE_ERROR << "not enough parameters" << LN;
 					goto parse_error;
 				}
 
 				module1 = module_search(tokens[2], pipeline);
 				if ( module1 == NULL ) {
-					std::cerr << "Error at line " << ln << ": unable to found module with id " << tokens[2] << std::endl;
+					WRITE_ERROR << "unable to found module with id " << tokens[2] << LN;
 					goto parse_error;
 				}
 
 				module2 = module_search(tokens[4], pipeline);
 				if ( module2 == NULL ) {
-					std::cerr << "Error at line " << ln << ": unable to found module with id " << tokens[4] << std::endl;
+					WRITE_ERROR << "unable to found module with id " << tokens[4] << LN;
 					goto parse_error;
 				}
 
@@ -799,12 +817,22 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 
 				module2->setInput(module1->getOutput(outidx), inidx);
 
+				if ( module1->haveError() ) {
+					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
+					goto parse_error;
+				}
+
+				if ( module2->haveError() ) {
+					WRITE_ERROR << "module error:" << module2->getLastError() << LN;
+					goto parse_error;
+				}
+
 			} else {
-				std::cerr << "Error at line " << ln << ": unknown pipeline subcommand: " << tokens[1] << std::endl;
+				WRITE_ERROR << "unknown pipeline subcommand: " << tokens[1] << LN;
 				goto parse_error;
 			}
 		} else {
-			std::cerr << "Error at line " << ln << ": unknown keyword: " << tokens[0] << std::endl;
+			WRITE_ERROR << "unknown command: " << tokens[0] << LN;
 			goto parse_error;
 		}
 	}

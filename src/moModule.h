@@ -185,6 +185,14 @@ public:
 	 */
 	void describe();
 
+	/*! \brief Get last error message, once called, it will reset the error state
+	 */
+	std::string getLastError();
+
+	/*! \brief Indicate if the module have an error
+	 */
+	bool haveError();
+
 	
 private:
 	/*! \brief Capabilities flags
@@ -194,6 +202,14 @@ private:
 	/*! \brief Boolean to store if the module is started or not
 	 */
 	bool is_started;
+
+	/*! \brief Indicate if error exist on module
+	 */
+	bool is_error;
+
+	/*! \brief Store the last error message
+	 */
+	std::string error_msg;
 
 protected:
 
@@ -233,12 +249,15 @@ protected:
 	 */
 	virtual void notifyData(moDataStream *source);
 
+	/*! \brief Set the error state on the class
+	 */
+	void setError(const std::string &msg);
+
 	/*! \brief Create a uniq id for the instance of the class
 	 *
 	 * \param base name of the class to use it
 	 */
 	static std::string createId(std::string base);
-
 
 	friend class moDataStream;
 	friend class moPipeline;
