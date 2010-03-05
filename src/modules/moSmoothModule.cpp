@@ -16,7 +16,7 @@ moSmoothModule::moSmoothModule() : moImageFilterModule(){
 moSmoothModule::~moSmoothModule() {
 }
 
-static int cv_smooth_type(std::string filter){
+int moSmoothModule::toCvType(const std::string &filter) {
 	if ( filter == "median" )
 		return CV_MEDIAN;
 	if ( filter == "gaussian" )
@@ -26,17 +26,18 @@ static int cv_smooth_type(std::string filter){
 	if ( filter == "blur_no_scale" )
 		return CV_BLUR_NO_SCALE;
 
-	assert( "unsupported filter type for Smooth module!!" && 0 );
+	LOGM(ERROR) << "Unsupported filter type: " << filter;
+	this->setError("Unsupported filter type");
 	return 0;
 }
 
-void moSmoothModule::applyFilter(){
+void moSmoothModule::applyFilter() {
 	cvSmooth(
-			 (IplImage*)this->input->getData(),
-			 this->output_buffer,
-			 cv_smooth_type(this->property("filter").asString()),
-			 this->property("size").asInteger()*2+1 //make sure its odd
-			);
+		static_cast<IplImage*>(this->input->getData()),
+		this->output_buffer,
+		this->toCvType(this->property("filter").asString()),
+		this->property("size").asInteger()*2+1 //make sure its odd
+	);
 }
 
 

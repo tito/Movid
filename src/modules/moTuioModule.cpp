@@ -154,7 +154,8 @@ void moTuioModule::notifyData(moDataStream *input) {
 		bundle->Add(msg);
 
 	} else {
-		assert("Unsupported input type" && 0);
+		LOGM(ERROR) << "Unsupported input type: " << input->getFormat();
+		this->setError("Unsupported input type");
 	}
 
 	this->osc->send(bundle);
@@ -164,22 +165,36 @@ void moTuioModule::notifyData(moDataStream *input) {
 	this->input->unlock();
 }
 
-void moTuioModule::setInput(moDataStream *input, int n) {
-	assert( n == 0 );
+void moTuioModule::setInput(moDataStream *stream, int n) {
+	if ( n != 0 ) {
+		this->setError("Invalid input index");
+		return;
+	}
 	if ( this->input != NULL )
 		this->input->removeObserver(this);
-	this->input = input;
+	this->input = stream;
+	if ( stream != NULL ) {
+		if ( stream->getFormat() != "touch" &&
+			 stream->getFormat() != "fiducial" ) {
+			this->setError("Input 0 accept only touch or fiducial");
+			this->input = NULL;
+			return;
+		}
+	}
 	if ( this->input != NULL )
 		this->input->addObserver(this);
 }
 
 moDataStream* moTuioModule::getInput(int n) {
-	assert( n == 0);
+	if ( n != 0 ) {
+		this->setError("Invalid input index");
+		return NULL;
+	}
 	return this->input;
 }
 
 moDataStream* moTuioModule::getOutput(int n) {
-	assert( "moTuioModule don't accept output" && 0 );
+	this->setError("no output supported");
 	return NULL;
 }
 

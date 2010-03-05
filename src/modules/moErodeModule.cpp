@@ -12,7 +12,7 @@ moErodeModule::~moErodeModule() {
 }
 
 void moErodeModule::applyFilter(){
-	IplImage* src = (IplImage*)this->input->getData();
+	IplImage* src = static_cast<IplImage>)this->input->getData();
 	int iter = this->property("iterations").asInteger();
 	cvErode(src, this->output_buffer, NULL, iter);
 }

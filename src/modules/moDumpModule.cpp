@@ -44,9 +44,10 @@ void moDumpModule::notifyData(moDataStream *stream) {
 		return;
 	}
 
-	if ( stream->getFormat() == "moDataGenericList" ) {
+	if ( stream->getFormat() == "touch" ||
+		 stream->getFormat() == "fiducial" ) {
 		moDataGenericList *list = static_cast<moDataGenericList*>(stream->getData());
-		LOG(INFO) << " `- DataGenericList size=" << list->size();
+		LOG(INFO) << " `- " << stream->getFormat() << " size=" << list->size();
 	}
 }
 

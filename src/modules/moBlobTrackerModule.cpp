@@ -38,7 +38,7 @@ void otFGDetector::Release(){
     /* pOldBlobList - pointer to blob list which already exist on image */
 	/* return number of detected blobs */
 //	int DetectNewBlob(IplImage* pFGMask, CvBlobSeq* pNewBlobList, CvBlobSeq* pOldBlobList) = 0;
-	
+
     /* release blob detector */
 //    void Release()=0;
 //};
@@ -57,20 +57,20 @@ MODULE_DECLARE(BlobTracker, "native", "Tracks Blobs");
 moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	MODULE_INIT();
 
-	this->output_data = new moDataStream("GenericTouch");
-	this->output_count = 2;
+	this->output_data	= new moDataStream("GenericTouch");
+	this->output_count	= 2;
 	this->output_infos[1] = new moDataStreamInfo("data", "GenericTouch", "Data stream with touch info");
 
-	this->next_id = 1;
-	this->new_blobs = new CvBlobSeq();
-	this->old_blobs = new CvBlobSeq();
+	this->next_id		= 1;
+	this->new_blobs		= new CvBlobSeq();
+	this->old_blobs		= new CvBlobSeq();
 
 	bzero(&this->param, sizeof(CvBlobTrackerAutoParam1));
 	this->param.FGTrainFrames = 0;
-	this->param.pFG       = new otFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
-	this->param.pBT       = cvCreateBlobTrackerCCMSPF();
-	this->param.pBTPP     = cvCreateModuleBlobTrackPostProcKalman();
-	this->tracker = cvCreateBlobTrackerAuto1(&this->param);
+	this->param.pFG		= new otFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
+	this->param.pBT		= cvCreateBlobTrackerCCMSPF();
+	this->param.pBTPP	= cvCreateModuleBlobTrackPostProcKalman();
+	this->tracker		= cvCreateBlobTrackerAuto1(&this->param);
 }
 
 moBlobTrackerModule::~moBlobTrackerModule() {
@@ -99,7 +99,7 @@ void moBlobTrackerModule::allocateBuffers() {
 	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	if ( src == NULL )
 		return;
-	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, 3);	//only one channel
+	this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, 3);
 	LOGM(TRACE) << "allocated output buffer for BlobTracker module.";
 }
 
@@ -121,21 +121,22 @@ void moBlobTrackerModule::applyFilter() {
 	this->clearBlobs();
 
 	for ( int i = this->tracker->GetBlobNum(); i > 0; i-- ) {
-
 		CvBlob* pB = this->tracker->GetBlob(i-1);
-		CvPoint p = cvPoint(cvRound(pB->x*256),cvRound(pB->y*256));
-		CvSize  s = cvSize(MAX(1,cvRound(CV_BLOB_RX(pB)*256)), MAX(1,cvRound(CV_BLOB_RY(pB)*256)));
-		int c = cvRound(255*this->tracker->GetState(CV_BLOB_ID(pB)));
 
-		cvEllipse( this->output_buffer,
-				  p,
-				  s,
-				  0, 0, 360,
-				  CV_RGB(c,255-c,0), cvRound(1+(3*0)/255), CV_AA, 8 );
+		// draw the blob on output image
+		if ( this->output->getObserverCount() > 0 ) {
+			CvPoint p = cvPoint(cvRound(pB->x*256),cvRound(pB->y*256));
+			CvSize  s = cvSize(MAX(1,cvRound(CV_BLOB_RX(pB)*256)), MAX(1,cvRound(CV_BLOB_RY(pB)*256)));
+			int c = cvRound(255*this->tracker->GetState(CV_BLOB_ID(pB)));
 
-		LOGM(INFO) << "<Blob>:  id="<<pB->ID<<"  pos=" <<pB->x <<","<< pB->y <<"size="<<pB->w <<","<< pB->h;
+			cvEllipse(this->output_buffer, p, s, 0, 0, 360,
+				CV_RGB(c,255-c,0), cvRound(1+(3*0)/255), CV_AA, 8);
+		}
 
-		// Not optimized, but will not care for today.
+		LOGM(INFO) << "Blob: id="<< pB->ID <<" pos=" << pB->x \
+			<< "," << pB->y << "size=" << pB->w << "," << pB->h;
+
+		// add the blob in data
 		moDataGenericContainer *touch = new moDataGenericContainer();
 		touch->properties["type"] = new moProperty("touch");
 		touch->properties["id"] = new moProperty(pB->ID);
@@ -144,7 +145,7 @@ void moBlobTrackerModule::applyFilter() {
 		touch->properties["w"] = new moProperty(pB->w);
 		touch->properties["h"] = new moProperty(pB->h);
 		this->blobs.push_back(touch);
-	}   /* Next blob. */;
+	};
 
 	this->output_data->push(&this->blobs);
 }

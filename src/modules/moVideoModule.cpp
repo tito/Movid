@@ -59,7 +59,7 @@ void moVideoModule::update() {
 }
 
 void moVideoModule::setInput(moDataStream* input, int n) {
-	assert( "no input supported on moVideoModule()" && 0 );
+	this->setError("no input supported");
 }
 
 moDataStream* moVideoModule::getInput(int n) {
@@ -67,7 +67,10 @@ moDataStream* moVideoModule::getInput(int n) {
 }
 
 moDataStream* moVideoModule::getOutput(int n) {
-	assert( n == 0 );
+	if ( n != 0 ) {
+		this->setError("Invalid output index");
+		return NULL;
+	}
 	return this->stream;
 }
 

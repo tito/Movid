@@ -90,11 +90,11 @@ void moImageFilterModule::notifyData(moDataStream *input) {
 
 
 void moImageFilterModule::allocateBuffers() {
-	IplImage* src = (IplImage*)(this->input->getData());
+	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	if ( src == NULL )
 		return;
-	LOG(DEBUG) << "First time, allocating output buffer for image filter";
-	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
+	LOGM(DEBUG) << "First time, allocating output buffer for image filter";
+	this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
 }
 
 void moImageFilterModule::update() {

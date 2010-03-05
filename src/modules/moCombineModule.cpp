@@ -32,10 +32,8 @@ void moCombineModule::stop() {
 }
 
 void moCombineModule::notifyData(moDataStream *input) {
-	IplImage* src = (IplImage*)(input->getData());
-
+	IplImage* src = static_cast<IplImage*>(input->getData());
 	assert( input->getFormat() == "IplImage" );
-
 	if ( src == NULL )
 		return;
 
@@ -90,15 +88,27 @@ void moCombineModule::update() {
 
 void moCombineModule::setInput(moDataStream *stream, int n) {
 	assert( n == 0 || n == 1 );
+
 	if ( n == 0 ) {
 		if ( this->input1 != NULL )
 			this->input1->removeObserver(this);
 		this->input1 = stream;
+		if ( stream->getFormat() != "IplImage" ) {
+			this->setError("Input 0 accept only IplImage");
+			this->input1 = NULL;
+			return;
+		}
 	} else {
 		if ( this->input2 != NULL )
 			this->input2->removeObserver(this);
 		this->input2 = stream;
+		if ( stream->getFormat() != "IplImage" ) {
+			this->setError("Input 1 accept only IplImage");
+			this->input2 = NULL;
+			return;
+		}
 	}
+
 	if ( stream != NULL )
 		stream->addObserver(this);
 }
@@ -108,10 +118,15 @@ moDataStream *moCombineModule::getInput(int n) {
 		return this->input1;
 	if ( n == 1 )
 		return this->input2;
+
+	this->setError("Invalid input index");
 	return NULL;
 }
 
 moDataStream *moCombineModule::getOutput(int n) {
-	assert( n == 0 );
+	if ( n != 0 ) {
+		this->setError("Invalid output index");
+		return NULL;
+	}
 	return this->output;
 }

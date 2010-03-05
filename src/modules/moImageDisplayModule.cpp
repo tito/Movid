@@ -46,22 +46,36 @@ void moImageDisplayModule::notifyData(moDataStream *input) {
 	this->input->unlock();
 }
 
-void moImageDisplayModule::setInput(moDataStream *input, int n) {
-	assert( n == 0 );
+void moImageDisplayModule::setInput(moDataStream *stream, int n) {
+	if ( n != 0 ) {
+		this->setError("Invalid input index");
+		return;
+	}
+
 	if ( this->input != NULL )
 		this->input->removeObserver(this);
-	this->input = input;
+	this->input = stream;
+	if ( stream != NULL ) {
+		if ( stream->getFormat() != "IplImage" ) {
+			this->setError("Input 0 accept only IplImage");
+			this->input = NULL;
+			return;
+		}
+	}
 	if ( this->input != NULL )
 		this->input->addObserver(this);
 }
 
 moDataStream* moImageDisplayModule::getInput(int n) {
-	assert( n == 0);
+	if ( n != 0 ) {
+		this->setError("Invalid input index");
+		return NULL;
+	}
 	return this->input;
 }
 
 moDataStream* moImageDisplayModule::getOutput(int n) {
-	assert( "moImageDisplayModule don't accept output" && 0 );
+	this->setError("no output supported");
 	return NULL;
 }
 

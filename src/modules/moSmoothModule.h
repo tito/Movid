@@ -10,6 +10,7 @@ public:
 	
 protected:
 	void applyFilter();
+	int toCvType(const std::string&);
 	int width, height;
 
 	MODULE_INTERNALS();

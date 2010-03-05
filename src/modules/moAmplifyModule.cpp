@@ -2,7 +2,7 @@
 #include "moAmplifyModule.h"
 #include "cv.h"
 
-MODULE_DECLARE(Amplify, "native", "Amplifies input image (for evry pixel: p = p^amp, so lareg values get larger quicker");
+MODULE_DECLARE(Amplify, "native", "Amplifies input image (for every pixel: p = p^amp, so larger values get larger quicker");
 
 moAmplifyModule::moAmplifyModule() : moImageFilterModule(){
 	MODULE_INIT();
@@ -13,7 +13,7 @@ moAmplifyModule::~moAmplifyModule() {
 }
 
 void moAmplifyModule::applyFilter() {
-	IplImage* src = (IplImage*)(this->input->getData());
-	cvMul( src,src, this->output_buffer, this->property("amplification").asDouble() );
+	IplImage* src = static_cast<IplImage*>(this->input->getData());
+	cvMul(src, src, this->output_buffer, this->property("amplification").asDouble());
 }
 

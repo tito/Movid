@@ -9,6 +9,7 @@ public:
 	virtual ~moMirrorImageModule();
 	
 protected:
+	int toCvType(const std::string &axis);
 	void applyFilter();
 	int width, height;
 	

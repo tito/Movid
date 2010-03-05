@@ -36,10 +36,10 @@ void moBackgroundSubtractModule::stop() {
 }
 
 void moBackgroundSubtractModule::allocateBuffers() {
-	IplImage* src = (IplImage*)(this->input->getData());
+	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
 	this->bg_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
-	LOG(TRACE) << "allocated output and background buffers for BackgroundSubtract module.";
+	LOGM(TRACE) << "allocated output and background buffers";
 }
 
 void moBackgroundSubtractModule::applyFilter() {
@@ -54,7 +54,7 @@ void moBackgroundSubtractModule::applyFilter() {
 	if (this->property("recapture").asBool()) {
 		cvCopy(src, this->bg_buffer);
 		this->property("recapture").set(false);
-		LOG(TRACE) << "recaptured background in BackgroundSubtract module.";
+		LOGM(TRACE) << "recaptured background";
 	}
 
 	// do subtraction

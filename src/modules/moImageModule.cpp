@@ -27,18 +27,22 @@ moImageModule::~moImageModule() {
 }
 
 void moImageModule::start() {
-	assert( this->image == NULL );
+	if ( this->image != NULL )
+		this->stop();
+
 	moModule::start();
 
 	this->image = cvLoadImage(this->property("filename").asString().c_str());
-	if ( this->image == NULL )
+	if ( this->image == NULL ) {
 		LOGM(ERROR) << "could not load image: " << this->property("filename").asString();
+		this->setError("unable to load image");
+	}
 }
 
 void moImageModule::stop() {
 	if ( this->image != NULL ) {
 		LOGM(TRACE) << "release Image";
-		// FIXME release !!!
+		cvReleaseImage((IplImage **)this->image);
 		this->image = NULL;
 	}
 	moModule::stop();
@@ -53,11 +57,14 @@ void moImageModule::update() {
 }
 
 void moImageModule::setInput(moDataStream* input, int n) {
-	assert( "no input supported on moImageModule()" && 0 );
+	this->setError("no input supported");
 }
 
 moDataStream* moImageModule::getOutput(int n) {
-	assert( n == 0 );
+	if ( n != 0 ) {
+		this->setError("Invalid output index");
+		return NULL;
+	}
 	return this->stream;
 }
 

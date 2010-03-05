@@ -32,8 +32,10 @@ void moCameraModule::start() {
 	LOGM(TRACE) << "start camera";
 
 	this->camera = cvCaptureFromCAM(this->property("index").asInteger());
-	if ( this->camera == NULL )
+	if ( this->camera == NULL ) {
 		LOGM(ERROR) << "could not load camera: " << this->property("index").asInteger();
+		this->setError("Unable to open camera");
+	}
 }
 
 void moCameraModule::stop() {
@@ -54,11 +56,14 @@ void moCameraModule::update() {
 }
 
 void moCameraModule::setInput(moDataStream* input, int n) {
-	assert( "no input supported on moCameraModule()" && 0 );
+	this->setError("no input supported");
 }
 
 moDataStream* moCameraModule::getOutput(int n) {
-	assert( n == 0 );
+	if ( n != 0 ) {
+		this->setError("Invalid output index");
+		return NULL;
+	}
 	return this->stream;
 }
 

@@ -16,8 +16,8 @@ MODULE_DECLARE(FiducialTracker, "native", "Tracks Fiducials");
 
 typedef struct {
 	Segmenter segmenter;
-	FiducialX fiducials[ MAX_FIDUCIALS ];
-	RegionX regions[ MAX_FIDUCIALS * 4 ];
+	FiducialX fiducials[MAX_FIDUCIALS];
+	RegionX regions[MAX_FIDUCIALS * 4];
 	TreeIdMap treeidmap;
 	FidtrackerX fidtrackerx;
 	ShortPoint *dmap;
@@ -67,8 +67,8 @@ void moFiducialTrackerModule::allocateBuffers() {
 }
 
 void moFiducialTrackerModule::applyFilter() {
-	IplImage* src = (IplImage*)(this->input->getData());
-	fiducials_data_t *fids = (fiducials_data_t *)this->internal;
+	IplImage* src = static_cast<IplImage*>(this->input->getData());
+	fiducials_data_t *fids = static_cast<fiducials_data_t*>(this->internal);
 	moDataGenericContainer *fiducial;
 	FiducialX *fdx;
 	int fid_count, valid_fiducials = 0;
@@ -81,7 +81,13 @@ void moFiducialTrackerModule::applyFilter() {
 	assert( src != NULL );
 	assert( fids != NULL );
 	assert( src->imageData != NULL );
-	assert( "fiducial tracker needs single channel input" && (src->nChannels == 1) );
+
+	if ( src->nChannels != 1 ) {
+		this->setError("FiducialTracker input image must be a single channel binary image.");
+		this->stop();
+		return;
+	}
+
 
 	// prepare image if we have listener on output
 	if ( do_image )
