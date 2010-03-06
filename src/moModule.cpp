@@ -84,13 +84,13 @@ void _thread_process(moThread *thread) {
 void moModule::start() {
 	this->use_thread = this->property("use_thread").asBool();
 	if ( this->use_thread ) {
-		LOGM(TRACE) << "create semaphore";
+		LOGM(MO_TRACE) << "create semaphore";
 		this->sem_need_update = new pt::semaphore(0);
 
-		LOGM(TRACE) << "start thread";
+		LOGM(MO_TRACE) << "start thread";
 		this->thread = new moThread(_thread_process, this);
 		if ( this->thread == NULL ) {
-			LOGM(ERROR) << "unable to create thread";
+			LOGM(MO_ERROR) << "unable to create thread";
 			this->setError("Error while creating thread");
 			this->use_thread = false;
 		} else {
@@ -99,7 +99,7 @@ void moModule::start() {
 	}
 
 	this->is_started = true;
-	LOGM(DEBUG) << "start";
+	LOGM(MO_DEBUG) << "start";
 }
 
 void moModule::stop() {
@@ -115,7 +115,7 @@ void moModule::stop() {
 	}
 
 	this->is_started = false;
-	LOG(DEBUG) << "stop <" << this->property("id").asString() << ">";
+	LOG(MO_DEBUG) << "stop <" << this->property("id").asString() << ">";
 }
 
 void moModule::lock() {

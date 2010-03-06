@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$..\bin"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
 			>
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;"
+				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
 				PreprocessorDefinitions="WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -59,7 +59,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="jpeg.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib"
+				AdditionalDependencies="WS2_32.lib jpeg.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
+				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;;C:\OpenCV\lib"
+				IgnoreAllDefaultLibraries="false"
+				GenerateDebugInformation="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -110,7 +113,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;"
+				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
 				PreprocessorDefinitions="WIN32"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -128,7 +131,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="jpeg.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib"
+				AdditionalDependencies="WS2_32.lib jpeg.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
+				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;;C:\OpenCV\lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -325,6 +329,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\moThread.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\contrib\XgetOpt\XGetopt.cxx"
 				>
 			</File>
 			<Filter

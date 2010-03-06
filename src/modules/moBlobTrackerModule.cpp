@@ -66,7 +66,7 @@ moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	this->new_blobs		= new CvBlobSeq();
 	this->old_blobs		= new CvBlobSeq();
 
-	bzero(&this->param, sizeof(CvBlobTrackerAutoParam1));
+	memset(&this->param, 0, sizeof(CvBlobTrackerAutoParam1));
 	this->param.FGTrainFrames = 0;
 	this->param.pFG		= new otFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
 	this->param.pBT		= cvCreateBlobTrackerCCMSPF();
@@ -101,7 +101,7 @@ void moBlobTrackerModule::allocateBuffers() {
 	if ( src == NULL )
 		return;
 	this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, 3);
-	LOGM(TRACE) << "allocated output buffer for BlobTracker module.";
+	LOGM(MO_TRACE) << "allocated output buffer for BlobTracker module.";
 }
 
 void moBlobTrackerModule::applyFilter() {
@@ -134,7 +134,7 @@ void moBlobTrackerModule::applyFilter() {
 				CV_RGB(c,255-c,0), cvRound(1+(3*0)/255), CV_AA, 8);
 		}
 
-		LOGM(INFO) << "Blob: id="<< pB->ID <<" pos=" << pB->x \
+		LOGM(MO_INFO) << "Blob: id="<< pB->ID <<" pos=" << pB->x \
 			<< "," << pB->y << "size=" << pB->w << "," << pB->h;
 
 		// add the blob in data

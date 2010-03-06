@@ -1,5 +1,18 @@
+#ifdef WIN32
+#include <winsock2.h>
+#include <windows.h>
+#include <Xgetopt.h>
+#endif
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/queue.h>
 #include <signal.h>
+#ifndef WIN32
+#include <sys/socket.h>
+
+#include <unistd.h>
+#include <netdb.h>
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -924,9 +937,16 @@ int main(int argc, char **argv) {
 		pipeline = new moPipeline();
 
 	if ( config_httpserver ) {
-
-		signal(SIGPIPE, SIG_IGN);
-
+		#ifdef WIN32
+			WORD wVersionRequested;
+			WSADATA wsaData;
+			int	err;
+			wVersionRequested = MAKEWORD( 2, 2 );
+			err = WSAStartup( wVersionRequested, &wsaData );
+		#else
+			signal(SIGPIPE, SIG_IGN);
+		#endif
+		
 		base = event_init();
 		server = evhttp_new(NULL);
 

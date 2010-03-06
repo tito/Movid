@@ -155,7 +155,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 		bundle->Add(msg);
 
 	} else {
-		LOGM(ERROR) << "Unsupported input type: " << input->getFormat();
+		LOGM(MO_ERROR) << "Unsupported input type: " << input->getFormat();
 		this->setError("Unsupported input type");
 	}
 

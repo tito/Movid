@@ -5,7 +5,7 @@
 
 #define REGISTER_MODULE(name) \
 	extern moModule* factory_create_mo##name(); \
-	LOG(DEBUG) << "register <" #name "> module"; \
+	LOG(MO_DEBUG) << "register <" #name "> module"; \
 	moFactory::getInstance()->registerModule(#name, factory_create_mo##name);
 
 LOG_DECLARE("Factory");
@@ -30,7 +30,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Threshold);
 	REGISTER_MODULE(Tuio);
 	REGISTER_MODULE(Video);
-	LOG(INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
+	LOG(MO_INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }
 
 void moFactory::cleanup() {

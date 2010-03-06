@@ -57,6 +57,6 @@ void moOSC::send(WOscBundle *msg) {
 	ret = sendto(this->sock, msg->GetBuffer(), msg->GetBufferLen(), 0,
 		 (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-	LOG(TRACE) << "send " << ret << " vs " << msg->GetBufferLen();
+	LOG(MO_TRACE) << "send " << ret << " vs " << msg->GetBufferLen();
 }
 

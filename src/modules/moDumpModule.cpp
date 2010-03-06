@@ -35,10 +35,10 @@ void moDumpModule::update() {
 }
 
 void moDumpModule::notifyData(moDataStream *stream) {
-	LOG(INFO) << "stream<" << stream << ">, type=" << stream->getFormat() << ", observers=" << stream->getObserverCount();
+	LOG(MO_INFO) << "stream<" << stream << ">, type=" << stream->getFormat() << ", observers=" << stream->getObserverCount();
 	if ( stream->getFormat() == "IplImage" ) {
 		IplImage *img = static_cast<IplImage *>(stream->getData());
-		LOG(INFO) << " `- Image size=" << img->width << "x" << img->height \
+		LOG(MO_INFO) << " `- Image size=" << img->width << "x" << img->height \
 			<< ", channels=" << img->nChannels \
 			<< ", depth=" << img->depth;
 		return;
@@ -47,7 +47,7 @@ void moDumpModule::notifyData(moDataStream *stream) {
 	if ( stream->getFormat() == "touch" ||
 		 stream->getFormat() == "fiducial" ) {
 		moDataGenericList *list = static_cast<moDataGenericList*>(stream->getData());
-		LOG(INFO) << " `- " << stream->getFormat() << " size=" << list->size();
+		LOG(MO_INFO) << " `- " << stream->getFormat() << " size=" << list->size();
 	}
 }
 

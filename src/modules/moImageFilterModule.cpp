@@ -91,7 +91,7 @@ void moImageFilterModule::allocateBuffers() {
 	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	if ( src == NULL )
 		return;
-	LOGM(DEBUG) << "First time, allocating output buffer for image filter";
+	LOGM(MO_DEBUG) << "First time, allocating output buffer for image filter";
 	this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
 }
 

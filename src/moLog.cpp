@@ -13,7 +13,7 @@ moLogMessage::moLogMessage(std::string name, std::string filename,
 
 	t = time(NULL);
 	tmp = localtime(&t);
-	strftime(buffer, sizeof(buffer), "%F %H:%M:%S", tmp);
+	strftime(buffer, sizeof(buffer), "%H:%M:%S", tmp);
 
 	this->os << buffer << " | ";
 	this->os << moLog::getInstance()->getLogLevelName(level) << " | ";
