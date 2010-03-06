@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="libmovid"
+	Name="Movid"
 	ProjectGUID="{9E6DC113-54E2-4DF4-899F-ADC959123912}"
 	RootNamespace="libmovid"
 	TargetFrameworkVersion="196613"
@@ -19,7 +19,7 @@
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="2"
 			>
 			<Tool
@@ -40,7 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;"
+				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;"
+				PreprocessorDefinitions="WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -57,12 +58,14 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="WS2_32.lib"
-				OutputFile="$(SolutionDir)\$(ConfigurationName)\$(ProjectName).lib"
+				Name="VCLinkerTool"
+				AdditionalDependencies="jpeg.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -74,6 +77,9 @@
 				Name="VCFxCopTool"
 			/>
 			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
@@ -81,7 +87,7 @@
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="4"
+			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
 			>
@@ -104,7 +110,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;"
+				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;"
+				PreprocessorDefinitions="WIN32"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
@@ -120,12 +127,14 @@
 				Name="VCPreLinkEventTool"
 			/>
 			<Tool
-				Name="VCLibrarianTool"
-				AdditionalDependencies="WS2_32.lib"
-				OutputFile="$(SolutionDir)\$(ConfigurationName)\$(ProjectName).lib"
+				Name="VCLinkerTool"
+				AdditionalDependencies="jpeg.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"
@@ -135,6 +144,9 @@
 			/>
 			<Tool
 				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -181,6 +193,10 @@
 			</File>
 			<File
 				RelativePath="..\..\src\moProperty.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\moThread.h"
 				>
 			</File>
 			<Filter
@@ -307,6 +323,10 @@
 				RelativePath="..\..\src\moProperty.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\moThread.cpp"
+				>
+			</File>
 			<Filter
 				Name="modules"
 				>
@@ -392,6 +412,10 @@
 				</File>
 			</Filter>
 		</Filter>
+		<File
+			RelativePath="..\..\src\movid.cpp"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
