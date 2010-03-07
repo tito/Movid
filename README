@@ -3,18 +3,19 @@
 ###################################################
 
 There is a visual studio solution in the Movid.visualstudio folder.
-Before you can open it and compile without errors, you have unpack some of the
-3rd party libraries in contrib/
 
-* extract WOscLib-00.09.zip ibnto teh contrib directory (so there is a directory called contrib/WOscLib-00.09)
-* extract libevent-1.4.13-stable.tar.gz into teh contrib directory (so that there is a called contib/libevent-1.4.13-stable)
-* extract lptypes-2.1.1.tar.gz into teh contrib directory (so that there is a directory called contib/lptypes-2.1.1)
+Before you can open it and compile without errors, you need to install OpenCV.  You can compile openCV 2.0 yourself.  the official binary distribution will not work because teh libs and dlls are build with mingw, dont work with visual studio, and dont include the blob tracking stuff in cvaux.
 
-You can use 7zip to extract the tar.gz files: http://www.7-zip.org/  (just double click teh archive, tehn douible click the .tar file inside and drag into teh contrib directory)
+If you dont want to compiel yourself, do teh following:
 
-after you extarct these things, you can just hit teh debug button inside Visual studio
-(the projects have been created and tested with Visual C++ Express 2008, which you can download for free from microsoft)
+*download http://tehansen.de/OpenCV.zip
+*unzip to C:\OpenCV  
 
+it must go in C:\OpenCV, otherwise you need to change the library include directory in teh Movid Visual Studio project, also teh VS studio set teh PATH environment variable to include c:\OpenCV\bin.  If you dont know what this paragraph is talking about, just make sure you unzip it into C:\OpenCV, so that the dll files are in C:\OpenCV\bin, and the lib files in C:\OpenCV\lib
+
+
+
+ 
 
 
 

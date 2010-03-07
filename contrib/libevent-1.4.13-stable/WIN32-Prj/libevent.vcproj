@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="libevent"
 	ProjectGUID="{B98ABFCE-24D4-4B70-94DE-EF7F1E0662F9}"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
