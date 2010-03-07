@@ -19,6 +19,7 @@ moBackgroundSubtractModule::~moBackgroundSubtractModule() {
 }
 
 void moBackgroundSubtractModule::stop() {
+	moImageFilterModule::stop();
 
 	if ( this->output_buffer != NULL ) {
 		cvReleaseImage(&this->output_buffer);
@@ -31,8 +32,6 @@ void moBackgroundSubtractModule::stop() {
 
 	// reset state
 	this->property("recapture").set(true);
-
-	moImageFilterModule::stop();
 }
 
 void moBackgroundSubtractModule::allocateBuffers() {

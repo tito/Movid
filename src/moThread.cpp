@@ -32,3 +32,7 @@ void moThread::stop() {
 bool moThread::wantQuit() {
 	return this->want_quit;
 }
+
+bool moThread::relax(int m) {
+	return pt::thread::relax(m);
+}

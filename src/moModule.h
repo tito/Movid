@@ -228,13 +228,17 @@ private:
 	 */
 	bool use_thread;
 
-	/*! \brief Semaphore to release when update need a refresh
-	 */
-	pt::semaphore *sem_need_update;
-
 	/*! \brief Boolean to known if we need to call update or not
 	 */
 	bool need_update;
+
+	/*! \brief Mutex to protect part of the module
+	 */
+	pt::mutex *mtx;
+
+	/*! \brief Trigger to awake the thread
+	 */
+	pt::trigger *thread_trigger;
 
 protected:
 

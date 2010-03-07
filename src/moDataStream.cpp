@@ -6,9 +6,11 @@
 moDataStream::moDataStream(std::string format) {
 	this->format = format;
 	this->data	 = NULL;
+	this->mtx	 = new pt::mutex();
 }
 
 moDataStream::~moDataStream() {
+	delete this->mtx;
 }
 
 std::string moDataStream::getFormat() {
@@ -20,11 +22,11 @@ void moDataStream::setFormat(const std::string &format) {
 }
 
 void moDataStream::lock() {
-	// FIXME
+	this->mtx->lock();
 }
 
 void moDataStream::unlock() {
-	// FIXME
+	this->mtx->unlock();
 }
 
 void moDataStream::push(void *data) {
@@ -52,8 +54,11 @@ void moDataStream::removeObserver(moModule *module) {
 
 void moDataStream::notifyObservers() {
 	std::vector<moModule *>::iterator it;
-	for ( it = this->observers.begin(); it != this->observers.end(); it++ )
+	for ( it = this->observers.begin(); it != this->observers.end(); it++ ) {
+		(*it)->lock();
 		(*it)->notifyData(this);
+		(*it)->unlock();
+	}
 }
 
 void *moDataStream::getData() {

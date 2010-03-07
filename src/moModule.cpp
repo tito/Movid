@@ -3,6 +3,8 @@
 #include <iostream>
 #include <errno.h>
 
+#include "pasync.h"
+
 #include "moModule.h"
 #include "moDataStream.h"
 #include "moLog.h"
@@ -23,7 +25,8 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->thread		= NULL;
 	this->use_thread	= false;
 	this->need_update	= false;
-	this->sem_need_update = NULL;
+	this->thread_trigger = NULL;
+	this->mtx			= new pt::mutex();
 
 	this->properties["use_thread"] = new moProperty(false);
 }
@@ -50,6 +53,10 @@ moModule::~moModule() {
 			(*it).second = NULL;
 		}
 	}
+
+	if ( this->thread_trigger != NULL )
+		delete this->thread_trigger;
+	delete this->mtx;
 }
 
 std::string moModule::createId(std::string base) {
@@ -76,7 +83,8 @@ void moModule::notifyData(moDataStream *source) {
 void _thread_process(moThread *thread) {
 	moModule *module = (moModule *)thread->getUserData();
 	while ( !thread->wantQuit() ) {
-		module->needUpdate(true);
+		if ( !module->needUpdate(true) )
+			continue;
 		module->update();
 	}
 }
@@ -84,8 +92,10 @@ void _thread_process(moThread *thread) {
 void moModule::start() {
 	this->use_thread = this->property("use_thread").asBool();
 	if ( this->use_thread ) {
-		LOGM(MO_TRACE) << "create semaphore";
-		this->sem_need_update = new pt::semaphore(0);
+		if ( this->thread_trigger == NULL ) {
+			LOGM(MO_TRACE) << "create trigger";
+			this->thread_trigger = new pt::trigger(true, false);
+		}
 
 		LOGM(MO_TRACE) << "start thread";
 		this->thread = new moThread(_thread_process, this);
@@ -107,10 +117,6 @@ void moModule::stop() {
 		this->thread->stop();
 		delete this->thread;
 		this->thread = NULL;
-
-		delete this->sem_need_update;
-		this->sem_need_update = NULL;
-
 		this->use_thread = false;
 	}
 
@@ -119,11 +125,11 @@ void moModule::stop() {
 }
 
 void moModule::lock() {
-	// implement if a thread.
+	this->mtx->lock();
 }
 
 void moModule::unlock() {
-	// implement if a thread.
+	this->mtx->unlock();
 }
 
 bool moModule::isStarted() {
@@ -238,22 +244,28 @@ void moModule::poll() {
 }
 
 void moModule::notifyUpdate() {
-	if ( this->use_thread ) {
-		this->sem_need_update->post();
-	} else {
-		this->need_update = true;
-	}
+	this->need_update = true;
+	if ( this->use_thread )
+		this->thread_trigger->post();
 }
 
 bool moModule::needUpdate(bool lock) {
+	if ( this->need_update ) {
+		this->need_update = false;
+		return true;
+	} else if ( lock == false )
+		return false;
+
 	// call from a thread
 	if ( lock ) {
-		this->sem_need_update->wait();
+		assert(this->thread != NULL);
+		this->thread_trigger->wait();
+	}
+
+	if ( this->need_update ) {
+		this->need_update = false;
 		return true;
 	}
 
-	// call not from a thread;
-	bool b = this->need_update;
-	this->need_update = false;
-	return b;
+	return false;
 }

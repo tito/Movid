@@ -62,9 +62,11 @@ void moTuioModule::start() {
 		this->property("ip").asString(),
 		this->property("port").asInteger()
 	);
+	moModule::start();
 }
 
 void moTuioModule::stop() {
+	moModule::stop();
 	delete this->osc;
 	this->osc = NULL;
 }

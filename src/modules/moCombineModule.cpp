@@ -27,9 +27,6 @@ moCombineModule::moCombineModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT, 
 moCombineModule::~moCombineModule() {
 }
 
-void moCombineModule::stop() {
-}
-
 void moCombineModule::notifyData(moDataStream *input) {
 	IplImage* src = static_cast<IplImage*>(input->getData());
 	assert( input->getFormat() == "IplImage" );
@@ -46,7 +43,7 @@ void moCombineModule::notifyData(moDataStream *input) {
 		}
 	}
 
-	this->needUpdate();
+	this->notifyUpdate();
 }
 
 void moCombineModule::update() {

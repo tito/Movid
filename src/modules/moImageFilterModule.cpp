@@ -63,11 +63,11 @@ moDataStream* moImageFilterModule::getOutput(int n) {
 }
 
 void moImageFilterModule::stop() {
+	moModule::stop();
 	if ( this->output_buffer != NULL ) {
 		cvReleaseImage(&this->output_buffer);
 		this->output_buffer = NULL;
 	}
-	moModule::stop();
 }
 
 void moImageFilterModule::notifyData(moDataStream *input) {
@@ -104,8 +104,11 @@ void moImageFilterModule::update() {
 	// don't pass data to filter if source is NULL
 	if ( this->input->getData() != NULL ) {
 		this->applyFilter();
+		this->input->unlock();
+
 		this->output->push(this->output_buffer);
+	} else {
+		this->input->unlock();
 	}
 
-	this->input->unlock();
 }

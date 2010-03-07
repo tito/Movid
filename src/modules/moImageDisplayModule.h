@@ -4,6 +4,8 @@
 #include <string>
 #include "../moModule.h"
 
+#include "cv.h"
+
 class moDataStream;
 
 class moImageDisplayModule : public moModule {
@@ -22,6 +24,7 @@ public:
 
 private:
 	moDataStream *input;
+	IplImage *img;
 	std::string window_name;
 
 	MODULE_INTERNALS();

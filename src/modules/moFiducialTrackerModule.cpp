@@ -76,8 +76,9 @@ void moFiducialTrackerModule::applyFilter() {
 	bool do_image = this->output->getObserverCount() > 0 ? true : false;
 	CvSize size = cvGetSize(src);
 
-	CvFont font;
+	CvFont font, font2;
 	cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 1.0, 1.0, 0, 2);
+	cvInitFont(&font2, CV_FONT_HERSHEY_PLAIN, 1.0, 1.0, 0, 1);
 
 	assert( src != NULL );
 	assert( fids != NULL );
@@ -129,8 +130,19 @@ void moFiducialTrackerModule::applyFilter() {
 		if ( do_image ) {
 			std::ostringstream oss;
 			oss << fdx->id;
-			cvPutText (this->output_buffer, oss.str().c_str(),
-				cvPoint(fdx->x, fdx->y), &font, cvScalar(20, 255, 20));
+			cvPutText(this->output_buffer, oss.str().c_str(),
+				cvPoint(fdx->x, fdx->y - 20), &font, cvScalar(20, 255, 20));
+
+			oss.str("");
+			oss << "angle:" << int(fdx->angle * 180 / 3.14159265);
+			cvPutText(this->output_buffer, oss.str().c_str(),
+				cvPoint(fdx->x - 30, fdx->y), &font2, cvScalar(20, 255, 20));
+
+			oss.str("");
+			oss << "l/r:" << fdx->leaf_size << "/" << fdx->root_size;
+			cvPutText(this->output_buffer, oss.str().c_str(),
+				cvPoint(fdx->x - 50, fdx->y + 20), &font2, cvScalar(20, 255, 20));
+
 		}
 	}
 

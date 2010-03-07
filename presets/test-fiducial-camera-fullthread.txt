@@ -35,4 +35,6 @@ pipeline set gray use_thread 1
 pipeline set threshold use_thread 1
 pipeline set smooth use_thread 1
 pipeline set tracker use_thread 1
+pipeline set combine use_thread 1
+pipeline set tuio use_thread 1
 

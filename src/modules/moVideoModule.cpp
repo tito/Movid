@@ -28,19 +28,19 @@ moVideoModule::~moVideoModule() {
 
 void moVideoModule::start() {
 	assert( this->video == NULL );
-	moModule::start();
 	LOGM(MO_TRACE) << "start video";
 	this->video = cvCaptureFromAVI(this->property("filename").asString().c_str());
 	this->numframes = (int)cvGetCaptureProperty(static_cast<CvCapture *>(this->video), CV_CAP_PROP_FRAME_COUNT);
+	moModule::start();
 }
 
 void moVideoModule::stop() {
+	moModule::stop();
 	if ( this->video != NULL ) {
 		LOGM(MO_TRACE) << "release video";
 		cvReleaseCapture((CvCapture **)&this->video);
 		this->video = NULL;
 	}
-	moModule::stop();
 }
 
 void moVideoModule::update() {

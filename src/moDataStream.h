@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "pasync.h"
+
 class moModule;
 
 class moDataStreamInfo {
@@ -59,6 +61,7 @@ protected:
 	std::string format;
 	void *data;
 	std::vector<moModule*> observers;
+	pt::mutex *mtx;
 
 	void notifyObservers();
 };

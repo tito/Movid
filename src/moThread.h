@@ -15,6 +15,7 @@ public:
 	void execute();
 	void stop();
 	bool wantQuit();
+	bool relax(int);
 
 private:
 	thread_process_t process;

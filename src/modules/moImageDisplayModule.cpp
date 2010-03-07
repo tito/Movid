@@ -1,6 +1,7 @@
 #include <sstream>
 #include <assert.h>
 
+#include "cv.h"
 #include "highgui.h"
 
 #include "moImageDisplayModule.h"
@@ -16,6 +17,7 @@ moImageDisplayModule::moImageDisplayModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 	MODULE_INIT();
 
 	this->input = NULL;
+	this->img = NULL;
 
 	// declare inputs
 	this->input_infos[0] = new moDataStreamInfo(
@@ -28,11 +30,13 @@ moImageDisplayModule::moImageDisplayModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 }
 
 moImageDisplayModule::~moImageDisplayModule(){
+	if ( this->img != NULL )
+		cvReleaseImage(&this->img);
 }
 
 void moImageDisplayModule::stop() {
-	cvDestroyWindow(this->property("name").asString().c_str());
 	moModule::stop();
+	cvDestroyWindow(this->property("name").asString().c_str());
 }
 
 void moImageDisplayModule::notifyData(moDataStream *input) {
@@ -41,10 +45,15 @@ void moImageDisplayModule::notifyData(moDataStream *input) {
 	assert( input == this->input );
 	assert( input->getFormat() == "IplImage" );
 
+
 	// out input have been updated !
 	this->input->lock();
-	cvShowImage(this->property("name").asString().c_str(), this->input->getData());
+	if ( this->img != NULL )
+		cvReleaseImage(&this->img);
+	this->img = cvCloneImage(static_cast<IplImage*>(this->input->getData()));
 	this->input->unlock();
+
+	this->notifyUpdate();
 }
 
 void moImageDisplayModule::setInput(moDataStream *stream, int n) {
@@ -81,5 +90,8 @@ moDataStream* moImageDisplayModule::getOutput(int n) {
 }
 
 void moImageDisplayModule::update() {
+	this->input->lock();
+	cvShowImage(this->property("name").asString().c_str(), this->img);
+	this->input->unlock();
 }
 

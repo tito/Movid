@@ -53,6 +53,7 @@ static bool config_httpserver = true;
 static bool test_mode = false;
 static std::string config_pipelinefn = "";
 static struct evhttp *server = NULL;
+static int config_delay = 5;
 
 class otStreamModule : public moModule {
 public:
@@ -748,6 +749,17 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 			WRITE_ERROR << "invalid line command" << LN;
 			goto parse_error;
 		}
+
+		if ( tokens[0] == "config" ) {
+			if ( tokens.size() < 3 ) {
+				WRITE_ERROR << "not enough parameters" << LN;
+				goto parse_error;
+			}
+			if ( tokens[1] == "delay" ) {
+				config_delay = atoi(tokens[2].c_str());
+			}
+		}
+
 		if ( tokens[0] == "pipeline" ) {
 			if ( tokens.size() < 2 ) {
 				WRITE_ERROR << "not enough parameters" << LN;
@@ -975,7 +987,7 @@ int main(int argc, char **argv) {
 
 	while ( want_quit == false ) {
 		// FIXME remove this hack !!!
-		cvWaitKey(5);
+		cvWaitKey(config_delay);
 
 		// update pipeline
 		if ( pipeline->isStarted() ) {

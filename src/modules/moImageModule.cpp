@@ -40,12 +40,12 @@ void moImageModule::start() {
 }
 
 void moImageModule::stop() {
+	moModule::stop();
 	if ( this->image != NULL ) {
 		LOGM(MO_TRACE) << "release Image";
 		cvReleaseImage((IplImage **)this->image);
 		this->image = NULL;
 	}
-	moModule::stop();
 }
 
 void moImageModule::update() {
