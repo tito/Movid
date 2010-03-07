@@ -6,9 +6,11 @@
 *.mode1v3
 *tehansen.pbxuser
 *.core
-tracker
-tester
-blobtrack
-describe
-daemon
 build
+movid
+
+# cause of window, try to not show differences...
+# but no help for already commited files...
+contrib/WOscLib-*
+contrib/jpeg-8*
+contrib/libevent*
