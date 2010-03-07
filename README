@@ -1,3 +1,25 @@
+###################################################
+# Windows Compile Notes
+###################################################
+
+There is a visual studio solution in the Movid.visualstudio folder.
+Before you can open it and compile without errors, you have unpack some of the
+3rd party libraries in contrib/
+
+* extract WOscLib-00.09.zip ibnto teh contrib directory (so there is a directory called contrib/WOscLib-00.09)
+* extract libevent-1.4.13-stable.tar.gz into teh contrib directory (so that there is a called contib/libevent-1.4.13-stable)
+* extract lptypes-2.1.1.tar.gz into teh contrib directory (so that there is a directory called contib/lptypes-2.1.1)
+
+You can use 7zip to extract the tar.gz files: http://www.7-zip.org/  (just double click teh archive, tehn douible click the .tar file inside and drag into teh contrib directory)
+
+after you extarct these things, you can just hit teh debug button inside Visual studio
+(the projects have been created and tested with Visual C++ Express 2008, which you can download for free from microsoft)
+
+
+
+
+
+
 ##################################################
 # OSX Compile Notes:
 ##################################################
