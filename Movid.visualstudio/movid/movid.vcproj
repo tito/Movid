@@ -60,7 +60,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="WS2_32.lib jpeg.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
-				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;;C:\OpenCV\lib"
+				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;;&quot;$(SolutionDir)..\contrib\ptypes-2.1.1\win32\$(ConfigurationName)&quot;;&quot;$(SolutionDir)..\contrib\libevent-1.4.13-stable\WIN32-Prj\$(ConfigurationName)&quot;;C:\OpenCV\lib"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
 			/>
