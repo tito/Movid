@@ -26,7 +26,7 @@ LIBMOVID_STATIC = libmovid.a
 
 OBJ = moThread.o moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
       moDaemon.o moLog.o moDataGenericContainer.o moDumpModule.o \
-	  moCameraModule.o moImageDisplayModule.o moSmoothModule.o \
+	  moCameraModule.o moImageDisplayModule.o moSmoothModule.o moRoiModule.o \
 	  moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \
 	  moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
 	  moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \

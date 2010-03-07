@@ -27,6 +27,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Invert);
 	REGISTER_MODULE(MirrorImage);
 	REGISTER_MODULE(Smooth);
+	REGISTER_MODULE(Roi);
 	REGISTER_MODULE(Threshold);
 	REGISTER_MODULE(Tuio);
 	REGISTER_MODULE(Video);
