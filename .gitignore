@@ -11,7 +11,4 @@ tester
 blobtrack
 describe
 daemon
-build/
-contrib/jpeg-8/
-contrib/libevent-1.4.13-stable/
-contrib/WOscLib-00.09/
+build

@@ -1,0 +1,90 @@
+
+WOSC_VERSION_MAJOR=00
+WOSC_VERSION_MINOR=09
+DISTDIR=WOscLib-$(WOSC_VERSION_MAJOR).$(WOSC_VERSION_MINOR)
+
+CFLAGS = -Wall -Os @OS_SPECIFIC_CFLAGS@
+LDFLAGS = -Wall -Os
+
+OBJS = \
+    WOscString.o               \
+    WOscInfo.o                 \
+    WOscPacket.o               \
+    WOscTimeTag.o              \
+    WOscLib.o                  \
+    WOscPatternMatch.o         \
+    WOscBlob.o                 \
+    WOscUtil.o                 \
+    WOscPriorityQueue.o        \
+    WOscBundle.o               \
+    WOscMessage.o              \
+    WOscReceiver.o             \
+    WOscNetReturn.o            \
+    WOscContainer.o            \
+    WOscMethod.o               \
+    WOscReceiverMethod.o       \
+    WOscException.o
+
+EXAMPPATH=./examples
+
+EXAMPOBJ = \
+    $(EXAMPPATH)/WOscServer.o  \
+	$(EXAMPPATH)/WOscClient.o
+
+TARGET = libwosclib@OS_SPECIFIC_LIBSUFFIX@
+SERVER = $(EXAMPPATH)/woscserver@OS_SPECIFIC_EXAMPLESUFFIX@
+CLIENT = $(EXAMPPATH)/woscclient@OS_SPECIFIC_EXAMPLESUFFIX@
+
+.PHONY : clean all dist dist-zip dist-clean
+
+all: $(OBJS) $(TARGET) $(CLIENT) $(SERVER) $(EXAMPOBJ)
+
+clean:
+	$(RM) -f $(OBJS) $(EXAMPOBJ) $(TARGET) $(CLIENT) $(SERVER)
+
+$(SERVER):$(TARGET) $(EXAMPPATH)/WOscServer.o
+	$(CXX) -o $@ $(EXAMPPATH)/WOscServer.o -L./ @OS_SPECIFIC_EXAMPLELINKS@
+
+$(CLIENT):$(TARGET) $(EXAMPPATH)/WOscClient.o
+	$(CXX) -o $@ $(EXAMPPATH)/WOscClient.o -L./ @OS_SPECIFIC_EXAMPLELINKS@
+
+libwosclib.a: ${OBJS}
+	$(AR) -r $@ $^
+
+libwosclib.dll: ${OBJS}
+	$(CXX) @OS_SPECIFIC_LIBLINKS@ -o $@ $^
+
+libwosclib.so: ${OBJS}
+	$(CXX) @OS_SPECIFIC_LIBLINKS@ -o $@ $^
+
+libwosclib.dylib: ${OBJS}
+	$(CXX) @OS_SPECIFIC_LIBLINKS@ -o $@ $^
+
+$(OBJS): %.o: %.cpp
+	$(CXX) -c $(CFLAGS) -o$@ $<
+
+$(EXAMPOBJ): %.o: %.cpp
+	$(CXX) -c $(CFLAGS) -o$@ -I. -I$(EXAMPPATH) $<
+
+dist: clean
+	rm -rf $(DISTDIR)
+	mkdir $(DISTDIR)
+	mkdir $(DISTDIR)/cfg
+	mkdir $(DISTDIR)/doc
+	mkdir $(DISTDIR)/examples
+	cp configure $(DISTDIR)/
+	cp configure.ac $(DISTDIR)/
+	cp *.cpp $(DISTDIR)/
+	cp *.h $(DISTDIR)/
+	cp *.in $(DISTDIR)/
+	cp *.txt $(DISTDIR)/
+	cp cfg/* $(DISTDIR)/cfg/
+	cp doc/* $(DISTDIR)/doc/
+	cp examples/* $(DISTDIR)/examples/
+
+dist-zip: dist
+	zip -r $(DISTDIR).zip $(DISTDIR)
+
+dist-clean: clean
+	rm -rf $(DISTDIR)
+	rm -f Makefile config.h config.log config.status $(DISTDIR).zip
