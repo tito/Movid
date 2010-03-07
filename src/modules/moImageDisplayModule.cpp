@@ -48,9 +48,12 @@ void moImageDisplayModule::notifyData(moDataStream *input) {
 
 	// out input have been updated !
 	this->input->lock();
-	if ( this->img != NULL )
+	if ( this->img != NULL ) {
 		cvReleaseImage(&this->img);
-	this->img = cvCloneImage(static_cast<IplImage*>(this->input->getData()));
+		this->img = NULL;
+	}
+	if ( this->input->getData() != NULL )
+		this->img = cvCloneImage(static_cast<IplImage*>(this->input->getData()));
 	this->input->unlock();
 
 	this->notifyUpdate();
