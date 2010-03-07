@@ -1,30 +1,26 @@
-JPEG_ARCHIVE = jpegsrc.v8.tar.gz
 JPEG_PATH = jpeg-8
 JPEG_LIB = ${JPEG_PATH}/.libs/libjpeg.a
 
-LIBEVENT_ARCHIVE = libevent-1.4.13-stable.tar.gz
 LIBEVENT_PATH = libevent-1.4.13-stable
 LIBEVENT_LIB = ${LIBEVENT_PATH}/.libs/libevent.a
 
 LIBFIDTRACK_PATH = libfidtrack
 LIBFIDTRACK_LIB = ${LIBFIDTRACK_PATH}/libfidtrack.a
 
-WOSCLIB_ARCHIVE = WOscLib-00.09.zip
 WOSCLIB_PATH = WOscLib-00.09
 WOSCLIB_LIB = ${WOSCLIB_PATH}/libwosclib.a
 
-PTYPES_ARCHIVE = ptypes-2.1.1.tar.gz
 PTYPES_PATH = ptypes-2.1.1
 PTYPES_LIB = ${PTYPES_PATH}/lib/libptypes.a
 
 all: ptypes libevent jpeglib fidtrack wosclib
 
 clean:
-	-rm -rf ${LIBEVENT_PATH}
-	-rm -rf ${JPEG_PATH}
-	-rm -rf ${WOSCLIB_PATH}
-	-rm -rf ${PTYPES_PATH}
-	${MAKE} -C ${LIBFIDTRACK_PATH} clean
+	-${MAKE} -C ${LIBEVENT_PATH} distclean
+	-${MAKE} -C ${JPEG_PATH} distclean
+	-${MAKE} -C ${WOSCLIB_PATH} clean
+	-${MAKE} -C ${PTYPES_PATH} clean
+	-${MAKE} -C ${LIBFIDTRACK_PATH} clean
 
 #
 # LIBEVENT
@@ -33,8 +29,7 @@ clean:
 libevent: ${LIBEVENT_LIB}
 
 ${LIBEVENT_LIB}:
-	tar xzf ${LIBEVENT_ARCHIVE}
-	cd ${LIBEVENT_PATH} && ./configure --disable-shared && ${MAKE}
+	cd ${LIBEVENT_PATH} && sh ./configure --disable-shared && ${MAKE}
 
 #
 # JPEGLIB
@@ -43,14 +38,15 @@ ${LIBEVENT_LIB}:
 jpeglib: ${JPEG_LIB}
 
 ${JPEG_LIB}:
-	tar xzf ${JPEG_ARCHIVE}
-	cd ${JPEG_PATH} && ./configure && ${MAKE}
+	cd ${JPEG_PATH} && sh ./configure && ${MAKE}
 
 #
 # FIDTRACK
 #
 
-fidtrack:
+fidtrack: ${LIBFIDTRACK_LIB}
+
+${LIBFIDTRACK_LIB}:
 	${MAKE} -C ${LIBFIDTRACK_PATH}
 
 #
@@ -60,8 +56,7 @@ fidtrack:
 wosclib: ${WOSCLIB_LIB}
 
 ${WOSCLIB_LIB}:
-	unzip ${WOSCLIB_ARCHIVE}
-	cd ${WOSCLIB_PATH} && ./configure && ${MAKE} libwosclib.a
+	cd ${WOSCLIB_PATH} && sh ./configure && ${MAKE} libwosclib.a
 
 #
 # PTYPES
@@ -70,6 +65,5 @@ ${WOSCLIB_LIB}:
 ptypes: ${PTYPES_LIB}
 
 ${PTYPES_LIB}:
-	tar xzf ${PTYPES_ARCHIVE}
 	cd ${PTYPES_PATH} && make
 
