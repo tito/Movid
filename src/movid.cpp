@@ -3,13 +3,14 @@
 #include <windows.h>
 #include <Xgetopt.h>
 #endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/queue.h>
 #include <signal.h>
+
 #ifndef WIN32
 #include <sys/socket.h>
-
 #include <unistd.h>
 #include <netdb.h>
 #endif
