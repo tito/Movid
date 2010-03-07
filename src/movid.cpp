@@ -759,7 +759,7 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 				config_delay = atoi(tokens[2].c_str());
 			}
 		}
-
+		else
 		if ( tokens[0] == "pipeline" ) {
 			if ( tokens.size() < 2 ) {
 				WRITE_ERROR << "not enough parameters" << LN;
