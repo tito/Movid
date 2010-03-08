@@ -31,6 +31,7 @@
 #include "evhttp.h"
 
 #define MO_DAEMON "movid"
+#define MO_GUIDIR "gui/html/"
 
 static moPipeline *pipeline = NULL;
 static bool want_quit = false;
@@ -945,11 +946,13 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
 		evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
 
-		evhttp_set_cb(server, "/gui/index.html", web_file, (void*)"gui/html/index.html");
-		evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)"gui/html/jquery.js");
-		evhttp_set_cb(server, "/gui/mo.js", web_file, (void*)"gui/html/mo.js");
-		evhttp_set_cb(server, "/gui/gui.css", web_file, (void*)"gui/html/gui.css");
-		evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)"gui/html/nostream.png");
+		evhttp_set_cb(server, "/gui/index.html", web_file, (void*)MO_GUIDIR"index.html");
+		evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)MO_GUIDIR"jquery.js");
+		evhttp_set_cb(server, "/gui/mo.js", web_file, (void*)MO_GUIDIR"mo.js");
+		evhttp_set_cb(server, "/gui/init.js", web_file, (void*)MO_GUIDIR"init.js");
+		evhttp_set_cb(server, "/gui/processing.js", web_file, (void*)MO_GUIDIR"processing.js");
+		evhttp_set_cb(server, "/gui/gui.css", web_file, (void*)MO_GUIDIR"gui.css");
+		evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)MO_GUIDIR"nostream.png");
 	}
 
 	while ( want_quit == false ) {
