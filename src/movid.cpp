@@ -102,18 +102,19 @@ public:
 		return NULL;
 	}
 
-	void copy() {
+	bool copy() {
 		if ( this->output_buffer == NULL || this->input == NULL )
-			return;
+			return false;
 		this->input->lock();
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL || src->imageData == NULL )
-			return;
+			return false;
 		if ( this->property("scale").asInteger() == 1 )
 			cvCopy(src, this->output_buffer);
 		else
 			cvResize(src, this->output_buffer);
 		this->input->unlock();
+		return true;
 	}
 
 	virtual void update() {}
@@ -146,7 +147,10 @@ static bool ipl2jpeg(IplImage *frame, unsigned char **outbuffer, long unsigned i
 	cinfo.image_width = frame->width;
 	cinfo.image_height = frame->height;
 	cinfo.input_components = frame->nChannels;
-	cinfo.in_color_space = JCS_RGB;
+	if ( frame->nChannels == 1 )
+		cinfo.in_color_space = JCS_GRAYSCALE;
+	else
+		cinfo.in_color_space = JCS_RGB;
 
 	jpeg_set_defaults(&cinfo);
 	jpeg_start_compress(&cinfo, TRUE);
@@ -215,6 +219,7 @@ struct chunk_req_state {
 	otStreamModule *stream;
 	int i;
 	bool closed;
+	int delay;
 };
 
 static void web_pipeline_stream_close(struct evhttp_connection *conn, void *arg) {
@@ -226,9 +231,11 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 {
 	struct evbuffer *evb = NULL;
 	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
-	struct timeval when = { 0, 20 };
+	struct timeval when = { 0, 0 };
 	long unsigned int outlen;
 	unsigned char *outbuf;
+
+	when.tv_usec = state->delay * 1000;
 
 	if ( state->closed ) {
 		// free !
@@ -238,13 +245,13 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 		return;
 	}
 
-	if ( state->stream->needUpdate() ) {
+	if ( !state->stream->copy() ) {
 		event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
 		return;
 	}
 
-	state->stream->copy();
-	cvCvtColor(state->stream->output_buffer, state->stream->output_buffer, CV_BGR2RGB);
+	if ( state->stream->output_buffer->nChannels == 3 )
+		cvCvtColor(state->stream->output_buffer, state->stream->output_buffer, CV_BGR2RGB);
 
 	ipl2jpeg(state->stream->output_buffer, &outbuf, &outlen);
 
@@ -289,16 +296,24 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 	if ( evhttp_find_header(&headers, "index") != NULL )
 		idx = atoi(evhttp_find_header(&headers, "index"));
 
+	if ( idx < 0 || idx >= module->getOutputCount() ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "invalid index");
+	}
+
 	struct chunk_req_state *state = (struct chunk_req_state*)malloc(sizeof(struct chunk_req_state));
 
 	memset(state, 0, sizeof(struct chunk_req_state));
 	state->req = req;
 	state->closed = false;
 	state->stream = new otStreamModule();
+	state->delay = 100;
 
 	if ( evhttp_find_header(&headers, "scale") != NULL )
 		state->stream->property("scale").set(evhttp_find_header(&headers, "scale"));
 
+	if ( evhttp_find_header(&headers, "delay") != NULL )
+		state->delay = atoi(evhttp_find_header(&headers, "delay"));
 
 	state->stream->setInput(module->getOutput(idx));
 

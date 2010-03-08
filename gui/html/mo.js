@@ -2,17 +2,25 @@ var mo_baseurl = 'http://127.0.0.1:7500';
 var mo_available_inputs = [];
 var mo_available_outputs = [];
 var mo_streamscale = 2;
+var mo_widget_selected = null;
+var mo_status_text = 'stopped';
 
 function mo_bootstrap() {
+	Processing($('#movidcanvas')[0], $('#movidpjs')[0].text);
+
 	mo_modules();
 	mo_status();
+
+	$('#modules').toggle();
+	$('#video').toggle();
+	$('#properties').toggle();
 }
 
 function mo_modules() {
 	$.get(mo_baseurl + '/factory/list', function(data) {
-		$('#modules_content').html('');
+		$('#modules').html('');
 		$(data['list']).each(function (index, elem) {
-			$('#modules_content').append(
+			$('#modules').append(
 				$('<a></a>')
 				.html(elem)
 				.addClass('module')
@@ -27,11 +35,53 @@ function mo_status() {
 		mo_available_inputs = [];
 		mo_available_outputs = [];
 
-		$('#status').html(data['status']['running'] == '0' ? 'stopped' : 'running');
+		mo_status_text = data['status']['running'] == '0' ? 'stopped' : 'running'
+		$('#statusinfo').html(mo_status_text);
 
-		$('#instances_content').html('');
+
+		widgetClearConnectivity();
+
 		for ( key in data['status']['modules'] ) {
-			infos = data['status']['modules'][key];
+			var infos = data['status']['modules'][key];
+			if ( widgetGet(key) == null ) {
+				widgetCreate(key);
+				var _x = infos['properties']['x'];
+				var _y = infos['properties']['y'];
+				if ( typeof _x == 'undefined' )
+					_x = 0;
+				if ( typeof _y == 'undefined' )
+					_y = 0;
+				widgetPosition(key, _x, _y);
+
+				if ( typeof(infos['inputs']) != 'undefined' ) {
+					for ( idx in infos['inputs'] ) {
+						input = infos['inputs'][idx];
+						widgetAddInput(key, input['name'], input['type']);
+					}
+				}
+				if ( typeof(infos['outputs']) != 'undefined' ) {
+					for ( idx in infos['outputs'] ) {
+						input = infos['outputs'][idx];
+						widgetAddOutput(key, input['name'], input['type']);
+					}
+				}
+			}
+		}
+
+		for ( key in data['status']['modules'] ) {
+			var infos = data['status']['modules'][key];
+			if ( typeof(infos['outputs']) != 'undefined' ) {
+				for ( idx in infos['outputs'] ) {
+					var output = infos['outputs'][idx];
+					for ( k in output['observers'] ) {
+						widgetConnect(key, idx, output['observers'][k], 0);
+					}
+				}
+			}
+		}
+
+
+			/**
 			$('#instances_content').append(
 				$('<a></a>')
 				.html(key)
@@ -49,30 +99,29 @@ function mo_status() {
 				output = infos['outputs'][idx];
 				mo_available_outputs[mo_available_outputs.length] = key + ':' + output['index'];
 			}
-		}
+			**/
 	});
 }
 
 function mo_create(elem) {
 	$.get(mo_baseurl + '/pipeline/create?objectname=' + elem, function(data) {
 		mo_status();
-		mo_properties(data['message']);
+		mo_select(data['message']);
 	});
+	$('#modules').slideToggle('fast');
 }
 
 function mo_remove(elem) {
 	$.get(mo_baseurl + '/pipeline/remove?objectname=' + elem, function(data) {
 		mo_status();
-		mo_properties('');
+		mo_select('');
 	});
 }
 
 function mo_properties(elem) {
 	if ( elem == '' ) {
-		$('#commands_content').html('');
-		$('#properties_content').html('');
-		$('#inputs_content').html('');
-		$('#outputs_content').html('');
+		$('#properties').html('');
+		$('#properties').slideUp('fast');
 		mo_status();
 		return;
 	}
@@ -83,95 +132,36 @@ function mo_properties(elem) {
 				continue;
 			infos = data['status']['modules'][key];
 
-			$('#commands_content').html('');
-			$('#commands_content').append(
-				$('<a></a>')
-				.html('Delete')
-				.attr('href', 'javascript:mo_remove("' + key + '")')
-			);
-
 			// update properties
-			$('#properties_content').html('');
+			$('#properties').html('');
 			for ( property in infos['properties'] ) {
 				value = infos['properties'][property];
-				$('#properties_content').append(
+				$('#properties').append(
 					$('<p></p>')
 					.html(property)
 				);
-				$('#properties_content').append(
+				$('#properties').append(
 					$('<input></input>')
 					.attr('type', 'text')
 					.attr('value', value)
-					.attr('onblur', 'javascript:mo_set(this, "' + elem + '", "' + property + '")')
+					.attr('onblur', 'javascript:mo_set("' + elem + '", "' + property + '", this.value)')
 				);
-			}
-
-			$('#inputs_content').html('');
-			$('#outputs_content').html('');
-
-			for ( idx in infos['inputs'] ) {
-				input = infos['inputs'][idx];
-				$('#inputs_content').append(
-					$('<p></p>')
-					.html(input['name'])
-				);
-			}
-
-			for ( idx in infos['outputs'] ) {
-				output = infos['outputs'][idx];
-
-				$('#outputs_content').append(
-					$('<a></a>')
-					.html(output['name'])
-					.attr('href', 'javascript:mo_stream("' + elem + '")')
-				);
-				for ( oidx in output['observers'] ) {
-					observer = output['observers'][oidx];
-					$('#outputs_content').append(
-						$('<p></p>')
-						.append(
-							$('<a></a>')
-							.html(observer)
-							.attr('href', 'javascript:mo_properties("' + observer + '")')
-						)
-						.append(
-							$('<a>remove</a>')
-							.attr('href', 'javascript:mo_connect("' + observer + ':' + idx + '", "NULL", ' + idx + ', "' + elem + '")')
-						)
-					);
-				}
-
-				// prepare input list
-				select = $('<select></select>')
-					.attr('onchange', 'mo_connect(this.value, "' + key + '", ' + idx + ', "' + elem + '")');
-				select.append($('<option></option>'));
-				for ( iidx in mo_available_inputs ) {
-					input = mo_available_inputs[iidx];
-					select.append(
-						$('<option></option>')
-						.attr('value', input)
-						.html(input)
-					);
-				}
-				$('#outputs_content').append(select);
 			}
 		}
 	});
+
+	$('#properties').slideDown('fast');
 }
 
-function mo_set(input, id, key) {
-	$.get(mo_baseurl + '/pipeline/set?objectname=' + id + '&name=' + key + '&value=' + input.value, function(data) {
+function mo_set(id, k, v) {
+	$.get(mo_baseurl + '/pipeline/set?objectname=' + id + '&name=' + k + '&value=' + v, function(data) {
 		// TODO
 	});
 }
 
-function mo_connect(input, output, outidx, baseobject) {
-	list = input.split(':');
-	input = list[0];
-	inidx = list[1];
+function mo_connect(input, inidx, output, outidx) {
 
 	$.get(mo_baseurl + '/pipeline/connect?in=' + input + '&out=' + output + '&inidx=' + inidx + '&outidx=' + outidx, function(data) {
-		mo_properties(baseobject);
 	});
 }
 
@@ -189,13 +179,24 @@ function mo_stop() {
 }
 
 function mo_stream(elem) {
-	if ( elem == '' ) {
-		$('#streamid').html('-');
-		$('#stream').attr('src', '/gui/nostream.png');
-	} else {
-		$('#streamid').html(elem);
-		$('#stream').attr('src', mo_baseurl + '/pipeline/stream?objectname=' + elem + '&scale=' + mo_streamscale);
+	if ( mo_status_text == 'stopped' ) {
+		$('#video').slideUp('fast');
+		return;
 	}
+	if ( elem == '' ) {
+		$('#streamid').html('No video');
+		$('#streamimg').attr('src', '/gui/nostream.png');
+		$('#video').slideUp('fast');
+	} else {
+		$('#streamid').html('Video of ' + elem);
+		$('#streamimg').attr('src', mo_baseurl + '/pipeline/stream?objectname=' + elem + '&scale=' + mo_streamscale + '#' + Math.random() * 10000);
+		$('#video').slideDown('fast');
+	}
+}
+
+function mo_select(elem) {
+	mo_properties(elem);
+	mo_stream(elem);
 }
 
 

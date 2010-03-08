@@ -1,47 +1,478 @@
 <html>
 <head>
 	<title>Movid Web Admin</title>
+	<script type="text/javascript">
+	var widgetCreate = null,
+		widgetGet = null,
+		widgetPosition = null,
+		widgetAddInput = null,
+		widgetAddOutput = null,
+		widgetClearConnectivity = null,
+		widgetConnect = null;
+	</script>
+	<script type="text/javascript" src="processing.js"></script>
 	<script type="text/javascript" src="jquery.js"></script>
 	<script type="text/javascript" src="mo.js"></script>
 	<link rel="stylesheet" type="text/css" href="gui.css"/>
 </head>
 <body>
-	<div id="wrapper">
-		<div id="commands">
-			<div class="status">Status: <span id="status">unknown</span></div>
-			<div id="startstop">
-				<a href="javascript:mo_start()">Start</a> -
-				<a href="javascript:mo_stop()">Stop</a> -
-				<a href="javascript:mo_quit()">Quit</a>
-			</div>
-		<div id="modules">
-			<h1>Create</h1>
-			<div id="modules_content"></div>
-		</div>
-		<div id="instances">
-			<h1>Instances</h1>
-			<div id="instances_content"></div>
-		</div>
-		<div id="properties">
-			<h1>Commands</h1>
-			<div id="commands_content"></div>
-			<h1>Properties</h1>
-			<div id="properties_content"></div>
-		</div>
-		<div id="ios">
-			<h1>Inputs</h1>
-			<div id="inputs_content"></div>
 
-			<h1>Outputs</h1>
-			<div id="outputs_content"></div>
-		</div>
-		<div id="streamings">
-			<h1>Streaming</h1>
-			<div id="streamings_content">
-				<p><span id="streamid">-</span> <a href="javascript:mo_stream('')">Stop</a></p>
-				<img id="stream" src="/gui/nostream.png"/>
-			</div>
-		</div>
+<div id="sidebar">
+	<h3><a onclick="$('#status').slideToggle('fast'); return false;">Status</a></h3>
+	<div id="status">
+		<p>
+			Status: <span id="statusinfo">Stopped</span>
+			<br/>
+			<a href="#" onclick="mo_start()">Start</a> -
+			<a href="#" onclick="mo_stop()">Stop</a>
+		</p>
 	</div>
+	<h3><a onclick="$('#modules').slideToggle('fast')">Create</a></h3>
+	<div id="modules">
+	</div>
+	<h3><a onclick="$('#video').slideToggle('fast')">Video</a></h3>
+	<div id="video">
+		<p id="streamid">No video</p>
+		<img src="/gui/nostream.png" id="streamimg"/>
+	</div>
+	<h3><a onclick="$('#properties').slideToggle('fast')">Properties</a></h3>
+	<div id="properties">
+	</div>
+</div>
+
+<div id="pjs">
+<script id="movidpjs" type="application/processing" target="movidcanvas">
+
+class IOWidget {
+	String name = '';
+	String type = '';
+
+	ArrayList observers;
+	ArrayList observers_idx;
+
+	IOWidget(String _name, String _type) {
+		name = _name;
+		type = _type;
+		observers = new ArrayList();
+		observers_idx = new ArrayList();
+	}
+
+	void connect(Widget _w, int _idx) {
+		observers.add(_w);
+		observers_idx.add(_idx);
+	}
+
+	void clearConnectivity() {
+		for ( int i = 0; i < observers.size(); i++ ) {
+			observers.remove(observers.get(0));
+			observers_idx.remove(observers_idx.get(0));
+		}
+	}
+}
+
+class Widget {
+	int x = 50;
+	int y = 50;
+	int w = 120;
+	int h = 75;
+	String name = 'UnknownID';
+	ArrayList inputs;
+	ArrayList outputs;
+
+	Widget() {
+		inputs = new ArrayList();
+		outputs = new ArrayList();
+	}
+
+	bool collide(int _x, int _y) {
+		return _x >= x && _x <= x + w && _y >= y && _y <= y + h;
+	}
+
+	int collideInput(int _x, int _y) {
+		_h = headerSize();
+		if ( _x < x || _x > x + 20 )
+			return -1;
+		if ( _y < _h || _y >= _h + inputs.size() * 20 )
+			return -1;
+		_y -= _h;
+		_y = _y / 20;
+		idx = Math.floor(_y);
+		if ( _y - idx <= 0.75 )
+			return idx;
+		return -1;
+	}
+
+	int collideOutput(int _x, int _y) {
+		_h = headerSize();
+		if ( _x < x + w - 20 || _x > x + w )
+			return -1;
+		if ( _y < h || _y >= _h + outputs.size() * 20 )
+			return -1;
+		_y -= _h;
+		_y = _y / 20;
+		idx = Math.floor(_y);
+		if ( _y - idx <= 0.75 )
+			return idx;
+		return -1;
+	}
+
+	void draw() {
+		drawBox();
+		drawInputs();
+		drawOutputs();
+	}
+
+	void drawInputs() {
+		fill(250, 150, 50);
+
+		_x = x;
+		_y = headerSize();
+		for ( int i = 0; i < inputs.size(); i++ ) {
+			rect(_x, _y, 15, 15);
+			_y += 20;
+		}
+	}
+
+	void drawOutputs() {
+		fill(250, 150, 50);
+
+		_x = x + w - 15;
+		_y = y + textHeight(name) + 10;
+		for ( int i = 0; i < outputs.size(); i++ ) {
+			rect(_x, _y, 15, 15);
+			_y += 20;
+		}
+	}
+
+	void drawBox() {
+		// box
+		fill(204, 102, 0);
+		rect(x, y, w, h);
+
+		fill(250, 150, 50);
+		rect(x, y, w, textHeight(name) + 6);
+
+		// text
+		fill(255, 255, 255);
+		text(name, x + (w - textWidth(name)) / 2, y + textHeight(name) + 2);
+	}
+
+	int headerSize() {
+		return y + textHeight(this.name) + 10;
+	}
+
+	int getInputX(int idx) {
+		return x + 15 / 2.;
+	}
+
+	int getOutputX(int idx) {
+		return x + w - 15 / 2.;
+	}
+
+	int getInputY(int idx) {
+		return headerSize() + idx * 20 + 15 / 2.;
+	}
+
+	int getOutputY(int idx) {
+		return headerSize() + idx * 20 + 15 / 2.;
+	}
+
+	void clearConnectivity() {
+		for ( int i = 0; i < inputs.size(); i++ ) {
+			inputs[i].clearConnectivity();
+		}
+		for ( int i = 0; i < outputs.size(); i++ ) {
+			outputs[i].clearConnectivity();
+		}
+	}
+}
+
+//
+// link with UI
+//
+
+widgetCreate = function(String _name) {
+	Widget w = new Widget();
+	w.name = _name;
+	widgets.add(w);
+}
+
+widgetGet = function(String _name) {
+	for ( int i = 0; i < widgets.size(); i++ )
+		if ( widgets.get(i).name == _name )
+			return widgets.get(i);
+	return null;
+}
+
+widgetPosition = function(String _name, int _x, int _y) {
+	Widget w = widgetGet(_name);
+	if ( w == null )
+		return;
+	w.x = parseInt(_x);
+	w.y = parseInt(_y);
+}
+
+widgetAddInput = function(String _name, String _type) {
+	Widget w = widgetGet(_name);
+	if ( w == null )
+		return;
+	IOWidget io = new IOWidget(_name, _type);
+	w.inputs.add(io);
+}
+
+widgetAddOutput = function(String _name, String _type) {
+	Widget w = widgetGet(_name);
+	if ( w == null )
+		return;
+	IOWidget io = new IOWidget(_name, _type);
+	w.outputs.add(io);
+}
+
+widgetClearConnectivity = function() {
+	for ( int i = 0; i < widgets.size(); i++ ) {
+		Widget w = widgets.get(i);
+		w.clearConnectivity();
+	}
+}
+
+widgetConnect = function(_out, _outidx, _in, _inidx) {
+	Widget wout = widgetGet(_out),
+		   win = widgetGet(_in);
+	if ( win == null )
+		return;
+	wout.outputs.get(parseInt(_outidx)).connect(win, parseInt(_inidx));
+}
+
+//
+// declarations
+//
+
+int fontsize = 11;
+PFont fontA = loadFont("monospace");
+ArrayList widgets;
+int selected_widget = -1;
+int selected_widget_x = 0;
+int selected_widget_y = 0;
+Widget selected_input_widget;
+int selected_input_idx = -1;
+Widget selected_output_widget;
+int selected_output_idx = -1;
+Widget connectivity_widget;
+String connectivity_io;
+int connectivity_idx;
+int connectivity_ok = 0;
+color cok = color(50, 200, 50);
+color cko = color(200, 50, 50);
+color cwait = color(200, 200, 50);
+
+int textWidth(String s) {
+	return s.length * (fontsize / 2) + (s.length - 1);
+}
+
+int textHeight(String s) {
+	return fontsize;
+}
+
+void setup() {
+	size(800,600);
+	frameRate(25);
+	noStroke();
+	textFont(fontA, fontsize);
+	widgets = new ArrayList();
+	//widgets.add(new Widget());
+	draw();
+}
+
+void draw() {
+	Widget w;
+
+	background(51);
+
+	for ( int i = 0; i < widgets.size(); i ++ ) {
+		w = widgets.get(i);
+		if ( selected_widget == i ) {
+			w.x = mouseX - selected_widget_x;
+			w.y = mouseY - selected_widget_y;
+		}
+		w.draw();
+	}
+
+	searchConnectivity();
+	checkConnectivity();
+	drawConnectivity();
+
+	$('#framecount').html(frameCount);
+}
+
+void drawConnectivity() {
+	if ( selected_input_idx != -1 ) {
+		line(
+			selected_input_widget.getInputX(selected_input_idx),
+			selected_input_widget.getInputY(selected_input_idx),
+			mouseX,
+			mouseY
+		);
+	} else if ( selected_output_idx != -1 ) {
+		line(
+			selected_output_widget.getOutputX(selected_output_idx),
+			selected_output_widget.getOutputY(selected_output_idx),
+			mouseX,
+			mouseY
+		);
+	}
+
+	stroke(cwait);
+	Widget w, w2;
+	IOWidget io;
+	int idx;
+	for (var i = 0;  i < widgets.size(); i++ ) {
+		w = widgets[i];
+		for ( var j = 0; j < w.outputs.size(); j++ ) {
+			io = w.outputs.get(j);
+			for ( var k = 0; k < io.observers.size(); k++ ) {
+				w2 = io.observers.get(k);
+				idx = io.observers_idx.get(k);
+				line(w.getOutputX(j), w.getOutputY(j),
+					 w2.getInputX(idx), w2.getInputY(idx));
+			}
+		}
+	}
+
+	noStroke();
+}
+
+void searchConnectivity() {
+	Widget w;
+	for (var i = 0;  i < widgets.size(); i++ ) {
+		w = widgets.get(i);
+		if ( !w.collide(mouseX, mouseY) )
+			continue;
+
+		// selected an input ?
+		idx = w.collideInput(mouseX, mouseY);
+		if ( idx != -1 ) {
+			connectivity_widget = w;
+			connectivity_idx = idx;
+			connectivity_io = 'input';
+			return;
+		}
+
+		// selected an output ?
+		idx = w.collideOutput(mouseX, mouseY);
+		if ( idx != -1 ) {
+			connectivity_widget = w;
+			connectivity_idx = idx;
+			connectivity_io = 'output';
+			return;
+		}
+	}
+
+	connectivity_idx = -1;
+	connectivity_io = '';
+}
+
+void checkConnectivity() {
+
+	connectivity_ok = 0;
+
+	strokeWeight(2);
+
+	if ( connectivity_idx == -1 ) {
+		stroke(cwait);
+		return;
+	}
+
+	if ( selected_input_idx != -1 ) {
+		if ( connectivity_io != 'output' ) {
+			stroke(cko);
+			return;
+		}
+		if ( selected_input_widget == connectivity_widget ) {
+			stroke(cko);
+			return;
+		}
+	} else if ( selected_output_idx != -1 ) {
+		if ( connectivity_io != 'input' ) {
+			stroke(cko);
+			return;
+		}
+		if ( selected_output_widget == connectivity_widget ) {
+			stroke(cko);
+			return;
+		}
+	}
+
+	connectivity_ok = 1;
+	stroke(cok);
+}
+
+void mousePressed() {
+	Widget w;
+	int idx;
+
+	for ( int i = widgets.size() - 1; i >= 0; i-- ) {
+		w = widgets.get(i);
+		if ( w.collide(mouseX, mouseY) ) {
+			// selected an input ?
+			idx = w.collideInput(mouseX, mouseY);
+			if ( idx != -1 ) {
+				selected_input_widget = w;
+				selected_input_idx = idx;
+				return;
+			}
+
+			// selected an output ?
+			idx = w.collideOutput(mouseX, mouseY);
+			if ( idx != -1 ) {
+				selected_output_widget = w;
+				selected_output_idx = idx;
+				return;
+			}
+
+			// so, the widget is selected !
+			selected_widget = i;
+			selected_widget_x = mouseX - w.x;
+			selected_widget_y = mouseY - w.y;
+			mo_select(widgets.get(selected_widget).name);
+			return;
+		}
+	}
+
+	selected_input_idx = -1;
+	selected_output_idx = -1;
+	selected_widget = -1;
+	mo_select('');
+}
+
+void mouseReleased() {
+
+	if ( connectivity_ok == 1 ) {
+		if ( selected_output_idx != -1 ) {
+			selected_output_widget.outputs.get(selected_output_idx).connect(
+				connectivity_widget, connectivity_idx);
+			mo_connect(connectivity_widget.name, connectivity_idx, selected_output_widget.name, selected_output_idx);
+		} else if ( selected_input_idx != -1 ) {
+			connectivity_widget.outputs.get(connectivity_idx).connect(
+				selected_input_widget, selected_input_idx);
+			mo_connect(selected_input_widget, selected_input_idx, connectivity_widget, connectivity_idx);
+		}
+		connectivity_ok = 0;
+	}
+
+	if ( selected_widget != -1 ) {
+		Widget w = widgets.get(selected_widget);
+		mo_set(w.name, "x", w.x);
+		mo_set(w.name, "y", w.y);
+	}
+
+	selected_widget = -1;
+	selected_input_idx = -1;
+	selected_output_idx = -1;
+}
+
+</script><canvas id="movidcanvas" width="800" height="600">You need HTML5 canvas support.</canvas>
+<div id="footer">
+	framecount:<span id="framecount">0</span>
+</div>
 </body>
 </html>

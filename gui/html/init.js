@@ -5,8 +5,6 @@
  * the Processing.js engine.
  */
 
-var pjsmain = -1;
-
 if ( window.addEventListener ) {
 	window.addEventListener("load", function() {
 		var scripts = document.getElementsByTagName("script");
@@ -23,7 +21,7 @@ if ( window.addEventListener ) {
 				}
 
 				if ( canvas ) {
-					pjsmain = Processing(canvas, scripts[i].text);
+					Processing(canvas, scripts[i].text);
 				}
 			}
 		}

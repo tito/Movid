@@ -1,90 +1,94 @@
- body, html {
-background-color: #000000;
-font:100% "Trebuchet MS",Verdana,Helvetica,Arial,sans-serif;
+html, body {
+	background-color: rgb(30, 30, 30);
+	color: rgb(200, 200, 200);
+	font-family: Lucida, sans-serif;
+	font-size: 90%;
 }
 
-.status,
-#startstop {
-color: #f0f0f0;
-background-color: #2A3139;
-padding: 4px;
-margin: 0px 10px;
+a {
+	color: rgb(204, 102, 0);
+	text-decoration: none;
 }
 
-#startstop {
-background-color: #f0f0f0;
+#footer {
+	color: rgb(70, 70, 70);
 }
 
-#streamings,
-#modules,
-#instances,
-#properties,
-#ios {
-background-color: #2A3139;
-display: block;
-width: 180px;
-float: left;
-font-size: 90%;
-margin: 10px;
+#sidebar {
+	float: left;
+	width: 270px;
+	background-color: rgb(51, 51, 51);
 }
 
-h1 {
-padding: 5px;
-margin: 0px;
-font-size: 100%;
-color: #eeeeee;
+#sidebar h3 {
+	margin: 2px 0px;
+	padding: 0px;
+	font-size: 110%;
+	font-weight: normal;
+	background-color: rgb(70, 70, 70);
 }
 
-#streamings_content,
-#properties_content,
-#inputs_content,
-#outputs_content,
-#commands_content {
-background-color: #f0f0f0;
-padding: 5px 0px;
+#sidebar h3 a {
+	color: rgb(220, 220, 220);
+	padding: 2px 5px;
+	display: block;
+	cursor: pointer;
 }
 
-
-#streamings_content a,
-#commands_content a,
-#outputs_content a,
-#properties_content p {
-text-decoration: none;
-margin: 10px 0px 2px 0px;
-padding: 0px 4px;
+#sidebar h3 a:hover {
+	color: rgb(240, 240, 240);
+	background-color: rgb(90, 90, 90);
 }
 
-#streamings_content a,
-#commands_content a,
-#outputs_content a,
-#startstop a {
-text-decoration: none;
-color: #ee4525;
+#sidebar div a {
+	display: block;
+	padding: 2px 5px;
 }
 
-select,
-input {
-display: block;
-margin: 5px 0px;
-border: 0px;
-width: 100%;
-background-color: #ffffff;
+#sidebar p {
+	padding: 2px 5px;
+	text-align: center;
 }
 
-input {
-padding: 4px;
+#sidebar div p a {
+	display: inline;
+	padding: 0px;
 }
 
-.module {
-display: block;
-padding: 5px;
-text-decoration: none;
-color: black;
-background-color: #f0f0f0;
+#sidebar div a:hover {
+	background-color: rgb(60, 60, 60);
 }
 
-.module:hover {
-background-color: #e0e5f0;
+#pjs {
+	margin-left: 280px;
 }
 
+canvas {
+	cursor: pointer;
+}
 
+#streamimg {
+	width: 100%;
+}
+
+#properties p {
+	float: left;
+	width: 130px;
+	padding: 2px 4px;
+	margin: 1px 0px;
+	text-align: right;
+	overflow: hidden;
+}
+
+#properties input {
+	float: left;
+	width: 130px;
+	padding: 2px 4px;
+	margin: 1px 0px;
+	background-color: rgb(180, 180, 180);
+	border: none;
+}
+
+#properties input:hover {
+	background-color: rgb(220, 220, 220);
+}
