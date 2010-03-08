@@ -27,9 +27,6 @@ moCombineModule::moCombineModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT, 
 moCombineModule::~moCombineModule() {
 }
 
-void moCombineModule::stop() {
-}
-
 void moCombineModule::notifyData(moDataStream *input) {
 	IplImage* src = static_cast<IplImage*>(input->getData());
 	assert( input->getFormat() == "IplImage" );
@@ -42,11 +39,11 @@ void moCombineModule::notifyData(moDataStream *input) {
 	} else {
 		if ( this->output_buffer->width != src->width ||
 			 this->output_buffer->height != src->height ) {
-			LOG(CRITICAL) << "cannot combine image with different size";
+			LOG(MO_CRITICAL) << "cannot combine image with different size";
 		}
 	}
 
-	this->needUpdate();
+	this->notifyUpdate();
 }
 
 void moCombineModule::update() {

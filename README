@@ -1,3 +1,26 @@
+###################################################
+# Windows Compile Notes
+###################################################
+
+There is a visual studio solution in the Movid.visualstudio folder.
+
+Before you can open it and compile without errors, you need to install OpenCV.  You can compile openCV 2.0 yourself.  the official binary distribution will not work because teh libs and dlls are build with mingw, dont work with visual studio, and dont include the blob tracking stuff in cvaux.
+
+If you dont want to compiel yourself, do teh following:
+
+*download http://tehansen.de/OpenCV.zip
+*unzip to C:\OpenCV  
+
+it must go in C:\OpenCV, otherwise you need to change the library include directory in teh Movid Visual Studio project, also teh VS studio set teh PATH environment variable to include c:\OpenCV\bin.  If you dont know what this paragraph is talking about, just make sure you unzip it into C:\OpenCV, so that the dll files are in C:\OpenCV\bin, and the lib files in C:\OpenCV\lib
+
+
+
+ 
+
+
+
+
+
 ##################################################
 # OSX Compile Notes:
 ##################################################

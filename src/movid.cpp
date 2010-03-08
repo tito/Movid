@@ -1,5 +1,19 @@
+#ifdef WIN32
+#include <winsock2.h>
+#include <windows.h>
+#include <Xgetopt.h>
+#endif
+
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/queue.h>
 #include <signal.h>
+
+#ifndef WIN32
+#include <sys/socket.h>
+#include <unistd.h>
+#include <netdb.h>
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -40,6 +54,7 @@ static bool config_httpserver = true;
 static bool test_mode = false;
 static std::string config_pipelinefn = "";
 static struct evhttp *server = NULL;
+static int config_delay = 5;
 
 class otStreamModule : public moModule {
 public:
@@ -735,7 +750,16 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 			WRITE_ERROR << "invalid line command" << LN;
 			goto parse_error;
 		}
-		if ( tokens[0] == "pipeline" ) {
+
+		if ( tokens[0] == "config" ) {
+			if ( tokens.size() < 3 ) {
+				WRITE_ERROR << "not enough parameters" << LN;
+				goto parse_error;
+			}
+			if ( tokens[1] == "delay" ) {
+				config_delay = atoi(tokens[2].c_str());
+			}
+		} else if ( tokens[0] == "pipeline" ) {
 			if ( tokens.size() < 2 ) {
 				WRITE_ERROR << "not enough parameters" << LN;
 				goto parse_error;
@@ -925,9 +949,16 @@ int main(int argc, char **argv) {
 		pipeline = new moPipeline();
 
 	if ( config_httpserver ) {
-
-		signal(SIGPIPE, SIG_IGN);
-
+		#ifdef WIN32
+			WORD wVersionRequested;
+			WSADATA wsaData;
+			int	err;
+			wVersionRequested = MAKEWORD( 2, 2 );
+			err = WSAStartup( wVersionRequested, &wsaData );
+		#else
+			signal(SIGPIPE, SIG_IGN);
+		#endif
+		
 		base = event_init();
 		server = evhttp_new(NULL);
 
@@ -957,7 +988,7 @@ int main(int argc, char **argv) {
 
 	while ( want_quit == false ) {
 		// FIXME remove this hack !!!
-		cvWaitKey(5);
+		cvWaitKey(config_delay);
 
 		// update pipeline
 		if ( pipeline->isStarted() ) {

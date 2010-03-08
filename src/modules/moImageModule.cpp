@@ -34,24 +34,24 @@ void moImageModule::start() {
 
 	this->image = cvLoadImage(this->property("filename").asString().c_str());
 	if ( this->image == NULL ) {
-		LOGM(ERROR) << "could not load image: " << this->property("filename").asString();
+		LOGM(MO_ERROR) << "could not load image: " << this->property("filename").asString();
 		this->setError("unable to load image");
 	}
 }
 
 void moImageModule::stop() {
+	moModule::stop();
 	if ( this->image != NULL ) {
-		LOGM(TRACE) << "release Image";
+		LOGM(MO_TRACE) << "release Image";
 		cvReleaseImage((IplImage **)this->image);
 		this->image = NULL;
 	}
-	moModule::stop();
 }
 
 void moImageModule::update() {
 	if ( this->image != NULL ) {
 		// push a new image on the stream
-		LOGM(TRACE) << "push a new image on the stream";
+		LOGM(MO_TRACE) << "push a new image on the stream";
 		this->stream->push(this->image);
 	}
 }

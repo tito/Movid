@@ -5,6 +5,7 @@ LIBCJSON_PATH = ${CONTRIB_PATH}/cJSON
 LIBJPEG_PATH = ${CONTRIB_PATH}/jpeg-8
 LIBFIDTRACK_PATH = ${CONTRIB_PATH}/libfidtrack
 WOSCLIB_PATH = ${CONTRIB_PATH}/WOscLib-00.09
+PTYPES_PATH = ${CONTRIB_PATH}/ptypes-2.1.1
 
 #stuff we need to compile
 BLOB_BIN = blobtrack
@@ -18,12 +19,14 @@ LIBCJSON_CFLAGS = -I${LIBCJSON_PATH}
 LIBFIDTRACK_LIBS = ${LIBFIDTRACK_PATH}/libfidtrack.a
 WOSCLIB_CFLAGS = -I${WOSCLIB_PATH}
 WOSCLIB_LIBS = ${WOSCLIB_PATH}/libwosclib.a
+PTYPES_CFLAGS = -I${PTYPES_PATH}/include
+PTYPES_LIB = ${PTYPES_PATH}/lib/libptypes.a
 
 LIBMOVID_STATIC = libmovid.a
 
 OBJ = moThread.o moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
       moDaemon.o moLog.o moDataGenericContainer.o moDumpModule.o \
-	  moCameraModule.o moImageDisplayModule.o moSmoothModule.o \
+	  moCameraModule.o moImageDisplayModule.o moSmoothModule.o moRoiModule.o \
 	  moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \
 	  moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
 	  moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
@@ -41,9 +44,9 @@ LIBS   ?=
 OPENCV_CFLAGS ?= `pkg-config --cflags opencv`
 OPENCV_LIBS   ?= `pkg-config --libs opencv`
 
-ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS} ${WOSCLIB_CFLAGS}
+ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS} ${WOSCLIB_CFLAGS} ${PTYPES_CFLAGS}
 ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}
-ALL_LIBS_STATIC = ${LIBMOVID_STATIC} ${LIBFIDTRACK_LIBS} ${WOSCLIB_LIBS}
+ALL_LIBS_STATIC = ${LIBMOVID_STATIC} ${LIBFIDTRACK_LIBS} ${WOSCLIB_LIBS} ${PTYPES_LIB}
 
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 

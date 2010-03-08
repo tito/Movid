@@ -5,15 +5,7 @@
 #include <map>
 
 #include "moProperty.h"
-
-#ifdef WIN32
-#include <windows.h>
-#else
-#include <pthread.h>
-#ifndef __bsdi__
-#include <semaphore.h>
-#endif
-#endif
+#include "pasync.h"
 
 class moThread;
 class moDataStream;
@@ -52,7 +44,7 @@ class moPipeline;
  */
 #define MODULE_INIT() \
 	this->properties["id"] = new moProperty(moModule::createId(module_name)); \
-	LOG(DEBUG) << "create object <" << module_name << "> with id <" \
+	LOG(MO_DEBUG) << "create object <" << module_name << "> with id <" \
 			   << this->property("id").asString() << ">";
 
 /*! \brief Declare needed functions for a module (must be inserted at end of a module)
@@ -236,13 +228,17 @@ private:
 	 */
 	bool use_thread;
 
-	/*! \brief Semaphore to release when update need a refresh
-	 */
-	sem_t sem_need_update;
-
 	/*! \brief Boolean to known if we need to call update or not
 	 */
 	bool need_update;
+
+	/*! \brief Mutex to protect part of the module
+	 */
+	pt::mutex *mtx;
+
+	/*! \brief Trigger to awake the thread
+	 */
+	pt::trigger *thread_trigger;
 
 protected:
 

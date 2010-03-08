@@ -16,7 +16,6 @@ public:
 	virtual moDataStream *getOutput(int n=0);
 	virtual void notifyData(moDataStream *input);
 
-	void stop();
 	void update();
 
 private:
@@ -25,7 +24,6 @@ private:
 	moDataStream *output;
 	IplImage *output_buffer;
 	IplImage *split;
-	bool need_update;
 
 	MODULE_INTERNALS();
 };

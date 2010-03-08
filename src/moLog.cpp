@@ -2,8 +2,10 @@
 #include <stdlib.h>
 
 #include "moLog.h"
+#include "pasync.h"
 
 static moLog* instance = NULL;
+static pt::mutex(logmtx);
 
 moLogMessage::moLogMessage(std::string name, std::string filename,
 						   int line, int level) {
@@ -13,7 +15,7 @@ moLogMessage::moLogMessage(std::string name, std::string filename,
 
 	t = time(NULL);
 	tmp = localtime(&t);
-	strftime(buffer, sizeof(buffer), "%F %H:%M:%S", tmp);
+	strftime(buffer, sizeof(buffer), "%H:%M:%S", tmp);
 
 	this->os << buffer << " | ";
 	this->os << moLog::getInstance()->getLogLevelName(level) << " | ";
@@ -22,8 +24,11 @@ moLogMessage::moLogMessage(std::string name, std::string filename,
 }
 
 moLogMessage::~moLogMessage() {
-	if ( this->level <= moLog::getInstance()->getLogLevel() )
+	if ( this->level <= moLog::getInstance()->getLogLevel() ) {
+		logmtx.lock();
 		std::cout << this->os.str() << std::endl;
+		logmtx.unlock();
+	}
 }
 
 std::ostringstream &moLogMessage::get() {

@@ -6,12 +6,11 @@
 *.mode1v3
 *tehansen.pbxuser
 *.core
-tracker
-tester
-blobtrack
-describe
-daemon
-build/
-contrib/jpeg-8/
-contrib/libevent-1.4.13-stable/
-contrib/WOscLib-00.09/
+build
+movid
+
+# cause of window, try to not show differences...
+# but no help for already commited files...
+contrib/WOscLib-*
+contrib/jpeg-8*
+contrib/libevent*

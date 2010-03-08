@@ -17,7 +17,7 @@ void moGrayScaleModule::allocateBuffers() {
 	if ( src == NULL )
 		return;
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, 1);	//only one channel
-	LOG(DEBUG) << "allocated output buffer for GrayScale module.";
+	LOG(MO_DEBUG) << "allocated output buffer for GrayScale module.";
 }
 
 void moGrayScaleModule::applyFilter() {

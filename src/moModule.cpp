@@ -3,6 +3,8 @@
 #include <iostream>
 #include <errno.h>
 
+#include "pasync.h"
+
 #include "moModule.h"
 #include "moDataStream.h"
 #include "moLog.h"
@@ -23,7 +25,8 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->thread		= NULL;
 	this->use_thread	= false;
 	this->need_update	= false;
-	this->sem_need_update = 0;
+	this->thread_trigger = NULL;
+	this->mtx			= new pt::mutex();
 
 	this->properties["use_thread"] = new moProperty(false);
 }
@@ -50,6 +53,10 @@ moModule::~moModule() {
 			(*it).second = NULL;
 		}
 	}
+
+	if ( this->thread_trigger != NULL )
+		delete this->thread_trigger;
+	delete this->mtx;
 }
 
 std::string moModule::createId(std::string base) {
@@ -76,7 +83,8 @@ void moModule::notifyData(moDataStream *source) {
 void _thread_process(moThread *thread) {
 	moModule *module = (moModule *)thread->getUserData();
 	while ( !thread->wantQuit() ) {
-		module->needUpdate(true);
+		if ( !module->needUpdate(true) )
+			continue;
 		module->update();
 	}
 }
@@ -84,18 +92,15 @@ void _thread_process(moThread *thread) {
 void moModule::start() {
 	this->use_thread = this->property("use_thread").asBool();
 	if ( this->use_thread ) {
-		LOGM(TRACE) << "create semaphore";
-
-		if ( sem_init(&this->sem_need_update, 0, 0) != 0 ) {
-			LOGM(ERROR) << "unable to init semaphore";
-			this->setError("unable to init semaphore");
-			this->use_thread = false;
+		if ( this->thread_trigger == NULL ) {
+			LOGM(MO_TRACE) << "create trigger";
+			this->thread_trigger = new pt::trigger(true, false);
 		}
 
-		LOGM(TRACE) << "start thread";
+		LOGM(MO_TRACE) << "start thread";
 		this->thread = new moThread(_thread_process, this);
 		if ( this->thread == NULL ) {
-			LOGM(ERROR) << "unable to create thread";
+			LOGM(MO_ERROR) << "unable to create thread";
 			this->setError("Error while creating thread");
 			this->use_thread = false;
 		} else {
@@ -104,29 +109,27 @@ void moModule::start() {
 	}
 
 	this->is_started = true;
-	LOGM(DEBUG) << "start";
+	LOGM(MO_DEBUG) << "start";
 }
 
 void moModule::stop() {
-	if ( this->use_thread ) {
-		if ( this->thread != NULL ) {
-			this->thread->cleanup();
-			delete this->thread;
-
-			sem_destroy(&this->sem_need_update);
-		}
+	if ( this->use_thread &&  this->thread != NULL ) {
+		this->thread->stop();
+		delete this->thread;
+		this->thread = NULL;
+		this->use_thread = false;
 	}
 
 	this->is_started = false;
-	LOG(DEBUG) << "stop <" << this->property("id").asString() << ">";
+	LOG(MO_DEBUG) << "stop <" << this->property("id").asString() << ">";
 }
 
 void moModule::lock() {
-	// implement if a thread.
+	this->mtx->lock();
 }
 
 void moModule::unlock() {
-	// implement if a thread.
+	this->mtx->unlock();
 }
 
 bool moModule::isStarted() {
@@ -241,31 +244,28 @@ void moModule::poll() {
 }
 
 void moModule::notifyUpdate() {
-	if ( this->use_thread ) {
-		if ( sem_post(&this->sem_need_update) != 0 ) {
-			LOGM(ERROR) << "unable to post semaphore";
-			this->setError("unable to post semaphore");
-		}
-	} else {
-		this->need_update = true;
-	}
+	this->need_update = true;
+	if ( this->use_thread )
+		this->thread_trigger->post();
 }
 
 bool moModule::needUpdate(bool lock) {
-	int err;
+	if ( this->need_update ) {
+		this->need_update = false;
+		return true;
+	} else if ( lock == false )
+		return false;
 
 	// call from a thread
 	if ( lock ) {
-		do {
-			err = sem_wait(&this->sem_need_update);
-		} while ( err == -1 && errno == EINTR );
-		if ( err != 0 )
-			return false;
+		assert(this->thread != NULL);
+		this->thread_trigger->wait();
+	}
+
+	if ( this->need_update ) {
+		this->need_update = false;
 		return true;
 	}
 
-	// call not from a thread;
-	bool b = this->need_update;
-	this->need_update = false;
-	return b;
+	return false;
 }
