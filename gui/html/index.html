@@ -12,6 +12,9 @@
 	</script>
 	<script type="text/javascript" src="processing.js"></script>
 	<script type="text/javascript" src="jquery.js"></script>
+	<script type="text/javascript" src="jquery-ui.js"></script>
+	<script type="text/javascript" src="ui.core.js"></script>
+	<script type="text/javascript" src="ui.slider.js"></script>
 	<script type="text/javascript" src="mo.js"></script>
 	<link rel="stylesheet" type="text/css" href="gui.css"/>
 </head>
@@ -23,8 +26,8 @@
 		<p>
 			Status: <span id="statusinfo">Stopped</span>
 			<br/>
-			<a href="#" onclick="mo_start()">Start</a> -
-			<a href="#" onclick="mo_stop()">Stop</a>
+			<a id="b_start" href="#" onclick="mo_start()">Start</a>
+			<a id="b_stop" href="#" onclick="mo_stop()">Stop</a>
 		</p>
 	</div>
 	<h3><a onclick="$('#modules').slideToggle('fast')">Create</a></h3>

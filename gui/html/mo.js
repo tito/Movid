@@ -6,14 +6,16 @@ var mo_widget_selected = null;
 var mo_status_text = 'stopped';
 
 function mo_bootstrap() {
+	$('#b_start').hide();
+	$('#b_stop').hide();
+	$('#modules').toggle();
+	$('#video').toggle();
+	$('#properties').toggle();
+
 	Processing($('#movidcanvas')[0], $('#movidpjs')[0].text);
 
 	mo_modules();
 	mo_status();
-
-	$('#modules').toggle();
-	$('#video').toggle();
-	$('#properties').toggle();
 }
 
 function mo_modules() {
@@ -37,6 +39,14 @@ function mo_status() {
 
 		mo_status_text = data['status']['running'] == '0' ? 'stopped' : 'running'
 		$('#statusinfo').html(mo_status_text);
+
+		if ( mo_status_text == 'stopped' ) {
+			$('#b_start').show();
+			$('#b_stop').hide();
+		} else {
+			$('#b_start').hide();
+			$('#b_stop').show();
+		}
 
 
 		widgetClearConnectivity();
@@ -134,18 +144,61 @@ function mo_properties(elem) {
 
 			// update properties
 			$('#properties').html('');
-			for ( property in infos['properties'] ) {
+			for ( var property in infos['properties'] ) {
 				value = infos['properties'][property];
 				$('#properties').append(
 					$('<p></p>')
 					.html(property)
 				);
-				$('#properties').append(
-					$('<input></input>')
-					.attr('type', 'text')
-					.attr('value', value)
-					.attr('onblur', 'javascript:mo_set("' + elem + '", "' + property + '", this.value)')
-				);
+				pinfo = infos['propertiesInfos'][property];
+				if ( pinfo['type'] == 'bool' ) {
+					$('#properties').append(
+						$('<select></select>').append(
+							$('<option></option>')
+							.attr('value', 'true')
+							.attr('selected', value == 'true'?'selected':'')
+							.html('True')
+						).append(
+							$('<option></option>')
+							.attr('value', 'false')
+							.attr('selected', value == 'false'?'selected':'')
+							.html('False')
+						).attr('onchange',
+							'javascript:mo_set("' + elem + '", "' + property + '", this.value)')
+					);
+				} else if ( pinfo['type'] == 'double' ) {
+					var slider = $('<div></div>').slider().slider('option', 'value', value);
+					if ( typeof pinfo['min'] != 'undefined' )
+						slider.slider('option', 'min', pinfo['min']);
+					if ( typeof pinfo['max'] != 'undefined' )
+						slider.slider('option', 'max', pinfo['max']);
+					var _p = property;
+					var _e = elem;
+					slider.bind('slidechange', function(event, ui) {
+							mo_set(_e, _p, ui.value);
+					});
+					$('#properties').append(slider);
+				} else if ( typeof pinfo['choices'] != 'undefined' ) {
+					var s = $('<select></select>')
+						.attr('onchange', 'javascript:mo_set("' + elem + '", "' + property + '", this.value)')
+					var choices = pinfo['choices'].split(';');
+					for ( var i = 0; i < choices.length; i++ ) {
+						choice = choices[i];
+						s.append($('<option></option>')
+							.attr('value', choice)
+							.attr('selected', value == choice?'selected':'')
+							.html(choice)
+						);
+					}
+					$('#properties').append(s);
+				} else {
+					$('#properties').append(
+						$('<input></input>')
+						.attr('type', 'text')
+						.attr('value', value)
+						.attr('onblur', 'javascript:mo_set("' + elem + '", "' + property + '", this.value)')
+					);
+				}
 			}
 		}
 	});

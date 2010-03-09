@@ -42,6 +42,12 @@ moProperty::moProperty(double value, const std::string &description) {
 void moProperty::init(const std::string &description) {
 	this->readonly = false;
 	this->val = NULL;
+	this->val_min = 0;
+	this->val_max = 0;
+	this->val_choices = "";
+	this->have_min = false;
+	this->have_max = false;
+	this->have_choices = false;
 	this->setDescription(description);
 }
 
@@ -281,3 +287,43 @@ bool moProperty::isReadOnly() {
 void moProperty::setReadOnly(bool ro) {
 	this->readonly = ro;
 }
+
+bool moProperty::haveMin() {
+	return this->have_min;
+}
+
+bool moProperty::haveMax() {
+	return this->have_max;
+}
+
+bool moProperty::haveChoices() {
+	return this->have_choices;
+}
+
+int moProperty::getMin() {
+	return this->val_min;
+}
+
+int moProperty::getMax() {
+	return this->val_max;
+}
+
+std::string moProperty::getChoices() {
+	return this->val_choices;
+}
+
+void moProperty::setMin(int val) {
+	this->val_min = val;
+	this->have_min = true;
+}
+
+void moProperty::setMax(int val) {
+	this->val_max = val;
+	this->have_max = true;
+}
+
+void moProperty::setChoices(const std::string &val) {
+	this->val_choices = val;
+	this->have_choices = true;
+}
+

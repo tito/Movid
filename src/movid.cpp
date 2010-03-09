@@ -354,7 +354,7 @@ void web_pipeline_create(struct evhttp_request *req, void *arg) {
 void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	std::map<std::string, moProperty*>::iterator it;
 	char buffer[64];
-	cJSON *root, *data, *modules, *mod, *properties, *io, *observers, *array;
+	cJSON *root, *data, *modules, *mod, *properties, *io, *observers, *array, *property;
 	moDataStream *ds;
 
 	root = cJSON_CreateObject();
@@ -382,6 +382,21 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 		for ( it = module->getProperties().begin(); it != module->getProperties().end(); it++ ) {
 			cJSON_AddStringToObject(properties, it->first.c_str(),
 					it->second->asString().c_str());
+		}
+
+		cJSON_AddItemToObject(mod, "propertiesInfos", properties=cJSON_CreateObject());
+
+		for ( it = module->getProperties().begin(); it != module->getProperties().end(); it++ ) {
+			moProperty *p = it->second;
+			cJSON_AddItemToObject(properties, it->first.c_str(), property=cJSON_CreateObject());
+			cJSON_AddStringToObject(property, "type", moProperty::getPropertyTypeName(p->getType()).c_str());
+			cJSON_AddNumberToObject(property, "readonly", p->isReadOnly() ? 1 : 0);
+			if ( p->haveMax() )
+				cJSON_AddNumberToObject(property, "max", p->getMax());
+			if ( p->haveMin() )
+				cJSON_AddNumberToObject(property, "min", p->getMin());
+			if ( p->haveChoices() )
+				cJSON_AddStringToObject(property, "choices", p->getChoices().c_str());
 		}
 
 		if ( module->getInputCount() ) {
@@ -804,6 +819,7 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 				}
 
 				module1->property("id").set(tokens[3]);
+				module1->property("id").setReadOnly(true);
 
 				if ( module1->haveError() ) {
 					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
@@ -994,6 +1010,9 @@ int main(int argc, char **argv) {
 
 		evhttp_set_cb(server, "/gui/index.html", web_file, (void*)MO_GUIDIR"index.html");
 		evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)MO_GUIDIR"jquery.js");
+		evhttp_set_cb(server, "/gui/jquery-ui.js", web_file, (void*)MO_GUIDIR"jquery-ui.js");
+		evhttp_set_cb(server, "/gui/ui.core.js", web_file, (void*)MO_GUIDIR"ui.core.js");
+		evhttp_set_cb(server, "/gui/ui.slider.js", web_file, (void*)MO_GUIDIR"ui.slider.js");
 		evhttp_set_cb(server, "/gui/mo.js", web_file, (void*)MO_GUIDIR"mo.js");
 		evhttp_set_cb(server, "/gui/init.js", web_file, (void*)MO_GUIDIR"init.js");
 		evhttp_set_cb(server, "/gui/processing.js", web_file, (void*)MO_GUIDIR"processing.js");

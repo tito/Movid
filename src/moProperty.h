@@ -39,6 +39,16 @@ public:
 	void set(std::string value);
 	void set(int value);
 	void set(double value);
+
+	bool haveMin();
+	bool haveMax();
+	bool haveChoices();
+	int getMin();
+	int getMax();
+	std::string getChoices();
+	void setMin(int val);
+	void setMax(int val);
+	void setChoices(const std::string &val);
 	
 	friend std::ostream& operator<< (std::ostream& o, const moProperty& f);
 
@@ -50,6 +60,12 @@ private:
 	std::string description;
 	void* val;
 	bool readonly;
+	bool have_min;
+	bool have_max;
+	bool have_choices;
+	int val_min;
+	int val_max;
+	std::string val_choices;
 	
 	void free();
 	void init(const std::string& description);

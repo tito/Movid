@@ -80,6 +80,7 @@ canvas {
 	overflow: hidden;
 }
 
+#properties select,
 #properties input {
 	float: left;
 	width: 130px;
@@ -91,4 +92,28 @@ canvas {
 
 #properties input:hover {
 	background-color: rgb(220, 220, 220);
+}
+
+/* slider 
+ */
+.ui-slider {
+	float: left;
+	width: 110px;
+	height: 11px;
+	padding: 0px !important;
+	margin: 4px 5px 6px 5px;
+	background-color: rgb(180, 180, 180);
+}
+
+.ui-slider-handle {
+	width: 20px;
+	height: 15px;
+	padding: 0px !important;
+	position: relative;
+	margin: -2px -5px;
+	background-color: rgb(220, 220, 220);
+}
+
+.ui-state-hover {
+	background-color: rgb(204, 102, 0) !important;
 }
