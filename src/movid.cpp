@@ -622,7 +622,7 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 	}
 
 	module->property(evhttp_find_header(&headers, "name")).set(
-		evhttp_find_header(&headers, "value"));
+		(const std::string &)evhttp_find_header(&headers, "value"));
 
 	evhttp_clear_headers(&headers);
 	web_message(req, "ok");

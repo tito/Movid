@@ -15,7 +15,7 @@ typedef enum _moPropertyType {
 class moProperty {
 public:
 	moProperty(bool value, const std::string &description = "");
-	moProperty(const char* value, const std::string &description = "");
+	moProperty(const char *value, const std::string &description = "");
 	moProperty(std::string value, const std::string &description = "");
 	moProperty(int value, const std::string &description = "");
 	moProperty(double value, const std::string &description = "");
@@ -35,8 +35,8 @@ public:
 	int asInteger();
 
 	void set(bool value);
-	void set(const char* value);
 	void set(std::string value);
+	void set(const char* value);
 	void set(int value);
 	void set(double value);
 
