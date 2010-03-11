@@ -58,6 +58,11 @@ MODULE_DECLARE(BlobTracker, "native", "Tracks Blobs");
 moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	MODULE_INIT();
 
+	// Minimum and maximum sizes for blobs. Blobs smaller or larger
+	// will be discarded.
+	this->properties["min_size"] = new moProperty(2.0);
+	this->properties["max_size"] = new moProperty(25.0);
+
 	this->output_data	= new moDataStream("GenericTouch");
 	this->output_count	= 2;
 	this->output_infos[1] = new moDataStreamInfo("data", "GenericTouch", "Data stream with touch info");
@@ -124,6 +129,11 @@ void moBlobTrackerModule::applyFilter() {
 	for ( int i = this->tracker->GetBlobNum(); i > 0; i-- ) {
 		CvBlob* pB = this->tracker->GetBlob(i-1);
 
+		int minsize = this->property("min_size").asDouble();
+		int maxsize = this->property("max_size").asDouble();
+		// Assume circular blobs
+		if (pB->w < minsize || maxsize < pB->w || pB->h < minsize || maxsize < pB->h)
+			continue;
 		// draw the blob on output image
 		if ( this->output->getObserverCount() > 0 ) {
 			CvPoint p = cvPoint(cvRound(pB->x*256),cvRound(pB->y*256));
