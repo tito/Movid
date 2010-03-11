@@ -10,13 +10,12 @@
 		widgetClearConnectivity = null,
 		widgetConnect = null;
 	</script>
-	<script type="text/javascript" src="processing.js"></script>
-	<script type="text/javascript" src="jquery.js"></script>
-	<script type="text/javascript" src="jquery-ui.js"></script>
-	<script type="text/javascript" src="ui.core.js"></script>
-	<script type="text/javascript" src="ui.slider.js"></script>
-	<script type="text/javascript" src="mo.js"></script>
-	<link rel="stylesheet" type="text/css" href="gui.css"/>
+	<script type="text/javascript" src="js/processing.js"></script>
+	<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui-1.8rc3.custom.min.js"></script>
+	<script type="text/javascript" src="js/movid.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/ui-darkness/jquery-ui-1.8rc3.custom.css"/>
+	<link rel="stylesheet" type="text/css" href="css/gui.css"/>
 </head>
 <body>
 
@@ -158,6 +157,13 @@ class Widget {
 		// text
 		fill(255, 255, 255);
 		text(name, x + (w - textWidth(name)) / 2, y + textHeight(name) + 2);
+
+		if ( mo_widget_selected == name ) {
+			stroke(230, 230, 230);
+			noFill();
+			rect(x-1, y-1, w+2, h+2);
+			noStroke();
+		}
 	}
 
 	int headerSize() {
@@ -278,12 +284,10 @@ int textHeight(String s) {
 
 void setup() {
 	size(800,600);
-	frameRate(25);
+	frameRate(2);
 	noStroke();
 	textFont(fontA, fontsize);
 	widgets = new ArrayList();
-	//widgets.add(new Widget());
-	draw();
 }
 
 void draw() {
@@ -471,6 +475,14 @@ void mouseReleased() {
 	selected_widget = -1;
 	selected_input_idx = -1;
 	selected_output_idx = -1;
+
+	draw();
+	frameCount += 1;
+}
+
+void mouseDragged() {
+	draw();
+	frameCount += 1;
 }
 
 </script><canvas id="movidcanvas" width="800" height="600">You need HTML5 canvas support.</canvas>

@@ -4,6 +4,12 @@ var mo_available_outputs = [];
 var mo_streamscale = 2;
 var mo_widget_selected = null;
 var mo_status_text = 'stopped';
+var mo_uniqidx = 0;
+
+function mo_uniq() {
+	mo_uniqidx += 1;
+	return 'mo' + mo_uniqidx;
+}
 
 function mo_bootstrap() {
 	$('#b_start').hide();
@@ -89,27 +95,6 @@ function mo_status() {
 				}
 			}
 		}
-
-
-			/**
-			$('#instances_content').append(
-				$('<a></a>')
-				.html(key)
-				.addClass('module')
-				.attr('id', 'mod_' + key)
-				.attr('href', 'javascript:mo_properties("' + key + '")')
-			);
-
-			for ( idx in infos['inputs'] ) {
-				input = infos['inputs'][idx];
-				mo_available_inputs[mo_available_inputs.length] = key + ':' + input['index'];
-			}
-
-			for ( idx in infos['outputs'] ) {
-				output = infos['outputs'][idx];
-				mo_available_outputs[mo_available_outputs.length] = key + ':' + output['index'];
-			}
-			**/
 	});
 }
 
@@ -136,36 +121,58 @@ function mo_properties(elem) {
 		return;
 	}
 
+	// ask for the status of the pipeline,
+	// filter on the UI we want, and contruct properties list.
 	$.get(mo_baseurl + '/pipeline/status', function(data) {
 		for ( key in data['status']['modules'] ) {
 			if ( key != elem )
 				continue;
+
+			// extract info about our module
 			infos = data['status']['modules'][key];
 
-			// update properties
-			$('#properties').html('');
+			// all elements will be in a table, prepare it
+			var table = $('<table></table>');
+
+			// enumerate properties
 			for ( var property in infos['properties'] ) {
+				var tr = $('<tr></tr>');
+				var td = $('<td></td>');
+
+				// add the label into the table
 				value = infos['properties'][property];
-				$('#properties').append(
-					$('<p></p>')
+				tr.append($('<td></td>')
+					.addClass('label')
 					.html(property)
 				);
+
+				// extract properties infos
 				pinfo = infos['propertiesInfos'][property];
+
+				//
+				// bool
+				//
 				if ( pinfo['type'] == 'bool' ) {
-					$('#properties').append(
-						$('<select></select>').append(
-							$('<option></option>')
-							.attr('value', 'true')
-							.attr('selected', value == 'true'?'selected':'')
-							.html('True')
-						).append(
-							$('<option></option>')
-							.attr('value', 'false')
-							.attr('selected', value == 'false'?'selected':'')
-							.html('False')
-						).attr('onchange',
-							'javascript:mo_set("' + elem + '", "' + property + '", this.value)')
+					var uniq = mo_uniq();
+					var input =
+						$('<input></input>')
+						.attr('id', uniq)
+						.attr('type', 'checkbox')
+						.attr('checked', value=='true'?'checked':'')
+						.attr('onchange', 'javascript:mo_set("'
+							+ elem + '", "' + property
+							+ '", this.checked ? "true" : "false")');
+					td.append(input);
+					td.append(
+						$('<label></label>')
+						.attr('for', uniq)
+						.html('Activate')
 					);
+
+
+				//
+				// double
+				//
 				} else if ( pinfo['type'] == 'double' ) {
 					var slider = $('<div></div>').slider().slider('option', 'value', value);
 					if ( typeof pinfo['min'] != 'undefined' )
@@ -177,10 +184,17 @@ function mo_properties(elem) {
 					slider.bind('slidechange', function(event, ui) {
 							mo_set(_e, _p, ui.value);
 					});
-					$('#properties').append(slider);
+					td.append(slider);
+
+				//
+				// choice list, use a select
+				//
 				} else if ( typeof pinfo['choices'] != 'undefined' ) {
 					var s = $('<select></select>')
-						.attr('onchange', 'javascript:mo_set("' + elem + '", "' + property + '", this.value)')
+						.addClass('ui-widget ui-widget-content')
+						.attr('onchange', 'javascript:mo_set("'
+							+ elem + '", "' + property
+							+ '", this.value)')
 					var choices = pinfo['choices'].split(';');
 					for ( var i = 0; i < choices.length; i++ ) {
 						choice = choices[i];
@@ -190,20 +204,42 @@ function mo_properties(elem) {
 							.html(choice)
 						);
 					}
-					$('#properties').append(s);
+					td.append(s);
+
+				//
+				// default case, use a simple input
+				//
 				} else {
-					$('#properties').append(
+					td.append(
 						$('<input></input>')
+						.addClass('text ui-widget-content')
 						.attr('type', 'text')
 						.attr('value', value)
-						.attr('onblur', 'javascript:mo_set("' + elem + '", "' + property + '", this.value)')
+						.attr('onblur', 'javascript:mo_set("'
+							+ elem + '", "' + property
+							+ '", this.value)')
 					);
 				}
+
+				// add the property to the table
+				tr.append(td);
+				table.append(tr);
 			}
+
+			// show table !
+			$('#properties').html(table);
 		}
 	});
 
+	// slide slide :)
 	$('#properties').slideDown('fast');
+
+	// WHYYYYYYYYYYYY ? :' :' :(
+	setTimeout(_mo_update_state, 20);
+}
+
+function _mo_update_state() {
+	$('#properties input[type=\"checkbox\"]').button();
 }
 
 function mo_set(id, k, v) {
@@ -248,6 +284,7 @@ function mo_stream(elem) {
 }
 
 function mo_select(elem) {
+	mo_widget_selected = elem;
 	mo_properties(elem);
 	mo_stream(elem);
 }

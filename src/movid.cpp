@@ -45,7 +45,7 @@
 #include "evhttp.h"
 
 #define MO_DAEMON "movid"
-#define MO_GUIDIR "gui/html/"
+#define MO_GUIDIR "gui/html"
 
 static moPipeline *pipeline = NULL;
 static bool want_quit = false;
@@ -696,16 +696,31 @@ void web_pipeline_quit(struct evhttp_request *req, void *arg) {
 }
 
 void web_file(struct evhttp_request *req, void *arg) {
-	assert( arg != NULL );
+	FILE *fd;
 	long filesize = 0;
 	struct evbuffer *evb;
-	char *filename = (char *)arg,
+	char filename[256],
 		 *buf;
-	FILE *fd;
 
+	/* web_file accept only file from gui
+	 */
+	if ( strstr(req->uri, "/gui/") != req->uri ) {
+		evhttp_send_error(req, 404, "Not found");
+		return;
+	}
+
+	if ( strstr(req->uri, "..") != NULL ) {
+		evhttp_send_error(req, 403, "Security error");
+		return;
+	}
+
+	snprintf(filename, sizeof(filename), "%s/%s",
+		MO_GUIDIR, req->uri + sizeof("/gui/") - 1);
+
+	printf("GET %s\n", filename);
 	fd = fopen(filename, "r");
 	if ( fd == NULL ) {
-		web_error(req, "gui file not found");
+		evhttp_send_error(req, 404, "Not found");
 		return;
 	}
 
@@ -1008,6 +1023,8 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
 		evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
 
+		evhttp_set_gencb(server, web_file, NULL);
+		/**
 		evhttp_set_cb(server, "/gui/index.html", web_file, (void*)MO_GUIDIR"index.html");
 		evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)MO_GUIDIR"jquery.js");
 		evhttp_set_cb(server, "/gui/jquery-ui.js", web_file, (void*)MO_GUIDIR"jquery-ui.js");
@@ -1018,6 +1035,7 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/gui/processing.js", web_file, (void*)MO_GUIDIR"processing.js");
 		evhttp_set_cb(server, "/gui/gui.css", web_file, (void*)MO_GUIDIR"gui.css");
 		evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)MO_GUIDIR"nostream.png");
+		**/
 	}
 
 	while ( want_quit == false ) {
