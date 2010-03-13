@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
+				AdditionalIncludeDirectories="C:\OpenCV\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
 				PreprocessorDefinitions="WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -113,7 +113,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="C:\OpenCV2.0\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
+				AdditionalIncludeDirectories="C:\OpenCV\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
 				PreprocessorDefinitions="WIN32"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -271,6 +271,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moRoiModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moSmoothModule.h"
 					>
 				</File>
@@ -400,6 +404,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moMirrorImageModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moRoiModule.cpp"
 					>
 				</File>
 				<File

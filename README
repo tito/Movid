@@ -13,7 +13,12 @@ If you dont want to compiel yourself, do teh following:
 
 it must go in C:\OpenCV, otherwise you need to change the library include directory in teh Movid Visual Studio project, also teh VS studio set teh PATH environment variable to include c:\OpenCV\bin.  If you dont know what this paragraph is talking about, just make sure you unzip it into C:\OpenCV, so that the dll files are in C:\OpenCV\bin, and the lib files in C:\OpenCV\lib
 
+> update
+The OpenCV.zip does not contain the include dir required to compile Movid.
 
+*Download http://sourceforge.net/projects/opencvlibrary/files/opencv-unix/2.0/OpenCV-2.0.0.tar.bz2/download
+*Unpack the file
+*Copy the folder \OpenCV-2.0.0\include to C:\OpenCV\include
 
  
 
