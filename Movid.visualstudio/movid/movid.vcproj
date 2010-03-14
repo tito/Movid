@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
@@ -60,7 +60,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="WS2_32.lib jpeg.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
-				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;;&quot;$(SolutionDir)..\contrib\ptypes-2.1.1\win32\$(ConfigurationName)&quot;;&quot;$(SolutionDir)..\contrib\libevent-1.4.13-stable\WIN32-Prj\$(ConfigurationName)&quot;;C:\OpenCV\lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(TargetDir)&quot;;&quot;$(SolutionDir)..\contrib\ptypes-2.1.1\win32\$(ConfigurationName)&quot;;&quot;$(SolutionDir)..\contrib\libevent-1.4.13-stable\WIN32-Prj\$(ConfigurationName)&quot;;C:\OpenCV\lib"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
 			/>
@@ -88,8 +88,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -132,7 +132,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="WS2_32.lib jpeg.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
-				AdditionalLibraryDirectories="&quot;$(TargetDir)&quot;;&quot;$(SolutionDir)..\contrib\ptypes-2.1.1\win32\$(ConfigurationName)&quot;;&quot;$(SolutionDir)..\contrib\libevent-1.4.13-stable\WIN32-Prj\$(ConfigurationName)&quot;;C:\OpenCV\lib"
+				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(TargetDir)&quot;;&quot;$(SolutionDir)..\contrib\ptypes-2.1.1\win32\$(ConfigurationName)&quot;;&quot;$(SolutionDir)..\contrib\libevent-1.4.13-stable\WIN32-Prj\$(ConfigurationName)&quot;;C:\OpenCV\lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
