@@ -202,6 +202,9 @@ public:
 	 */
 	bool needUpdate(bool lock=false);
 
+	/*! \brief Export the module to a file
+	 */
+	virtual bool generateExport(std::ostringstream &oss);
 	
 private:
 	/*! \brief Capabilities flags

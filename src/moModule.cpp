@@ -269,3 +269,20 @@ bool moModule::needUpdate(bool lock) {
 
 	return false;
 }
+
+bool moModule::generateExport(std::ostringstream &oss) {
+	std::string id = this->property("id").asString();
+
+	oss << "pipeline create " << this->getName() << " " << id << std::endl;
+
+	if ( this->properties.size() > 0 ) {
+		std::map<std::string, moProperty*>::iterator it;
+		for ( it = this->properties.begin(); it != this->properties.end(); it++ ) {
+			oss << "pipeline set " << id << " "
+				<< (*it).first << " "
+				<< (*it).second << std::endl;
+		}
+	}
+
+	return true;
+}

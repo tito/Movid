@@ -44,6 +44,10 @@ public:
 	 */
 	virtual bool haveError();
 
+	/*! \brief Dump the pipeline into a file
+	 */
+	virtual std::string generateExport();
+
 private:
 	std::vector<moModule *> modules;
 	bool is_group;
