@@ -50,6 +50,7 @@ moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 	// declare properties
 	this->properties["ip"] = new moProperty("127.0.0.1");
 	this->properties["port"] = new moProperty(3333);
+	this->properties["sendsize"] = new moProperty(true);
 }
 
 moTuioModule::~moTuioModule(){
@@ -146,8 +147,10 @@ void moTuioModule::notifyData(moDataStream *input) {
 			msg->Add((float)0.); // X
 			msg->Add((float)0.); // Y
 			msg->Add((float)0.); // m
-			msg->Add((float)(*it)->properties["w"]->asDouble()); // w
-			msg->Add((float)(*it)->properties["h"]->asDouble()); // h
+			if ( this->property("sendsize").asBool() ) {
+				msg->Add((float)(*it)->properties["w"]->asDouble()); // w
+				msg->Add((float)(*it)->properties["h"]->asDouble()); // h
+			}
 			bundle->Add(msg);
 		}
 
