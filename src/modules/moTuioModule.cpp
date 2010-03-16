@@ -90,7 +90,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 		moDataGenericList *list = (moDataGenericList *)this->input->getData();
 		for ( it = list->begin(); it != list->end(); it++ ) {
 			assert((*it)->properties["type"]->asString() == "fiducial");
-			msg->Add((*it)->properties["id"]->asString().c_str());
+			msg->Add(atoi((*it)->properties["id"]->asString().c_str()));
 		}
 
 		bundle->Add(msg);
@@ -130,7 +130,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 		moDataGenericList *list = (moDataGenericList *)this->input->getData();
 		for ( it = list->begin(); it != list->end(); it++ ) {
 			assert((*it)->properties["type"]->asString() == "touch");
-			msg->Add((*it)->properties["id"]->asString().c_str());
+			msg->Add(atoi((*it)->properties["id"]->asString().c_str()));
 		}
 
 		bundle->Add(msg);
