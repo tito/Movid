@@ -102,6 +102,22 @@ public:
 	 * \return the selected output.
 	 */
 	virtual moDataStream *getOutput(int n=0) = 0;
+	
+	/*! \brief Get the input index at which the data stream is attached
+	 *
+	 * \param ds datastream which is connected to the module
+	 *
+	 * \return the input index at which ds is connected, -1 if it is not connected
+	 */
+	virtual int getInputIndex(moDataStream* stream);
+
+	/*! \brief Get the output index at which the data stream is attached
+	 *
+	 * \param ds datastream which is connected to the module
+	 *
+	 * \return the output index at which ds is connected, -1 if it is not connected
+	 */
+	virtual int getOutputIndex(moDataStream* stream);
 
 	/*! \brief Get number of input stream
 	 */
@@ -202,9 +218,13 @@ public:
 	 */
 	bool needUpdate(bool lock=false);
 
-	/*! \brief Export the module to a file
+	/*! \brief Export setup of the module to a file
 	 */
-	virtual bool generateExport(std::ostringstream &oss);
+	virtual bool serializeCreation(std::ostringstream &oss);
+
+	/*! \brief Export connections of the module to a file
+	 */
+	virtual bool serializeConnections(std::ostringstream &oss);
 	
 private:
 	/*! \brief Capabilities flags

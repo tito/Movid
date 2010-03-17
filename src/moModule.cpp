@@ -77,6 +77,22 @@ int moModule::getOutputCount() {
 	return this->output_count;
 }
 
+int moModule::getInputIndex(moDataStream *ds) {
+	for(int i=0; i < this->getInputCount(); i++){
+		if (ds == this->getInput(i))
+			return i;
+	}
+	return -1;
+}
+
+int moModule::getOutputIndex(moDataStream *ds){
+	for(int i=0; i < this->getOutputCount(); i++){
+		if (ds == this->getOutput(i))
+			return i;
+	}
+	return -1;
+}
+
 void moModule::notifyData(moDataStream *source) {
 }
 
@@ -270,7 +286,7 @@ bool moModule::needUpdate(bool lock) {
 	return false;
 }
 
-bool moModule::generateExport(std::ostringstream &oss) {
+bool moModule::serializeCreation(std::ostringstream &oss) {
 	std::string id = this->property("id").asString();
 
 	oss << "pipeline create " << this->getName() << " " << id << std::endl;
@@ -283,6 +299,32 @@ bool moModule::generateExport(std::ostringstream &oss) {
 				<< (*it).second << std::endl;
 		}
 	}
+	
+	oss << "" << std::endl;
 
+	return true;
+}
+
+
+bool moModule::serializeConnections(std::ostringstream &oss) {
+	std::string id = this->property("id").asString();
+
+	//For every Output Connection that we have
+	for (int i=0; i < this->getOutputCount(); i++){
+		moDataStream* ds = this->getOutput(i);
+		if ( ds == NULL ) continue;
+
+		for ( int j=0; j < ds->getObserverCount(); j++ ) {
+			moModule* observer = ds->getObserver(j);			
+			int in_idx = observer->getInputIndex(ds);
+				
+			oss << "pipeline connect " << id << " " << i  << " " 
+				<< observer->property("id").asString() << " "
+				<< observer->getInputIndex(ds)<< " " << std::endl;
+		}
+
+		oss << "" << std::endl;
+	}
+	oss << "" << std::endl;
 	return true;
 }

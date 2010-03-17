@@ -688,6 +688,8 @@ void web_pipeline_start(struct evhttp_request *req, void *arg) {
 void web_pipeline_stop(struct evhttp_request *req, void *arg) {
 	pipeline->stop();
 	web_message(req, "ok");
+	//uncomment to test serialize pipeline
+	//printf(pipeline->serializeCreation().c_str());
 }
 
 void web_pipeline_quit(struct evhttp_request *req, void *arg) {

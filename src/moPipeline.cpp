@@ -159,7 +159,7 @@ std::string moPipeline::getLastError() {
 	return "";
 }
 
-std::string moPipeline::generateExport() {
+std::string moPipeline::serializeCreation() {
 	std::ostringstream oss;
 
 	oss << "# ================================================================" << std::endl;
@@ -167,9 +167,18 @@ std::string moPipeline::generateExport() {
 	oss << "# ================================================================" << std::endl;
 	oss << "" << std::endl;
 
+	////////////////////////////////////////////////////////////////////
+	//export modules and their properties
 	std::vector<moModule *>::iterator it;
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
-		(*it)->generateExport(oss);
+		(*it)->serializeCreation(oss);
+	}
+
+	////////////////////////////////////////////////////////////////////
+	//now do connections, once all modules have been created
+	std::vector<moModule *>::iterator mod;
+	for ( mod = this->modules.begin(); mod != this->modules.end(); mod++ ) {
+		(*mod)->serializeConnections(oss);
 	}
 
 	return oss.str();

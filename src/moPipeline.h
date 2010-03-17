@@ -46,7 +46,7 @@ public:
 
 	/*! \brief Dump the pipeline into a file
 	 */
-	virtual std::string generateExport();
+	virtual std::string serializeCreation();
 
 private:
 	std::vector<moModule *> modules;
