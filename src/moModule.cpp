@@ -131,6 +131,8 @@ void moModule::start() {
 void moModule::stop() {
 	if ( this->use_thread &&  this->thread != NULL ) {
 		this->thread->stop();
+		this->thread_trigger->post();
+		this->thread->waitfor();
 		delete this->thread;
 		this->thread = NULL;
 		this->use_thread = false;

@@ -26,7 +26,6 @@ void *moThread::getUserData() {
 
 void moThread::stop() {
 	this->want_quit = true;
-	this->waitfor();
 }
 
 bool moThread::wantQuit() {
