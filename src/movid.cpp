@@ -708,6 +708,7 @@ void web_pipeline_quit(struct evhttp_request *req, void *arg) {
 
 void web_file(struct evhttp_request *req, void *arg) {
 	FILE *fd;
+	int readidx = 0, ret;
 	long filesize = 0;
 	struct evbuffer *evb;
 	char filename[256],
@@ -729,7 +730,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 		MO_GUIDIR, req->uri + sizeof("/gui/") - 1);
 
 	printf("GET %s\n", filename);
-	fd = fopen(filename, "r");
+	fd = fopen(filename, "rb");
 	if ( fd == NULL ) {
 		evhttp_send_error(req, 404, "Not found");
 		return;
@@ -746,7 +747,14 @@ void web_file(struct evhttp_request *req, void *arg) {
 		return;
 	}
 
-	fread(buf, filesize, 1, fd);
+	while ( readidx < filesize ) {
+		ret = fread(&buf[readidx], 1, filesize - readidx, fd);
+		if ( ret <= 0 ) {
+			perror("guifile");
+			return;
+		}
+		readidx += ret;
+	}
 	fclose(fd);
 
 	if ( strncmp(filename + strlen(filename) - 2, "js", 2) == 0 )
