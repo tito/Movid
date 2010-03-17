@@ -138,6 +138,7 @@ void moModule::stop() {
 		this->use_thread = false;
 	}
 
+	this->need_update = false;
 	this->is_started = false;
 	LOG(MO_DEBUG) << "stop <" << this->property("id").asString() << ">";
 }
