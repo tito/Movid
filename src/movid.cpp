@@ -688,8 +688,17 @@ void web_pipeline_start(struct evhttp_request *req, void *arg) {
 void web_pipeline_stop(struct evhttp_request *req, void *arg) {
 	pipeline->stop();
 	web_message(req, "ok");
-	//uncomment to test serialize pipeline
-	//printf(pipeline->serializeCreation().c_str());
+}
+
+void web_pipeline_dump(struct evhttp_request *req, void *arg) {
+	struct evbuffer *evb = evbuffer_new();
+	std::string sout = pipeline->serializeCreation();
+	const char *out = sout.c_str();
+
+	evbuffer_add(evb, out, strlen(out));
+	evhttp_add_header(req->output_headers, "Content-Type", "text/plain");
+	evhttp_send_reply(req, HTTP_OK, "OK", evb);
+	evbuffer_free(evb);
 }
 
 void web_pipeline_quit(struct evhttp_request *req, void *arg) {
@@ -1006,7 +1015,7 @@ int main(int argc, char **argv) {
 		#else
 			signal(SIGPIPE, SIG_IGN);
 		#endif
-		
+
 		base = event_init();
 		server = evhttp_new(NULL);
 
@@ -1024,20 +1033,9 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/start", web_pipeline_start, NULL);
 		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
 		evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
+		evhttp_set_cb(server, "/pipeline/dump", web_pipeline_dump, NULL);
 
 		evhttp_set_gencb(server, web_file, NULL);
-		/**
-		evhttp_set_cb(server, "/gui/index.html", web_file, (void*)MO_GUIDIR"index.html");
-		evhttp_set_cb(server, "/gui/jquery.js", web_file, (void*)MO_GUIDIR"jquery.js");
-		evhttp_set_cb(server, "/gui/jquery-ui.js", web_file, (void*)MO_GUIDIR"jquery-ui.js");
-		evhttp_set_cb(server, "/gui/ui.core.js", web_file, (void*)MO_GUIDIR"ui.core.js");
-		evhttp_set_cb(server, "/gui/ui.slider.js", web_file, (void*)MO_GUIDIR"ui.slider.js");
-		evhttp_set_cb(server, "/gui/mo.js", web_file, (void*)MO_GUIDIR"mo.js");
-		evhttp_set_cb(server, "/gui/init.js", web_file, (void*)MO_GUIDIR"init.js");
-		evhttp_set_cb(server, "/gui/processing.js", web_file, (void*)MO_GUIDIR"processing.js");
-		evhttp_set_cb(server, "/gui/gui.css", web_file, (void*)MO_GUIDIR"gui.css");
-		evhttp_set_cb(server, "/gui/nostream.png", web_file, (void*)MO_GUIDIR"nostream.png");
-		**/
 	}
 
 	while ( want_quit == false ) {

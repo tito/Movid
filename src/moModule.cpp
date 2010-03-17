@@ -296,10 +296,10 @@ bool moModule::serializeCreation(std::ostringstream &oss) {
 		for ( it = this->properties.begin(); it != this->properties.end(); it++ ) {
 			oss << "pipeline set " << id << " "
 				<< (*it).first << " "
-				<< (*it).second << std::endl;
+				<< ((*it).second)->asString() << std::endl;
 		}
 	}
-	
+
 	oss << "" << std::endl;
 
 	return true;
@@ -309,22 +309,18 @@ bool moModule::serializeCreation(std::ostringstream &oss) {
 bool moModule::serializeConnections(std::ostringstream &oss) {
 	std::string id = this->property("id").asString();
 
-	//For every Output Connection that we have
-	for (int i=0; i < this->getOutputCount(); i++){
+	// for every Output Connection that we have
+	for (int i=0; i < this->getOutputCount(); i++) {
 		moDataStream* ds = this->getOutput(i);
 		if ( ds == NULL ) continue;
 
-		for ( int j=0; j < ds->getObserverCount(); j++ ) {
-			moModule* observer = ds->getObserver(j);			
-			int in_idx = observer->getInputIndex(ds);
-				
-			oss << "pipeline connect " << id << " " << i  << " " 
+		for ( unsigned int j=0; j < ds->getObserverCount(); j++ ) {
+			moModule* observer = ds->getObserver(j);
+			oss << "pipeline connect " << id << " " << i  << " "
 				<< observer->property("id").asString() << " "
 				<< observer->getInputIndex(ds)<< " " << std::endl;
 		}
-
-		oss << "" << std::endl;
 	}
-	oss << "" << std::endl;
+
 	return true;
 }
