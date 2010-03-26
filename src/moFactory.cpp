@@ -31,6 +31,8 @@ void moFactory::init() {
 	REGISTER_MODULE(Threshold);
 	REGISTER_MODULE(Tuio);
 	REGISTER_MODULE(Video);
+	REGISTER_MODULE(Erode);
+	REGISTER_MODULE(Dilate);
 	LOG(MO_INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }
 
