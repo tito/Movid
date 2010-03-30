@@ -15,7 +15,7 @@ moDilateModule::~moDilateModule() {
 void moDilateModule::applyFilter(){
 	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	int iter = this->property("iterations").asInteger();
-	cvErode(src, this->output_buffer, NULL, iter);
+	cvDilate(src, this->output_buffer, NULL, iter);
 }
 
 
