@@ -17,7 +17,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0156A990112AAA8B00E6063F /* describe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = describe.cpp; sourceTree = "<group>"; };
+		1212F0551164F85F00E40580 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		1212F09C1164F9AB00E40580 /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = AUTHORS; sourceTree = "<group>"; };
 		1215EEAC113DCCB200AF1E5B /* gui.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = gui.css; sourceTree = "<group>"; };
 		1215EEAD113DCCB200AF1E5B /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		1215EEAE113DCCB200AF1E5B /* jquery.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.js; sourceTree = "<group>"; };
@@ -37,44 +38,6 @@
 		12C7439B113C7C4C00BC55DF /* moDataGenericContainer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moDataGenericContainer.h; sourceTree = "<group>"; };
 		12C7439C113C7C4C00BC55DF /* moDataStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moDataStream.cpp; sourceTree = "<group>"; };
 		12C7439D113C7C4C00BC55DF /* moDataStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moDataStream.h; sourceTree = "<group>"; };
-		12C7439F113C7C4C00BC55DF /* moAmplifyModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moAmplifyModule.cpp; sourceTree = "<group>"; };
-		12C743A0113C7C4C00BC55DF /* moAmplifyModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moAmplifyModule.h; sourceTree = "<group>"; };
-		12C743A1113C7C4C00BC55DF /* moBackgroundSubtractModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moBackgroundSubtractModule.cpp; sourceTree = "<group>"; };
-		12C743A2113C7C4C00BC55DF /* moBackgroundSubtractModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moBackgroundSubtractModule.h; sourceTree = "<group>"; };
-		12C743A3113C7C4C00BC55DF /* moBlobTrackerModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moBlobTrackerModule.cpp; sourceTree = "<group>"; };
-		12C743A4113C7C4C00BC55DF /* moBlobTrackerModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moBlobTrackerModule.h; sourceTree = "<group>"; };
-		12C743A5113C7C4C00BC55DF /* moCameraModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moCameraModule.cpp; sourceTree = "<group>"; };
-		12C743A6113C7C4C00BC55DF /* moCameraModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moCameraModule.h; sourceTree = "<group>"; };
-		12C743A7113C7C4C00BC55DF /* moCombineModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moCombineModule.cpp; sourceTree = "<group>"; };
-		12C743A8113C7C4C00BC55DF /* moCombineModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moCombineModule.h; sourceTree = "<group>"; };
-		12C743A9113C7C4C00BC55DF /* moDilateModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moDilateModule.cpp; sourceTree = "<group>"; };
-		12C743AA113C7C4C00BC55DF /* moDilateModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moDilateModule.h; sourceTree = "<group>"; };
-		12C743AB113C7C4C00BC55DF /* moDumpModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moDumpModule.cpp; sourceTree = "<group>"; };
-		12C743AC113C7C4C00BC55DF /* moDumpModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moDumpModule.h; sourceTree = "<group>"; };
-		12C743AD113C7C4C00BC55DF /* moErodeModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moErodeModule.cpp; sourceTree = "<group>"; };
-		12C743AE113C7C4C00BC55DF /* moErodeModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moErodeModule.h; sourceTree = "<group>"; };
-		12C743AF113C7C4C00BC55DF /* moFiducialTrackerModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moFiducialTrackerModule.cpp; sourceTree = "<group>"; };
-		12C743B0113C7C4C00BC55DF /* moFiducialTrackerModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moFiducialTrackerModule.h; sourceTree = "<group>"; };
-		12C743B1113C7C4C00BC55DF /* moGrayScaleModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moGrayScaleModule.cpp; sourceTree = "<group>"; };
-		12C743B2113C7C4C00BC55DF /* moGrayScaleModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moGrayScaleModule.h; sourceTree = "<group>"; };
-		12C743B3113C7C4C00BC55DF /* moHighpassModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moHighpassModule.cpp; sourceTree = "<group>"; };
-		12C743B4113C7C4C00BC55DF /* moHighpassModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moHighpassModule.h; sourceTree = "<group>"; };
-		12C743B5113C7C4C00BC55DF /* moImageDisplayModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moImageDisplayModule.cpp; sourceTree = "<group>"; };
-		12C743B6113C7C4C00BC55DF /* moImageDisplayModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moImageDisplayModule.h; sourceTree = "<group>"; };
-		12C743B7113C7C4C00BC55DF /* moImageFilterModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moImageFilterModule.cpp; sourceTree = "<group>"; };
-		12C743B8113C7C4C00BC55DF /* moImageFilterModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moImageFilterModule.h; sourceTree = "<group>"; };
-		12C743B9113C7C4C00BC55DF /* moImageModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moImageModule.cpp; sourceTree = "<group>"; };
-		12C743BA113C7C4C00BC55DF /* moImageModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moImageModule.h; sourceTree = "<group>"; };
-		12C743BB113C7C4C00BC55DF /* moInvertModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moInvertModule.cpp; sourceTree = "<group>"; };
-		12C743BC113C7C4C00BC55DF /* moInvertModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moInvertModule.h; sourceTree = "<group>"; };
-		12C743BD113C7C4C00BC55DF /* moMirrorImageModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moMirrorImageModule.cpp; sourceTree = "<group>"; };
-		12C743BE113C7C4C00BC55DF /* moMirrorImageModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moMirrorImageModule.h; sourceTree = "<group>"; };
-		12C743BF113C7C4C00BC55DF /* moSmoothModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moSmoothModule.cpp; sourceTree = "<group>"; };
-		12C743C0113C7C4C00BC55DF /* moSmoothModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moSmoothModule.h; sourceTree = "<group>"; };
-		12C743C1113C7C4C00BC55DF /* moThresholdModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moThresholdModule.cpp; sourceTree = "<group>"; };
-		12C743C2113C7C4C00BC55DF /* moThresholdModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moThresholdModule.h; sourceTree = "<group>"; };
-		12C743C3113C7C4C00BC55DF /* moVideoModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moVideoModule.cpp; sourceTree = "<group>"; };
-		12C743C4113C7C4C00BC55DF /* moVideoModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moVideoModule.h; sourceTree = "<group>"; };
 		12C743C5113C7C4C00BC55DF /* moFactory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moFactory.cpp; sourceTree = "<group>"; };
 		12C743C6113C7C4C00BC55DF /* moFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moFactory.h; sourceTree = "<group>"; };
 		12C743C7113C7C4C00BC55DF /* moLog.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moLog.cpp; sourceTree = "<group>"; };
@@ -455,9 +418,52 @@
 		12D5564F114697BC00B58731 /* WOscUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WOscUtil.h; sourceTree = "<group>"; };
 		12D55651114697BC00B58731 /* XGetopt.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGetopt.cxx; sourceTree = "<group>"; };
 		12D55652114697BC00B58731 /* XGetopt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XGetopt.h; sourceTree = "<group>"; };
-		12E1F755112DE43500D24FA4 /* daemon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = daemon.cpp; sourceTree = "<group>"; };
+		12D556911147202D00B58731 /* moThread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moThread.cpp; sourceTree = "<group>"; };
+		12D556921147202D00B58731 /* moThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moThread.h; sourceTree = "<group>"; };
+		12D556931147202D00B58731 /* movid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = movid.cpp; sourceTree = "<group>"; };
+		12D556951147205600B58731 /* moAmplifyModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moAmplifyModule.cpp; sourceTree = "<group>"; };
+		12D556961147205600B58731 /* moAmplifyModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moAmplifyModule.h; sourceTree = "<group>"; };
+		12D556971147205600B58731 /* moBackgroundSubtractModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moBackgroundSubtractModule.cpp; sourceTree = "<group>"; };
+		12D556981147205600B58731 /* moBackgroundSubtractModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moBackgroundSubtractModule.h; sourceTree = "<group>"; };
+		12D556991147205600B58731 /* moBlobTrackerModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moBlobTrackerModule.cpp; sourceTree = "<group>"; };
+		12D5569A1147205600B58731 /* moBlobTrackerModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moBlobTrackerModule.h; sourceTree = "<group>"; };
+		12D5569B1147205600B58731 /* moCameraModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moCameraModule.cpp; sourceTree = "<group>"; };
+		12D5569C1147205600B58731 /* moCameraModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moCameraModule.h; sourceTree = "<group>"; };
+		12D5569D1147205600B58731 /* moCombineModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moCombineModule.cpp; sourceTree = "<group>"; };
+		12D5569E1147205600B58731 /* moCombineModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moCombineModule.h; sourceTree = "<group>"; };
+		12D5569F1147205600B58731 /* moDilateModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moDilateModule.cpp; sourceTree = "<group>"; };
+		12D556A01147205600B58731 /* moDilateModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moDilateModule.h; sourceTree = "<group>"; };
+		12D556A11147205600B58731 /* moDumpModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moDumpModule.cpp; sourceTree = "<group>"; };
+		12D556A21147205600B58731 /* moDumpModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moDumpModule.h; sourceTree = "<group>"; };
+		12D556A31147205600B58731 /* moErodeModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moErodeModule.cpp; sourceTree = "<group>"; };
+		12D556A41147205600B58731 /* moErodeModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moErodeModule.h; sourceTree = "<group>"; };
+		12D556A51147205600B58731 /* moFiducialTrackerModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moFiducialTrackerModule.cpp; sourceTree = "<group>"; };
+		12D556A61147205600B58731 /* moFiducialTrackerModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moFiducialTrackerModule.h; sourceTree = "<group>"; };
+		12D556A71147205600B58731 /* moGrayScaleModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moGrayScaleModule.cpp; sourceTree = "<group>"; };
+		12D556A81147205600B58731 /* moGrayScaleModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moGrayScaleModule.h; sourceTree = "<group>"; };
+		12D556A91147205600B58731 /* moHighpassModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moHighpassModule.cpp; sourceTree = "<group>"; };
+		12D556AA1147205600B58731 /* moHighpassModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moHighpassModule.h; sourceTree = "<group>"; };
+		12D556AB1147205600B58731 /* moImageDisplayModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moImageDisplayModule.cpp; sourceTree = "<group>"; };
+		12D556AC1147205600B58731 /* moImageDisplayModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moImageDisplayModule.h; sourceTree = "<group>"; };
+		12D556AD1147205600B58731 /* moImageFilterModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moImageFilterModule.cpp; sourceTree = "<group>"; };
+		12D556AE1147205600B58731 /* moImageFilterModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moImageFilterModule.h; sourceTree = "<group>"; };
+		12D556AF1147205600B58731 /* moImageModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moImageModule.cpp; sourceTree = "<group>"; };
+		12D556B01147205600B58731 /* moImageModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moImageModule.h; sourceTree = "<group>"; };
+		12D556B11147205600B58731 /* moInvertModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moInvertModule.cpp; sourceTree = "<group>"; };
+		12D556B21147205600B58731 /* moInvertModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moInvertModule.h; sourceTree = "<group>"; };
+		12D556B31147205600B58731 /* moMirrorImageModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moMirrorImageModule.cpp; sourceTree = "<group>"; };
+		12D556B41147205600B58731 /* moMirrorImageModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moMirrorImageModule.h; sourceTree = "<group>"; };
+		12D556B51147205600B58731 /* moRoiModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moRoiModule.cpp; sourceTree = "<group>"; };
+		12D556B61147205600B58731 /* moRoiModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moRoiModule.h; sourceTree = "<group>"; };
+		12D556B71147205600B58731 /* moSmoothModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moSmoothModule.cpp; sourceTree = "<group>"; };
+		12D556B81147205600B58731 /* moSmoothModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moSmoothModule.h; sourceTree = "<group>"; };
+		12D556B91147205600B58731 /* moThresholdModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moThresholdModule.cpp; sourceTree = "<group>"; };
+		12D556BA1147205600B58731 /* moThresholdModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moThresholdModule.h; sourceTree = "<group>"; };
+		12D556BB1147205600B58731 /* moTuioModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moTuioModule.cpp; sourceTree = "<group>"; };
+		12D556BC1147205600B58731 /* moTuioModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moTuioModule.h; sourceTree = "<group>"; };
+		12D556BD1147205600B58731 /* moVideoModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moVideoModule.cpp; sourceTree = "<group>"; };
+		12D556BE1147205600B58731 /* moVideoModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moVideoModule.h; sourceTree = "<group>"; };
 		12F85BC811274A9900C13390 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
-		12F85BCD11274A9900C13390 /* tracker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tracker.cpp; sourceTree = "<group>"; };
 		12F85C1711275B8B00C13390 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -465,14 +471,16 @@
 		08FB7794FE84155DC02AAC07 /* Movid */ = {
 			isa = PBXGroup;
 			children = (
-				12C746A3113C7E6D00BC55DF /* docs */,
-				12C7469E113C7E3500BC55DF /* presets */,
-				12F85C1711275B8B00C13390 /* README */,
 				12AF438E112A5ED0001C2529 /* .gitignore */,
+				12F85C1711275B8B00C13390 /* README */,
+				1212F09C1164F9AB00E40580 /* AUTHORS */,
+				1212F0551164F85F00E40580 /* LICENSE */,
 				12F85BC811274A9900C13390 /* Makefile */,
+				12F85BC911274A9900C13390 /* src */,
 				12D789DC112E49770051E2CA /* gui */,
 				12E1F756112DE44400D24FA4 /* contrib */,
-				12F85BC911274A9900C13390 /* src */,
+				12C7469E113C7E3500BC55DF /* presets */,
+				12C746A3113C7E6D00BC55DF /* docs */,
 			);
 			name = Movid;
 			sourceTree = "<group>";
@@ -509,51 +517,6 @@
 				1215EEB7113DCCB200AF1E5B /* pyot.pyc */,
 			);
 			path = pymt;
-			sourceTree = "<group>";
-		};
-		12C7439E113C7C4C00BC55DF /* modules */ = {
-			isa = PBXGroup;
-			children = (
-				12C7439F113C7C4C00BC55DF /* moAmplifyModule.cpp */,
-				12C743A0113C7C4C00BC55DF /* moAmplifyModule.h */,
-				12C743A1113C7C4C00BC55DF /* moBackgroundSubtractModule.cpp */,
-				12C743A2113C7C4C00BC55DF /* moBackgroundSubtractModule.h */,
-				12C743A3113C7C4C00BC55DF /* moBlobTrackerModule.cpp */,
-				12C743A4113C7C4C00BC55DF /* moBlobTrackerModule.h */,
-				12C743A5113C7C4C00BC55DF /* moCameraModule.cpp */,
-				12C743A6113C7C4C00BC55DF /* moCameraModule.h */,
-				12C743A7113C7C4C00BC55DF /* moCombineModule.cpp */,
-				12C743A8113C7C4C00BC55DF /* moCombineModule.h */,
-				12C743A9113C7C4C00BC55DF /* moDilateModule.cpp */,
-				12C743AA113C7C4C00BC55DF /* moDilateModule.h */,
-				12C743AB113C7C4C00BC55DF /* moDumpModule.cpp */,
-				12C743AC113C7C4C00BC55DF /* moDumpModule.h */,
-				12C743AD113C7C4C00BC55DF /* moErodeModule.cpp */,
-				12C743AE113C7C4C00BC55DF /* moErodeModule.h */,
-				12C743AF113C7C4C00BC55DF /* moFiducialTrackerModule.cpp */,
-				12C743B0113C7C4C00BC55DF /* moFiducialTrackerModule.h */,
-				12C743B1113C7C4C00BC55DF /* moGrayScaleModule.cpp */,
-				12C743B2113C7C4C00BC55DF /* moGrayScaleModule.h */,
-				12C743B3113C7C4C00BC55DF /* moHighpassModule.cpp */,
-				12C743B4113C7C4C00BC55DF /* moHighpassModule.h */,
-				12C743B5113C7C4C00BC55DF /* moImageDisplayModule.cpp */,
-				12C743B6113C7C4C00BC55DF /* moImageDisplayModule.h */,
-				12C743B7113C7C4C00BC55DF /* moImageFilterModule.cpp */,
-				12C743B8113C7C4C00BC55DF /* moImageFilterModule.h */,
-				12C743B9113C7C4C00BC55DF /* moImageModule.cpp */,
-				12C743BA113C7C4C00BC55DF /* moImageModule.h */,
-				12C743BB113C7C4C00BC55DF /* moInvertModule.cpp */,
-				12C743BC113C7C4C00BC55DF /* moInvertModule.h */,
-				12C743BD113C7C4C00BC55DF /* moMirrorImageModule.cpp */,
-				12C743BE113C7C4C00BC55DF /* moMirrorImageModule.h */,
-				12C743BF113C7C4C00BC55DF /* moSmoothModule.cpp */,
-				12C743C0113C7C4C00BC55DF /* moSmoothModule.h */,
-				12C743C1113C7C4C00BC55DF /* moThresholdModule.cpp */,
-				12C743C2113C7C4C00BC55DF /* moThresholdModule.h */,
-				12C743C3113C7C4C00BC55DF /* moVideoModule.cpp */,
-				12C743C4113C7C4C00BC55DF /* moVideoModule.h */,
-			);
-			path = modules;
 			sourceTree = "<group>";
 		};
 		12C7469E113C7E3500BC55DF /* presets */ = {
@@ -1138,6 +1101,55 @@
 			path = XgetOpt;
 			sourceTree = "<group>";
 		};
+		12D556941147205600B58731 /* modules */ = {
+			isa = PBXGroup;
+			children = (
+				12D556951147205600B58731 /* moAmplifyModule.cpp */,
+				12D556961147205600B58731 /* moAmplifyModule.h */,
+				12D556971147205600B58731 /* moBackgroundSubtractModule.cpp */,
+				12D556981147205600B58731 /* moBackgroundSubtractModule.h */,
+				12D556991147205600B58731 /* moBlobTrackerModule.cpp */,
+				12D5569A1147205600B58731 /* moBlobTrackerModule.h */,
+				12D5569B1147205600B58731 /* moCameraModule.cpp */,
+				12D5569C1147205600B58731 /* moCameraModule.h */,
+				12D5569D1147205600B58731 /* moCombineModule.cpp */,
+				12D5569E1147205600B58731 /* moCombineModule.h */,
+				12D5569F1147205600B58731 /* moDilateModule.cpp */,
+				12D556A01147205600B58731 /* moDilateModule.h */,
+				12D556A11147205600B58731 /* moDumpModule.cpp */,
+				12D556A21147205600B58731 /* moDumpModule.h */,
+				12D556A31147205600B58731 /* moErodeModule.cpp */,
+				12D556A41147205600B58731 /* moErodeModule.h */,
+				12D556A51147205600B58731 /* moFiducialTrackerModule.cpp */,
+				12D556A61147205600B58731 /* moFiducialTrackerModule.h */,
+				12D556A71147205600B58731 /* moGrayScaleModule.cpp */,
+				12D556A81147205600B58731 /* moGrayScaleModule.h */,
+				12D556A91147205600B58731 /* moHighpassModule.cpp */,
+				12D556AA1147205600B58731 /* moHighpassModule.h */,
+				12D556AB1147205600B58731 /* moImageDisplayModule.cpp */,
+				12D556AC1147205600B58731 /* moImageDisplayModule.h */,
+				12D556AD1147205600B58731 /* moImageFilterModule.cpp */,
+				12D556AE1147205600B58731 /* moImageFilterModule.h */,
+				12D556AF1147205600B58731 /* moImageModule.cpp */,
+				12D556B01147205600B58731 /* moImageModule.h */,
+				12D556B11147205600B58731 /* moInvertModule.cpp */,
+				12D556B21147205600B58731 /* moInvertModule.h */,
+				12D556B31147205600B58731 /* moMirrorImageModule.cpp */,
+				12D556B41147205600B58731 /* moMirrorImageModule.h */,
+				12D556B51147205600B58731 /* moRoiModule.cpp */,
+				12D556B61147205600B58731 /* moRoiModule.h */,
+				12D556B71147205600B58731 /* moSmoothModule.cpp */,
+				12D556B81147205600B58731 /* moSmoothModule.h */,
+				12D556B91147205600B58731 /* moThresholdModule.cpp */,
+				12D556BA1147205600B58731 /* moThresholdModule.h */,
+				12D556BB1147205600B58731 /* moTuioModule.cpp */,
+				12D556BC1147205600B58731 /* moTuioModule.h */,
+				12D556BD1147205600B58731 /* moVideoModule.cpp */,
+				12D556BE1147205600B58731 /* moVideoModule.h */,
+			);
+			path = modules;
+			sourceTree = "<group>";
+		};
 		12D789DC112E49770051E2CA /* gui */ = {
 			isa = PBXGroup;
 			children = (
@@ -1164,13 +1176,16 @@
 		12F85BC911274A9900C13390 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				12D556941147205600B58731 /* modules */,
+				12D556911147202D00B58731 /* moThread.cpp */,
+				12D556921147202D00B58731 /* moThread.h */,
+				12D556931147202D00B58731 /* movid.cpp */,
 				12C74398113C7C4C00BC55DF /* moDaemon.cpp */,
 				12C74399113C7C4C00BC55DF /* moDaemon.h */,
 				12C7439A113C7C4C00BC55DF /* moDataGenericContainer.cpp */,
 				12C7439B113C7C4C00BC55DF /* moDataGenericContainer.h */,
 				12C7439C113C7C4C00BC55DF /* moDataStream.cpp */,
 				12C7439D113C7C4C00BC55DF /* moDataStream.h */,
-				12C7439E113C7C4C00BC55DF /* modules */,
 				12C743C5113C7C4C00BC55DF /* moFactory.cpp */,
 				12C743C6113C7C4C00BC55DF /* moFactory.h */,
 				12C743C7113C7C4C00BC55DF /* moLog.cpp */,
@@ -1183,9 +1198,6 @@
 				12C743CE113C7C4C00BC55DF /* moPipeline.h */,
 				12C743CF113C7C4C00BC55DF /* moProperty.cpp */,
 				12C743D0113C7C4C00BC55DF /* moProperty.h */,
-				12E1F755112DE43500D24FA4 /* daemon.cpp */,
-				0156A990112AAA8B00E6063F /* describe.cpp */,
-				12F85BCD11274A9900C13390 /* tracker.cpp */,
 				128298C9112AA57C0078B03F /* blobtracker.cpp */,
 			);
 			path = src;

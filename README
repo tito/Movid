@@ -1,10 +1,54 @@
 ###################################################
-# Windows Compile Notes
+# About
 ###################################################
+
+Movid is an acronym for Modular Open Vision Interaction Daemon. 
+Movid a crossplatform and Open Source tracker, designed to be as modular as possible.
+
+For more information see: http://www.movid.org
+
+
+
+###################################################
+# Features
+###################################################
+
+* Crossplatform
+Movid is fully cross-platform. It runs on Windows, Linux, MacOSX and FreeBSD. You can share and use the same "pipeline presets" for every platform. 
+
+* Daemon
+As the acronym suggests, Movid runs as a daemon process. That means you can launch it on a headless computer if you want. 
+
+* Threading
+With Movid, you have the ability to enable threading for any module you want. That means you are finally able to use your Core 2 Duo / Quad Core to its full potential. :) Obviously, you can still use non-threaded mode if all you got is a single-core processor. 
+
+*Remote API
+Movid has a JSON remote API to control all the settings and adjust your pipeline in real time! 
+
+*HTML5 Administration
+Movid Web administration makes use of the most recent developments in web programming with open standards like HTML5. No heavy flash or Java required, although one sure could create a frontend using those platforms. All that is required is a compatible HTML5 web browser. As of today, Firefox 3.6, Safari and Chromium have successfully run Movid Web Administration.
+
+
+
+###################################################
+# License
+###################################################
+Movid Copyright (C) 2010 Movid Authors (see AUTHORS file).  All rights reserved.
+Movid may be used and distributed under the terms of the Q Public License as appearing in the LICENSE file distributed with this software.
+
+
+
+###################################################
+# Compiling Movid
+###################################################
+
++++++++++++++++++++++++++++++++++++++++++++++++++++
++ Windows Compile Notes
++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 There is a visual studio solution in the Movid.visualstudio folder.
 
-Before you can open it and compile without errors, you need to install OpenCV.  You can compile openCV 2.0 yourself.  the official binary distribution will not work because teh libs and dlls are build with mingw, dont work with visual studio, and dont include the blob tracking stuff in cvaux.
+Before you can open it and compile without errors, you need to install OpenCV.  You can compile openCV 2.0 yourself.  The official binary distribution will not work because teh libs and dlls are build with mingw, dont work with visual studio, and dont include the blob tracking stuff in cvaux.
 
 If you dont want to compiel yourself, do teh following:
 
@@ -14,15 +58,11 @@ If you dont want to compiel yourself, do teh following:
 it must go in C:\OpenCV, otherwise you need to change the library include directory in teh Movid Visual Studio project, also teh VS studio set teh PATH environment variable to include c:\OpenCV\bin.  If you dont know what this paragraph is talking about, just make sure you unzip it into C:\OpenCV, so that the dll files are in C:\OpenCV\bin, and the lib files in C:\OpenCV\lib
 
 
- 
++++++++++++++++++++++++++++++++++++++++++++++++++++
++ OSX Compile Notes
++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-
-
-
-##################################################
-# OSX Compile Notes:
-##################################################
+On OSX, you must build OpenCV before buildiong Movid, see OpenCV compile instruction further down if you dont know how to do this yourself
 
 
 ==================================================
