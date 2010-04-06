@@ -51,6 +51,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Video);
 	REGISTER_MODULE(Erode);
 	REGISTER_MODULE(Dilate);
+	//DoNotRemoveThisComment
 	LOG(MO_INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }
 

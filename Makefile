@@ -26,11 +26,13 @@ LIBMOVID_STATIC = libmovid.a
 
 OBJ = moThread.o moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
       moDaemon.o moLog.o moDataGenericContainer.o moDumpModule.o \
-	  moCameraModule.o moImageDisplayModule.o moSmoothModule.o moRoiModule.o \
-	  moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \
-	  moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
-	  moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
-	  moImageModule.o moOSC.o moTuioModule.o moDilateModule.o moErodeModule.o
+      moCameraModule.o moImageDisplayModule.o moSmoothModule.o moRoiModule.o \
+      moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \
+      moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
+      moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
+      moImageModule.o moOSC.o moTuioModule.o moDilateModule.o moErodeModule.o \
+      #DoNotRemoveThisComment
+
 
 #where the source is, and where to put the object files
 SRC_DIR = src
@@ -51,6 +53,13 @@ ALL_LIBS_STATIC = ${LIBMOVID_STATIC} ${LIBFIDTRACK_LIBS} ${WOSCLIB_LIBS} ${PTYPE
 BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
 
 all: movid
+
+newmodule:
+	cat src/modules/.dummy.h | sed "s/MO_DUMMY/MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
+	cat src/modules/.dummy.cpp | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.cpp
+	#cat Makefile | sed "s/#DoNotRemoveThisComment/mo${NAME}Module.o#DoNotRemoveThisComment/g" > Makefile
+	cat src/moFactory.cpp | sed "s/\/\/DoNotRemoveThisComment/REGISTER_MODULE(${NAME});\/\/DoNotRemoveThisComment/g" > src/moFactory.cpp
+
 
 #rules for building targets
 static: ${BIN}
