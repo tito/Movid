@@ -24,7 +24,7 @@
 
 
 //pass through f detection
-class otFGDetector : public CvFGDetector{
+class moFGDetector : public CvFGDetector{
 private:
 	IplImage* blob_image;
 
@@ -34,14 +34,14 @@ public:
 	void    Release();
 };
 
-IplImage* otFGDetector::GetMask(){
+IplImage* moFGDetector::GetMask(){
 	return this->blob_image;
 }
-void otFGDetector::Process(IplImage* pImg){
+void moFGDetector::Process(IplImage* pImg){
 	assert ("Blob Tracker input image, must be single channel binary image!" && pImg->nChannels ==1);
 	this->blob_image = pImg;
 }
-void otFGDetector::Release(){
+void moFGDetector::Release(){
 
 }
 
@@ -49,7 +49,7 @@ void otFGDetector::Release(){
 
 
  
-//class otBlobFinder : CvBlobDetector
+//class moBlobFinder : CvBlobDetector
 //{
 //public:
     /* pFGMask - image of foreground mask */
@@ -62,10 +62,10 @@ void otFGDetector::Release(){
 //    void Release()=0;
 //};
 
-//otBlobFinder::DetectNewBlob((IplImage* pFGMask, CvBlobSeq* pNewBlobList, CvBlobSeq* pOldBlobList)){
+//moBlobFinder::DetectNewBlob((IplImage* pFGMask, CvBlobSeq* pNewBlobList, CvBlobSeq* pOldBlobList)){
 //}
 
-//otBlobFinder::Release();
+//moBlobFinder::Release();
 
 
 
@@ -91,7 +91,7 @@ moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 
 	memset(&this->param, 0, sizeof(CvBlobTrackerAutoParam1));
 	this->param.FGTrainFrames = 0;
-	this->param.pFG		= new otFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new otFGDetector();
+	this->param.pFG		= new moFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new moFGDetector();
 	this->param.pBT		= cvCreateBlobTrackerCCMSPF();
 	this->param.pBTPP	= cvCreateModuleBlobTrackPostProcKalman();
 	this->tracker		= cvCreateBlobTrackerAuto1(&this->param);
