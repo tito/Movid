@@ -19,6 +19,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sstream>
 #include "moProperty.h"
 
 #ifdef _WIN32
@@ -40,6 +41,9 @@
 			return; \
 		case MO_PROPERTY_DOUBLE: \
 			*(static_cast<double*>(this->val)) = convertToDouble(typein, &value); \
+			return; \
+		case MO_PROPERTY_POINTLIST: \
+			*(static_cast<moPointList*>(this->val)) = convertToPointList(typein, &value); \
 			return; \
 		default:; \
 	}
@@ -67,6 +71,11 @@ static bool convertToBool(moPropertyType type, void *val) {
 		case MO_PROPERTY_DOUBLE: {
 			CASTEDGET(double);
 			return value == 0 ? false : true;
+		}
+
+		case MO_PROPERTY_POINTLIST: {
+			CASTEDGET(moPointList);
+			return value.size() > 0;
 		}
 
 		default:
@@ -101,6 +110,15 @@ static std::string convertToString(moPropertyType type, void *val) {
 			CASTEDGET(double);
 			snprintf(buffer, sizeof(buffer), "%f", value);
 			return buffer;
+		}
+
+		case MO_PROPERTY_POINTLIST: {
+			std::ostringstream oss;
+			moPointList::iterator it;
+			CASTEDGET(moPointList);
+			for ( it = value.begin(); it != value.end(); it++ )
+				oss << (*it).x << "," << (*it).y << ";";
+			return oss.str();
 		}
 
 		default:;
@@ -163,6 +181,11 @@ static int convertToInteger(moPropertyType type, void *val) {
 			return (int)value;
 		}
 
+		case MO_PROPERTY_POINTLIST: {
+			CASTEDGET(moPointList);
+			return value.size();
+		}
+
 		default:;
 		assert(0);
 	}
@@ -170,6 +193,74 @@ static int convertToInteger(moPropertyType type, void *val) {
 	assert(0);
 	return 0;
 }
+
+std::vector<std::string> tokenize(const std::string& str, const std::string& delimiters)
+{
+	std::string client = str;
+	std::vector<std::string> result;
+
+	while ( !client.empty() )
+	{
+		std::string::size_type dPos = client.find_first_of( delimiters );
+		if ( dPos == 0 ) {
+			client = client.substr(delimiters.length());
+			result.push_back("");
+		} else {
+			std::string::size_type dPos = client.find_first_of(delimiters);
+			std::string element = client.substr(0, dPos);
+			result.push_back(element);
+
+			if (dPos == std::string::npos)
+				return result;
+			else
+				client = client.substr(dPos+delimiters.length());
+		}
+	}
+
+	if ( client.empty() )
+		result.push_back("");
+
+	return result;
+}
+
+static moPointList convertToPointList(moPropertyType type, void *val) {
+	moPointList output = moPointList();
+	switch ( type ) {
+		case MO_PROPERTY_STRING: {
+			CASTEDGET(std::string);
+			std::vector<std::string> points = tokenize(value, ";");
+			std::vector<std::string>::iterator it;
+			for ( it = points.begin(); it != points.end(); it++ ) {
+				std::vector<std::string> point = tokenize((*it), ",");
+				moPoint p;
+
+				// it's an error, not 2 points. just forget it.
+				if ( point.size() != 2 )
+					continue;
+
+				// push the point into the list
+				p.x = atof(point[0].c_str());
+				p.y = atof(point[1].c_str());
+				output.push_back(p);
+			}
+
+			return output;
+		}
+
+		case MO_PROPERTY_POINTLIST: {
+			CASTEDGET(moPointList);
+			return value;
+		}
+
+		// we can't do anything for other type.
+		default:
+			return output;
+	}
+
+	return output;
+}
+
+
 
 moProperty::moProperty(bool value, const std::string &description) {
 	this->init(description);
@@ -203,6 +294,13 @@ moProperty::moProperty(double value, const std::string &description) {
 	this->init(description);
 	this->type = MO_PROPERTY_DOUBLE;
 	this->val = new double();
+	this->set(value);
+}
+
+moProperty::moProperty(moPointList value, const std::string &description) {
+	this->init(description);
+	this->type = MO_PROPERTY_POINTLIST;
+	this->val = new moPointList();
 	this->set(value);
 }
 
@@ -249,6 +347,12 @@ void moProperty::set(double value) {
 	AUTOCONVERT(MO_PROPERTY_DOUBLE, value);
 }
 
+void moProperty::set(moPointList value) {
+	if ( this->isReadOnly() )
+		return;
+	AUTOCONVERT(MO_PROPERTY_POINTLIST, value);
+}
+
 moProperty::~moProperty() {
 	this->free();
 }
@@ -271,6 +375,10 @@ double moProperty::asDouble() {
 
 int moProperty::asInteger() {
 	return convertToInteger(this->type, this->val);
+}
+
+moPointList moProperty::asPointList() {
+	return convertToPointList(this->type, this->val);
 }
 
 void moProperty::free() {
@@ -302,6 +410,7 @@ std::string moProperty::getPropertyTypeName(moPropertyType type) {
 		case MO_PROPERTY_INTEGER: return "integer";
 		case MO_PROPERTY_STRING: return "string";
 		case MO_PROPERTY_BOOL: return "bool";
+		case MO_PROPERTY_POINTLIST: return "pointlist";
 		default:;
 	}
 
@@ -318,6 +427,7 @@ std::ostream& operator<< (std::ostream& o, const moProperty& p) {
 		case MO_PROPERTY_BOOL:		return o << f->asBool();
 		case MO_PROPERTY_INTEGER:	return o << f->asInteger();
 		case MO_PROPERTY_DOUBLE:	return o << f->asDouble();
+		case MO_PROPERTY_POINTLIST: return o << f->asPointList();
 		default:;
 	}
 

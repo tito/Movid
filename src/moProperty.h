@@ -21,13 +21,22 @@
 
 #include <ostream>
 #include <string>
+#include <vector>
+
+typedef struct _moPoint {
+	double x;
+	double y;
+} moPoint;
+
+typedef std::vector<moPoint> moPointList;
 
 typedef enum _moPropertyType {
 	MO_PROPERTY_NONE,
 	MO_PROPERTY_BOOL, 
 	MO_PROPERTY_STRING, 
 	MO_PROPERTY_INTEGER,
-	MO_PROPERTY_DOUBLE
+	MO_PROPERTY_DOUBLE,
+	MO_PROPERTY_POINTLIST,
 } moPropertyType;
 
 class moProperty {
@@ -37,6 +46,7 @@ public:
 	moProperty(std::string value, const std::string &description = "");
 	moProperty(int value, const std::string &description = "");
 	moProperty(double value, const std::string &description = "");
+	moProperty(moPointList, const std::string &description = "");
 	~moProperty();
 	
 	moPropertyType getType();
@@ -51,12 +61,14 @@ public:
 	std::string asString();
 	double asDouble();
 	int asInteger();
+	moPointList asPointList();
 
 	void set(bool value);
 	void set(std::string value);
 	void set(const char* value);
 	void set(int value);
 	void set(double value);
+	void set(moPointList value);
 
 	bool haveMin();
 	bool haveMax();
