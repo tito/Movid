@@ -888,7 +888,7 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 
 				module1 = module_search(tokens[2], pipeline);
 				if ( module1 == NULL ) {
-					WRITE_ERROR << "unable to found module with id " << tokens[2] << LN;
+					WRITE_ERROR << "unable to find module with id " << tokens[2] << LN;
 					goto parse_error;
 				}
 
@@ -908,13 +908,13 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 
 				module1 = module_search(tokens[2], pipeline);
 				if ( module1 == NULL ) {
-					WRITE_ERROR << "unable to found module with id " << tokens[2] << LN;
+					WRITE_ERROR << "unable to find module with id " << tokens[2] << LN;
 					goto parse_error;
 				}
 
 				module2 = module_search(tokens[4], pipeline);
 				if ( module2 == NULL ) {
-					WRITE_ERROR << "unable to found module with id " << tokens[4] << LN;
+					WRITE_ERROR << "unable to find module with id " << tokens[4] << LN;
 					goto parse_error;
 				}
 
@@ -1023,7 +1023,7 @@ int main(int argc, char **argv) {
 			return 2;
 		}
 	} else if ( config_httpserver == false ) {
-		std::cerr << "ERROR : no pipeline or webserver to start !" << std::endl;
+		std::cerr << "ERROR : no pipeline or webserver to start!" << std::endl;
 		return 3;
 	}
 
