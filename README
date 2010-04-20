@@ -43,6 +43,35 @@ Movid may be used and distributed under the terms of the Q Public License as app
 ###################################################
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++
++ Linux Compile Notes
++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+The following instructions are for Ubuntu/Debian.
+They should be easily transferable to other linux distributions.
+Building from source on these distributions is really easy.
+
+First, you have to install the opencv headers, git and the build-tools:
+sudo apt-get install libcv-dev git-core build-essential
+
+Then, you get the current development version of Movid:
+git clone git://github.com/tito/Movid.git
+
+Afterwards, we change to the Movid repo you just cloned:
+cd Movid
+
+It is time to compile, let's run make!
+make
+
+Now you should be able to use movid already. Try the simple-video preset:
+./movid -l presets/simple-video.txt
+
+Now that the daemon is running, you can simply open your webbrowser
+(needs to be Firefox 3.6 or some other browser with HTML5 and support for
+the canvas object. Javascript has to be enabled.) and navigate to the admin interface:
+http://127.0.0.1:7500/
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++
 + Windows Compile Notes
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -135,6 +164,7 @@ Inside the cmake config do the following:
 
 
 
+That's it! You can now play with Movid! If you have questions, feature requests, find bugs or want to help, please see the following page: http://movid.org/Documentation/HowToContribute
 
 
 
