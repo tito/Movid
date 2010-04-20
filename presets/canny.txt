@@ -1,0 +1,14 @@
+#
+# Simple pipeline that show camera to a window
+#
+
+pipeline create Camera camera
+
+pipeline create GrayScale gray
+pipeline connect camera 0 gray 0
+
+pipeline create Canny canny
+pipeline connect gray 0 canny 0
+
+pipeline create ImageDisplay window
+pipeline connect canny 0 window 0
