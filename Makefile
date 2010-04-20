@@ -31,8 +31,8 @@ OBJ = moThread.o moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o
       moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
       moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
       moImageModule.o moOSC.o moTuioModule.o moDilateModule.o moErodeModule.o \
+      moCannyModule.o
       #DoNotRemoveThisComment
-
 
 #where the source is, and where to put the object files
 SRC_DIR = src
