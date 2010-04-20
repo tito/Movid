@@ -724,6 +724,11 @@ void web_pipeline_quit(struct evhttp_request *req, void *arg) {
 	want_quit = false;
 }
 
+void web_index(struct evhttp_request *req, void *arg) {
+	evhttp_add_header(req->output_headers, "Location", "/gui/index.html");
+	evhttp_send_reply(req, HTTP_MOVETEMP, "Everything is fine", NULL);
+}
+
 void web_file(struct evhttp_request *req, void *arg) {
 	FILE *fd;
 	int readidx = 0, ret;
@@ -1047,6 +1052,7 @@ int main(int argc, char **argv) {
 
 		evhttp_bind_socket(server, "127.0.0.1", 7500);
 
+		evhttp_set_cb(server, "/", web_index, NULL);
 		evhttp_set_cb(server, "/factory/list", web_factory_list, NULL);
 		evhttp_set_cb(server, "/factory/describe", web_factory_desribe, NULL);
 		evhttp_set_cb(server, "/pipeline/create", web_pipeline_create, NULL);
