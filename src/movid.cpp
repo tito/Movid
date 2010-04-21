@@ -501,6 +501,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 	cJSON_AddStringToObject(mod, "description", module->getDescription().c_str());
 	cJSON_AddStringToObject(mod, "author", module->getAuthor().c_str());
 	cJSON_AddNumberToObject(mod, "running", module->isStarted() ? 1 : 0);
+	cJSON_AddNumberToObject(mod, "gui", (module->getCapabilities() & MO_MODULE_GUI) ? 1 : 0);
 	cJSON_AddItemToObject(mod, "properties", properties=cJSON_CreateObject());
 
 	for ( it = module->getProperties().begin(); it != module->getProperties().end(); it++ ) {
@@ -696,6 +697,31 @@ void web_pipeline_remove(struct evhttp_request *req, void *arg) {
 
 	web_message(req, "ok");
 	evhttp_clear_headers(&headers);
+}
+
+void web_pipeline_gui(struct evhttp_request *req, void *arg) {
+	moModule *module;
+	struct evkeyvalq headers;
+	const char *uri;
+
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
+
+	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing objectname");
+	}
+
+	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	if ( module == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "object not found");
+	}
+
+	// TODO
+
+	evhttp_clear_headers(&headers);
+	web_message(req, "ok");
 }
 
 void web_pipeline_start(struct evhttp_request *req, void *arg) {
@@ -1061,6 +1087,7 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/connect", web_pipeline_connect, NULL);
 		evhttp_set_cb(server, "/pipeline/set", web_pipeline_set, NULL);
 		evhttp_set_cb(server, "/pipeline/get", web_pipeline_get, NULL);
+		evhttp_set_cb(server, "/pipeline/gui", web_pipeline_gui, NULL);
 		evhttp_set_cb(server, "/pipeline/stream", web_pipeline_stream, NULL);
 		evhttp_set_cb(server, "/pipeline/start", web_pipeline_start, NULL);
 		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);

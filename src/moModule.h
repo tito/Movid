@@ -76,7 +76,8 @@ class moPipeline;
 enum {
 	MO_MODULE_NONE		= 0x00000000,		/*< Module have no input/output */
 	MO_MODULE_INPUT		= 0x00000001,		/*< Module have inputs */
-	MO_MODULE_OUTPUT	= 0x00000002		/*< Module have outputs */
+	MO_MODULE_OUTPUT	= 0x00000002,		/*< Module have outputs */
+	MO_MODULE_GUI       = 0x00000004,		/*< Module have a GUI */
 };
 
 /*! \brief Base class for all modules
@@ -243,6 +244,14 @@ public:
 	/*! \brief Export connections of the module to a file
 	 */
 	virtual bool serializeConnections(std::ostringstream &oss);
+
+	/*! \brief Receive some feedback on the configuration ui
+	 */
+	virtual void guiFeedback(const std::string &type, double x, double y);
+
+	/*! \brief Get instruction about how to draw the GUI
+	 */
+	std::vector<std::string> &getGui(void);
 	
 private:
 	/*! \brief Capabilities flags
@@ -332,6 +341,10 @@ protected:
 	 * \param base name of the class to use it
 	 */
 	static std::string createId(std::string base);
+
+	/*! \brief Storage for GUI instruction
+	 */
+	std::vector<std::string> gui;
 
 	friend class moDataStream;
 	friend class moPipeline;
