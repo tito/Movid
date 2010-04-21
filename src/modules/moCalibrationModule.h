@@ -19,6 +19,8 @@
 #ifndef MO_Calibration_MODULE_H
 #define MO_Calibration_MODULE_H
 
+#include <vector>
+#include "../moDataGenericContainer.h"
 #include "moImageFilterModule.h"
 
 class moCalibrationModule : public moImageFilterModule{
@@ -30,6 +32,8 @@ protected:
 	void applyFilter();
 	void triangulate();
 	int active_point;
+	std::vector<moPoint> screenPoints;
+	std::vector<moPoint> surfacePoints;
 	CvRect rect;
 	CvMemStorage* storage;
 	CvSubdiv2D* subdiv;

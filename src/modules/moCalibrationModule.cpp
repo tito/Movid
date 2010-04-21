@@ -25,66 +25,24 @@
 // XXX Desc
 MODULE_DECLARE(Calibration, "native", "Calibration");
 
-//XXX This should'nt be an imagefiltermodule
+//XXX This shouldn't be an imagefiltermodule
 moCalibrationModule::moCalibrationModule() : moImageFilterModule(){
 
 	MODULE_INIT();
 
 	this->properties["rows"] = new moProperty(3);
 	this->properties["cols"] = new moProperty(3);
-	this->properties["grid_points"] = new moProperty(moPointList());
+	this->properties["screenPoints"] = new moProperty(moPointList());
 	this->properties["do_calibration"] = new moProperty(true);
 	this->properties["needs_retriangulation"] = new moProperty(true);
-//	this->rect = { 0, 0, 5000, 5000 }; // XXX
+	// XXX
+	this->rect = cvRect(0, 0, 5000, 5000);
 	this->storage = cvCreateMemStorage(0);
 	this->active_point = 0;
 }
 
 moCalibrationModule::~moCalibrationModule() {
 }
-
-
-typedef struct _DualPoint {
-	moPoint screen;
-	moPoint surface;
-} DualPoint;
-
-typedef struct {
-	float alpha;
-	float beta;
-	float gamma;
-} surf2screen_t;
-
-class Triangle {
-public:
-	DualPoint a;
-	DualPoint b;
-	DualPoint c;
-	
-	void surfaceToScreen(moPoint p, surf2screen_t *result) {
-		assert(result != NULL);
-		
-		// XXX These should be vectors...
-		moPoint abs = {b.screen.x - a.screen.x, b.screen.y - a.screen.y};
-		moPoint acs = {c.screen.x - a.screen.x, c.screen.y - a.screen.y};
-		result->beta = (p.x - a.screen.x) / float(abs.x);
-		result->gamma = (p.y - a.screen.y) / float(acs.y);
-		result->alpha = 1.0 - result->beta - result->gamma;
-	}
-	
-	bool collide_point(moPoint point) {
-		surf2screen_t params;
-		float *p;
-		int i;
-		
-		this->surfaceToScreen(point, &params);
-		
-		for ( p = (float *)(&params), i = 0; i < 3; i++, p++ ) 
-			if (!(0.0 <= *p <= 1.0))
-				return false;
-		return true;
-	}
-};
 
 CvSubdiv2D* init_delaunay(CvMemStorage* storage, CvRect rect) {
     CvSubdiv2D* subdiv;
@@ -97,8 +55,8 @@ CvSubdiv2D* init_delaunay(CvMemStorage* storage, CvRect rect) {
     return subdiv;
 }
 
-void moCalibrationModule::triangulate() {
-	/*std::cout << "Points:" << std::endl;
+void moCalibrationModule::triangulate() {/*
+	std::cout << "Points:" << std::endl;
 	moPointList points = this->property("grid_points").asPointList();
 	moPointList::iterator it;
 	this->subdiv = init_delaunay(this->storage, this->rect);
@@ -113,24 +71,29 @@ void moCalibrationModule::triangulate() {
 	// XXX Is triangulation performed now already?
 
 	// Take the result of the triangulation and put them into our triangle struct
-
-	this->property("needs_retriangulation") = false;*/
+	// TODO
+	this->property("needs_retriangulation") = false;
+	*/
 }
 
 void moCalibrationModule::applyFilter() {
-	/*
-	bool* calibrate = this->property("do_calibration");
-	bool* triangulate = this->property("needs_retriangulation");
+	bool calibrate = this->property("do_calibration").asBool();
+	bool triangulate = this->property("needs_retriangulation").asBool();
 	if (calibrate) {
-		// Perhaps points were added, moved or deleted. If this is the case
-		// we have to triangulate again.
-		if (triangulate) this->triangulate();
+		moDataGenericList *blobs = static_cast<moDataGenericList*>(this->input->getData());
+		//std::cout << blobs->size() << std::endl;
+		if (blobs->size() != 1) return;
+		moDataGenericContainer *touch = (*blobs)[0];
+		std::cout << touch->properties["type"]->asString() << std::endl;
+		//for (it = blobs->begin(); it != blobs->end(); it++) {
+		//	std::cout << (*it)->properties["type"]->asString() << std::endl;
+		//}
 		// We now assign each point its coordinates on the touch surface
-		moPointList* points = this->property("grid_points").asPointList();
+/*		moPointList* points = this->property("grid_points").asPointList();
 		moPointList* mapping = this->mapping;
 		mapping.erase();
 		// We ignore calibration attempts where not exactly one touch is present
-		if (this->input.length() != 1) return;
+
 		moDataGenericContainer touch = this->input.get(0);
 		mapping.push_back(DualPoint(points[this->active_point], moPoint(touch->property("x"), touch->property("y"))));
 		this->active_point += 1;
@@ -139,8 +102,57 @@ void moCalibrationModule::applyFilter() {
 			this->active_point == 0;
 			this->property("do_calibration") = false;
 		}
+		// Perhaps points were added, moved or deleted. If this is the case
+		// we have to triangulate again. 
+ 		if (triangulate) this->triangulate();
+		*/
 	}
 	else {
 		// Calibration is done. Just convert the point coordinates.
-	}*/
+	}
 }
+
+
+/*
+ typedef struct _DualPoint {
+ moPoint screen;
+ moPoint surface;
+ } DualPoint;
+ 
+ typedef struct {
+ float alpha;
+ float beta;
+ float gamma;
+ } surf2screen_t;
+ 
+ class Triangle {
+ public:
+ DualPoint a;
+ DualPoint b;
+ DualPoint c;
+ 
+ void surfaceToScreen(moPoint p, surf2screen_t *result) {
+ assert(result != NULL);
+ 
+ // XXX These should be vectors...
+ moPoint abs = {b.screen.x - a.screen.x, b.screen.y - a.screen.y};
+ moPoint acs = {c.screen.x - a.screen.x, c.screen.y - a.screen.y};
+ result->beta = (p.x - a.screen.x) / float(abs.x);
+ result->gamma = (p.y - a.screen.y) / float(acs.y);
+ result->alpha = 1.0 - result->beta - result->gamma;
+ }
+ 
+ bool collide_point(moPoint point) {
+ surf2screen_t params;
+ float *p;
+ int i;
+ 
+ this->surfaceToScreen(point, &params);
+ 
+ for ( p = (float *)(&params), i = 0; i < 3; i++, p++ ) 
+ if (!(0.0 <= *p <= 1.0))
+ return false;
+ return true;
+ }
+ };
+*/
