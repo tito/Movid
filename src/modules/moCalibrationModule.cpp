@@ -29,6 +29,10 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 
 	MODULE_INIT();
 
+	// declare input/output
+	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
+	this->output_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
+
 	this->properties["rows"] = new moProperty(3);
 	this->properties["cols"] = new moProperty(3);
 	this->properties["screenPoints"] = new moProperty(moPointList());
