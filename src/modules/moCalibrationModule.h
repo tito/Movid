@@ -20,17 +20,31 @@
 #define MO_Calibration_MODULE_H
 
 #include <vector>
+#include "../moDataStream.h"
 #include "../moDataGenericContainer.h"
-#include "moImageFilterModule.h"
+#include "../moModule.h"
+#include "cv.h"
 
-class moCalibrationModule : public moImageFilterModule{
+class moCalibrationModule : public moModule {
 public:
 	moCalibrationModule();
 	virtual ~moCalibrationModule();
 	virtual void guiFeedback(const std::string& type, double x, double y);
 	
-protected:
-	void applyFilter();
+	virtual void setInput(moDataStream* stream, int n=0);
+	virtual moDataStream *getInput(int n=0);
+	virtual moDataStream *getOutput(int n=0);
+	
+	void notifyData(moDataStream *stream);
+	void update();
+	
+	void start();
+	void stop();
+	
+private:
+	moDataStream *input;
+	moDataStream *output;
+	bool retriangulate;
 	void triangulate();
 	int active_point;
 	std::vector<moPoint> screenPoints;
@@ -38,9 +52,8 @@ protected:
 	CvRect rect;
 	CvMemStorage* storage;
 	CvSubdiv2D* subdiv;
-
+	
 	MODULE_INTERNALS();
 };
 
 #endif
-
