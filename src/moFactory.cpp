@@ -52,6 +52,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Erode);
 	REGISTER_MODULE(Dilate);
 	REGISTER_MODULE(Canny);
+	REGISTER_MODULE(Calibration);
 	//DoNotRemoveThisComment
 	LOG(MO_INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }
