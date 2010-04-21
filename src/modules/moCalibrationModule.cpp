@@ -19,23 +19,21 @@
 #include <assert.h>
 #include "moCalibrationModule.h"
 #include "../moLog.h"
-#include "cv.h"
 #include <stdio.h>
 
 // XXX Desc
 MODULE_DECLARE(Calibration, "native", "Calibration");
 
-//XXX This shouldn't be an imagefiltermodule
-moCalibrationModule::moCalibrationModule() : moImageFilterModule(){
+moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT | MO_MODULE_GUI, 1, 1){
 
 	MODULE_INIT();
 
 	this->properties["rows"] = new moProperty(3);
 	this->properties["cols"] = new moProperty(3);
 	this->properties["screenPoints"] = new moProperty(moPointList());
-	this->properties["do_calibration"] = new moProperty(true);
-	this->properties["needs_retriangulation"] = new moProperty(true);
+	this->properties["calibrate"] = new moProperty(true);
 	// XXX
+	this->retriangulate = true;
 	this->rect = cvRect(0, 0, 5000, 5000);
 	this->storage = cvCreateMemStorage(0);
 	this->active_point = 0;
@@ -76,11 +74,14 @@ void moCalibrationModule::triangulate() {/*
 	*/
 }
 
-void moCalibrationModule::applyFilter() {
-	bool calibrate = this->property("do_calibration").asBool();
-	bool triangulate = this->property("needs_retriangulation").asBool();
+void moCalibrationModule::notifyData(moDataStream *input) {
+	assert( input != NULL );
+	assert( input == this->input );
+	this->input->lock();	
+	
+	bool calibrate = this->property("calibrate").asBool();
 	if (calibrate) {
-		moDataGenericList *blobs = static_cast<moDataGenericList*>(this->input->getData());
+		moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
 		//std::cout << blobs->size() << std::endl;
 		if (blobs->size() != 1) return;
 		moDataGenericContainer *touch = (*blobs)[0];
@@ -104,55 +105,54 @@ void moCalibrationModule::applyFilter() {
 		}
 		// Perhaps points were added, moved or deleted. If this is the case
 		// we have to triangulate again. 
- 		if (triangulate) this->triangulate();
+ 		if (this->retriangulate) this->triangulate();
 		*/
 	}
 	else {
 		// Calibration is done. Just convert the point coordinates.
 	}
+	this->input->unlock();
 }
 
+void moCalibrationModule::start() {
+	moModule::start();
+}
 
-/*
- typedef struct _DualPoint {
- moPoint screen;
- moPoint surface;
- } DualPoint;
- 
- typedef struct {
- float alpha;
- float beta;
- float gamma;
- } surf2screen_t;
- 
- class Triangle {
- public:
- DualPoint a;
- DualPoint b;
- DualPoint c;
- 
- void surfaceToScreen(moPoint p, surf2screen_t *result) {
- assert(result != NULL);
- 
- // XXX These should be vectors...
- moPoint abs = {b.screen.x - a.screen.x, b.screen.y - a.screen.y};
- moPoint acs = {c.screen.x - a.screen.x, c.screen.y - a.screen.y};
- result->beta = (p.x - a.screen.x) / float(abs.x);
- result->gamma = (p.y - a.screen.y) / float(acs.y);
- result->alpha = 1.0 - result->beta - result->gamma;
- }
- 
- bool collide_point(moPoint point) {
- surf2screen_t params;
- float *p;
- int i;
- 
- this->surfaceToScreen(point, &params);
- 
- for ( p = (float *)(&params), i = 0; i < 3; i++, p++ ) 
- if (!(0.0 <= *p <= 1.0))
- return false;
- return true;
- }
- };
-*/
+void moCalibrationModule::stop() {
+	moModule::stop();
+}
+
+void moCalibrationModule::setInput(moDataStream *stream, int n) {
+	if ( n != 0 ) {
+		this->setError("Invalid input index");
+		return;
+	}
+	if ( this->input != NULL )
+		this->input->removeObserver(this);
+	this->input = stream;
+	if ( stream != NULL ) {
+		if ( stream->getFormat() != "GenericTouch" &&
+			stream->getFormat() != "GenericFiducial" ) {
+			this->setError("Input 0 accept only touch or fiducial");
+			this->input = NULL;
+			return;
+		}
+	}
+	if ( this->input != NULL )
+		this->input->addObserver(this);
+}
+
+moDataStream* moCalibrationModule::getInput(int n) {
+	if ( n != 0 ) {
+		this->setError("Invalid input index");
+		return NULL;
+	}
+	return this->input;
+}
+
+moDataStream* moCalibrationModule::getOutput(int n) {
+	return this->output;
+}
+
+void moCalibrationModule::update() {
+}
