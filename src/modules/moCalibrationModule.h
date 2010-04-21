@@ -27,6 +27,7 @@ class moCalibrationModule : public moImageFilterModule{
 public:
 	moCalibrationModule();
 	virtual ~moCalibrationModule();
+	virtual void guiFeedback(const std::string& type, double x, double y);
 	
 protected:
 	void applyFilter();

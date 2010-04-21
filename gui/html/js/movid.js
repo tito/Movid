@@ -60,13 +60,14 @@ function mo_status() {
 		for ( key in data['status']['modules'] ) {
 			var infos = data['status']['modules'][key];
 			if ( widgetGet(key) == null ) {
-				widgetCreate(key);
 				var _x = infos['properties']['x'];
 				var _y = infos['properties']['y'];
+				var _gui = infos['gui'];
 				if ( typeof _x == 'undefined' )
 					_x = 0;
 				if ( typeof _y == 'undefined' )
 					_y = 0;
+				widgetCreate(key, _gui);
 				widgetPosition(key, _x, _y);
 
 				if ( typeof(infos['inputs']) != 'undefined' ) {
@@ -133,6 +134,29 @@ function mo_properties(elem) {
 
 			// all elements will be in a table, prepare it
 			var table = $('<table></table>');
+			if ( infos['gui'] == 1 ) {
+				var uniq = mo_uniq();
+				var input =
+					$('<input></input>')
+					.attr('id', uniq)
+					.attr('type', 'checkbox')
+					.attr('onchange', 'javascript:mo_gui("'
+						+ elem + '", 0)');
+				var tr = $('<tr></tr>')
+					.append( $('<td></td>')
+						.addClass('label')
+						.html('GUI')
+					)
+					.append( $('<td></td>')
+						.append(input)
+						.append(
+							$('<label></label>')
+							.attr('for', uniq)
+							.html('Open'))
+					);
+				table.append(tr);
+			}
+
 
 			// enumerate properties
 			for ( var property in infos['properties'] ) {
@@ -242,9 +266,10 @@ function _mo_update_state() {
 	$('#properties input[type=\"checkbox\"]').button();
 }
 
-function mo_set(id, k, v) {
+function mo_set(id, k, v, callback) {
 	$.get(mo_baseurl + '/pipeline/set?objectname=' + id + '&name=' + k + '&value=' + v, function(data) {
-		// TODO
+		if ( typeof(callback) != 'undefined' )
+			callback();
 	});
 }
 
@@ -287,6 +312,12 @@ function mo_select(elem) {
 	mo_widget_selected = elem;
 	mo_properties(elem);
 	mo_stream(elem);
+}
+
+function mo_gui(elem, is_update) {
+	$.get(mo_baseurl + '/pipeline/gui?objectname=' + elem, function(data) {
+		widgetConfigure(data, is_update);
+	});
 }
 
 

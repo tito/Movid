@@ -16,6 +16,7 @@
  **********************************************************************/
 
 
+#include <stdlib.h>
 #include <assert.h>
 #include <sstream>
 #include <iostream>
@@ -39,7 +40,7 @@ static void module_gui_feedback_cb(moProperty *property, void *userdata) {
 	assert( userdata != NULL );
 	moModule *module = NULL;
 	std::vector<std::string> tokens;
-	
+
 	// split the value in 3 (type, x, y)
 	std::string s = property->asString();
 	if ( s == "" )

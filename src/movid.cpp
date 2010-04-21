@@ -395,6 +395,7 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 		cJSON_AddStringToObject(mod, "description", module->getDescription().c_str());
 		cJSON_AddStringToObject(mod, "author", module->getAuthor().c_str());
 		cJSON_AddNumberToObject(mod, "running", module->isStarted() ? 1 : 0);
+		cJSON_AddNumberToObject(mod, "gui", module->getCapabilities() & MO_MODULE_GUI ? 1 : 0);
 		cJSON_AddItemToObject(mod, "properties", properties=cJSON_CreateObject());
 
 		for ( it = module->getProperties().begin(); it != module->getProperties().end(); it++ ) {
@@ -718,10 +719,16 @@ void web_pipeline_gui(struct evhttp_request *req, void *arg) {
 		return web_error(req, "object not found");
 	}
 
-	// TODO
-
 	evhttp_clear_headers(&headers);
-	web_message(req, "ok");
+
+	struct evbuffer *evb = evbuffer_new();
+	std::vector<std::string> gui = module->getGui();
+	std::vector<std::string>::iterator it;
+	for ( it = gui.begin(); it != gui.end(); it++ )
+		evbuffer_add_printf(evb, "%s\n", (*it).c_str());
+	evhttp_add_header(req->output_headers, "Content-Type", "text/plain");
+	evhttp_send_reply(req, HTTP_OK, "Everything is fine", evb);
+	evbuffer_free(evb);
 }
 
 void web_pipeline_start(struct evhttp_request *req, void *arg) {

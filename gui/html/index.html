@@ -9,6 +9,7 @@
 		widgetAddOutput = null,
 		widgetClearConnectivity = null,
 		widgetConnect = null;
+		widgetConfigure = null;
 	</script>
 	<script type="text/javascript" src="js/processing.js"></script>
 	<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
@@ -78,6 +79,7 @@ class Widget {
 	int w = 120;
 	int h = 75;
 	String name = 'UnknownID';
+	int gui = 0;
 	ArrayList inputs;
 	ArrayList outputs;
 
@@ -200,9 +202,10 @@ class Widget {
 // link with UI
 //
 
-widgetCreate = function(String _name) {
+widgetCreate = function(String _name, int have_gui) {
 	Widget w = new Widget();
 	w.name = _name;
+	w.gui = have_gui;
 	widgets.add(w);
 }
 
@@ -252,6 +255,7 @@ widgetConnect = function(_out, _outidx, _in, _inidx) {
 	wout.outputs.get(parseInt(_outidx)).connect(win, parseInt(_inidx));
 }
 
+
 //
 // declarations
 //
@@ -270,9 +274,59 @@ Widget connectivity_widget;
 String connectivity_io;
 int connectivity_idx;
 int connectivity_ok = 0;
+int config_show = 0;
 color cok = color(50, 200, 50);
 color cko = color(200, 50, 50);
 color cwait = color(200, 200, 50);
+
+widgetConfigure = function(guicommand, is_update) {
+	if ( is_update == 0 && config_show == 1 ) {
+		config_show = 0;
+		return;
+	}
+
+	config_show = 1;
+	config_insts = guicommand.split("\n");
+	draw();
+}
+
+void configDraw() {
+	if ( config_show == 0 )
+		return;
+
+	// biggest task. decompile draw instruction
+	// and convert to processing one.
+	fill(255, 255, 255);
+	var y = 10;
+	for ( var index in config_insts ) {
+		var args = config_insts[index].split(" ");
+
+		switch ( args[0] ) {
+			case '':
+				break;
+				
+			case 'color':
+				fill(parseInt(args[1]), parseInt(args[2]), parseInt(args[3]));
+				break;
+
+			case 'rect':
+				rect(parseInt(args[1]), parseInt(args[2]), parseInt(args[3]), parseInt(args[4]));
+				break;
+
+			default:
+				fill(255, 255, 255);
+				text('not handled cmd:' + args[0], 10, y);
+				y += 10;
+		}
+	}
+}
+
+void configSendFeedback(type, x, y) {
+	mo_set(mo_widget_selected, "gui_feedback", "" + type + ";" + x + ";" + y, function() {
+		mo_gui(mo_widget_selected);
+	});
+}
+
 
 int textWidth(String s) {
 	return s.length * (fontsize / 2) + (s.length - 1);
@@ -295,19 +349,28 @@ void draw() {
 
 	background(51);
 
-	for ( int i = 0; i < widgets.size(); i ++ ) {
-		w = widgets.get(i);
-		if ( selected_widget == i ) {
-			w.x = mouseX - selected_widget_x;
-			w.y = mouseY - selected_widget_y;
+	if ( config_show == 1 ) {
+
+		configDraw();
+
+	} else {
+
+		for ( int i = 0; i < widgets.size(); i ++ ) {
+			w = widgets.get(i);
+			if ( selected_widget == i ) {
+				w.x = mouseX - selected_widget_x;
+				w.y = mouseY - selected_widget_y;
+			}
+			w.draw();
 		}
-		w.draw();
+
+		searchConnectivity();
+		checkConnectivity();
+		drawConnectivity();
+
 	}
 
-	searchConnectivity();
-	checkConnectivity();
-	drawConnectivity();
-
+	frameCount += 1;
 	$('#framecount').html(frameCount);
 }
 
@@ -417,6 +480,11 @@ void mousePressed() {
 	Widget w;
 	int idx;
 
+	if ( config_show == 1 ) {
+		configSendFeedback('down', mouseX, mouseY);
+		return;
+	}
+
 	for ( int i = widgets.size() - 1; i >= 0; i-- ) {
 		w = widgets.get(i);
 		if ( w.collide(mouseX, mouseY) ) {
@@ -453,6 +521,12 @@ void mousePressed() {
 
 void mouseReleased() {
 
+	if ( config_show == 1 ) {
+		configSendFeedback('up', mouseX, mouseY);
+		draw();
+		return;
+	}
+
 	if ( connectivity_ok == 1 ) {
 		if ( selected_output_idx != -1 ) {
 			selected_output_widget.outputs.get(selected_output_idx).connect(
@@ -477,12 +551,14 @@ void mouseReleased() {
 	selected_output_idx = -1;
 
 	draw();
-	frameCount += 1;
 }
 
 void mouseDragged() {
 	draw();
-	frameCount += 1;
+	if ( config_show == 1 ) {
+		configSendFeedback('move', mouseX, mouseY);
+		return;
+	}
 }
 
 </script><canvas id="movidcanvas" width="800" height="600">You need HTML5 canvas support.</canvas>

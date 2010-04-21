@@ -17,6 +17,7 @@
 
 
 #include <assert.h>
+#include "sstream"
 #include "moCalibrationModule.h"
 #include "../moLog.h"
 #include "cv.h"
@@ -30,6 +31,10 @@ moCalibrationModule::moCalibrationModule() : moImageFilterModule(){
 
 	MODULE_INIT();
 
+	// TODO remove this when module will be a standalone module
+	// not an imagefilter one
+	this->capabilities |= MO_MODULE_GUI;
+
 	this->properties["rows"] = new moProperty(3);
 	this->properties["cols"] = new moProperty(3);
 	this->properties["screenPoints"] = new moProperty(moPointList());
@@ -42,6 +47,15 @@ moCalibrationModule::moCalibrationModule() : moImageFilterModule(){
 }
 
 moCalibrationModule::~moCalibrationModule() {
+}
+
+void moCalibrationModule::guiFeedback(const std::string& type, double x, double y) {
+	std::ostringstream oss;
+	this->gui.clear();
+	this->gui.push_back("viewport 100 100");
+	this->gui.push_back("color 255 255 255");
+	oss << "rect " << x - 10 << " " << y - 10 << " 20 20";
+	this->gui.push_back(oss.str());
 }
 
 CvSubdiv2D* init_delaunay(CvMemStorage* storage, CvRect rect) {
