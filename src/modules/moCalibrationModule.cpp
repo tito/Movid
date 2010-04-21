@@ -29,10 +29,6 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 
 	MODULE_INIT();
 
-	// TODO remove this when module will be a standalone module
-	// not an imagefilter one
-	this->capabilities |= MO_MODULE_GUI;
-
 	this->properties["rows"] = new moProperty(3);
 	this->properties["cols"] = new moProperty(3);
 	this->properties["screenPoints"] = new moProperty(moPointList());
@@ -48,6 +44,8 @@ moCalibrationModule::~moCalibrationModule() {
 }
 
 void moCalibrationModule::guiFeedback(const std::string& type, double x, double y) {
+	// just a temporary ui playground
+	// draw only one rect that follow the mouse !
 	std::ostringstream oss;
 	this->gui.clear();
 	this->gui.push_back("viewport 100 100");
