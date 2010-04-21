@@ -38,6 +38,10 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->rect = cvRect(0, 0, 5000, 5000);
 	this->storage = cvCreateMemStorage(0);
 	this->active_point = 0;
+	this->input = NULL;
+	this->output = NULL;
+	this->subdiv = NULL;
+
 }
 
 moCalibrationModule::~moCalibrationModule() {
