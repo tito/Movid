@@ -74,44 +74,58 @@ void moCalibrationModule::triangulate() {/*
 	*/
 }
 
-void moCalibrationModule::notifyData(moDataStream *input) {
-	assert( input != NULL );
-	assert( input == this->input );
+void moCalibrationModule::update() {
 	this->input->lock();	
 	
 	bool calibrate = this->property("calibrate").asBool();
 	if (calibrate) {
 		moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
-		//std::cout << blobs->size() << std::endl;
-		if (blobs->size() != 1) return;
-		moDataGenericContainer *touch = (*blobs)[0];
-		std::cout << touch->properties["type"]->asString() << std::endl;
-		//for (it = blobs->begin(); it != blobs->end(); it++) {
-		//	std::cout << (*it)->properties["type"]->asString() << std::endl;
-		//}
-		// We now assign each point its coordinates on the touch surface
-/*		moPointList* points = this->property("grid_points").asPointList();
-		moPointList* mapping = this->mapping;
-		mapping.erase();
-		// We ignore calibration attempts where not exactly one touch is present
+		std::cout << "#Blobs in frame: " << blobs->size() << std::endl;
+		// We only calibrate the current point if there is an unambiguous amount of touches
+		if (blobs->size() == 1) {
+			// We now want to assign each point its coordinates on the touch surface
+			moDataGenericContainer *touch = (*blobs)[0];
+			// TODO While calibrating, this list MUST NOT change!
+			moPointList screenPoints = this->property("screenPoints").asPointList();
+			if (this->active_point == screenPoints.size()) {
+				// We have calibrated all points, so we're done.
+				std::cout << "Calibration complete!" << std::endl;
+				this->active_point = 0;
+				this->property("calibrate").set(false);
+				this->input->unlock();
+				return;
+			}
+			std::cout << "# of screenPoints: " << screenPoints.size() << std::endl;
+			std::cout << "Processing point #" << this->active_point << std::endl;
+			// We're starting calibration again, so discard all old calibration results
+			if (this->active_point == 0) this->surfacePoints.clear();
+			// screenPoints and corresponding surfacePoint have the same index in their respective vector
+			moPoint surfacePoint = {touch->properties["x"]->asDouble(),
+									touch->properties["y"]->asDouble()};
+			this->surfacePoints.push_back(surfacePoint);
+			
+			moPoint p = screenPoints[this->active_point];
+			std::cout << "(" << p.x << ", " << p.y << ") is mapped to";
+			std::cout << " (" << surfacePoint.x << ", " << surfacePoint.y << ")." << std::endl;
+			// Proceed with the next grid point
+			this->active_point++;
 
-		moDataGenericContainer touch = this->input.get(0);
-		mapping.push_back(DualPoint(points[this->active_point], moPoint(touch->property("x"), touch->property("y"))));
-		this->active_point += 1;
-		if (this->active_point == points.length()-1) {
-			// OK, we calibrated all the points!
-			this->active_point == 0;
-			this->property("do_calibration") = false;
+			// Perhaps points were added, moved or deleted. If this is the case
+			// we have to triangulate again. 
+			if (this->retriangulate) this->triangulate();
 		}
-		// Perhaps points were added, moved or deleted. If this is the case
-		// we have to triangulate again. 
- 		if (this->retriangulate) this->triangulate();
-		*/
 	}
 	else {
-		// Calibration is done. Just convert the point coordinates.
-	}
-	this->input->unlock();
+		// Calibration & triangulation is done. Just convert the point coordinates.
+	}	
+	
+	this->input->unlock();	
+}
+
+void moCalibrationModule::notifyData(moDataStream *input) {
+	assert( input != NULL );
+	assert( input == this->input );
+	this->notifyUpdate();
 }
 
 void moCalibrationModule::start() {
@@ -154,5 +168,3 @@ moDataStream* moCalibrationModule::getOutput(int n) {
 	return this->output;
 }
 
-void moCalibrationModule::update() {
-}

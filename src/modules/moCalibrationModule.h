@@ -46,7 +46,6 @@ private:
 	bool retriangulate;
 	void triangulate();
 	int active_point;
-	std::vector<moPoint> screenPoints;
 	std::vector<moPoint> surfacePoints;
 	CvRect rect;
 	CvMemStorage* storage;

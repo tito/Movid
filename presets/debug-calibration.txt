@@ -1,0 +1,24 @@
+#
+# Blob tracking from video
+#
+
+# create defaults objects
+pipeline create Video video
+pipeline set video filename media/blob.avi
+pipeline create GrayScale gray
+pipeline create Threshold threshold
+pipeline create Smooth smooth
+pipeline create BlobTracker tracker
+pipeline create Calibration calib
+
+# do connections
+pipeline connect video 0 gray 0
+pipeline connect gray 0 smooth 0
+pipeline connect smooth 0 threshold 0
+pipeline connect threshold 0 tracker 0
+pipeline connect tracker 1 calib 0
+
+# thread ?
+pipeline set video use_thread 1
+pipeline set tracker use_thread 1
+pipeline set calib screenPoints 1.09,2.09;2.09,3.09;4.09,5.09;5.09,6.09
