@@ -21,6 +21,8 @@
 		019D9D2B117DC9D300E95CC3 /* moCannyModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moCannyModule.cpp; sourceTree = "<group>"; };
 		01BDCCCB117EEC3200A68BE2 /* moCalibrationModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moCalibrationModule.h; sourceTree = "<group>"; };
 		01BDCCCC117EEC3300A68BE2 /* moCalibrationModule.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moCalibrationModule.cpp; sourceTree = "<group>"; };
+		01BDCE4D117F594500A68BE2 /* moUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = moUtils.h; sourceTree = "<group>"; };
+		01BDCE4E117F594500A68BE2 /* moUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = moUtils.cpp; sourceTree = "<group>"; };
 		1212F0551164F85F00E40580 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		1212F09C1164F9AB00E40580 /* AUTHORS */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = AUTHORS; sourceTree = "<group>"; };
 		1215EEAC113DCCB200AF1E5B /* gui.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = gui.css; sourceTree = "<group>"; };
@@ -1184,6 +1186,8 @@
 		12F85BC911274A9900C13390 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				01BDCE4D117F594500A68BE2 /* moUtils.h */,
+				01BDCE4E117F594500A68BE2 /* moUtils.cpp */,
 				12D556941147205600B58731 /* modules */,
 				12D556911147202D00B58731 /* moThread.cpp */,
 				12D556921147202D00B58731 /* moThread.h */,
