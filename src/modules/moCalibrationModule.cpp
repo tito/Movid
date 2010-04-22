@@ -70,20 +70,19 @@ void moCalibrationModule::guiFeedback(const std::string& type, double x, double 
 }
 
 void moCalibrationModule::guiBuild(void) {
-	// just a temporary ui playground
-	// draw only one rect that follow the mouse !
 	std::ostringstream oss;
 	int x, y, dx, dy;
+
 	this->gui.clear();
 	this->gui.push_back("viewport 100 100");
-	this->gui.push_back("color 255 255 255");
+	this->gui.push_back("color 0 121 184");
 
 	dx = 100 / (this->property("cols").asInteger() - 1);
 	dy = 100 / (this->property("rows").asInteger() - 1);
 	for ( x = 0; x < this->property("cols").asInteger(); x++ ) {
 		for ( y = 0; y < this->property("rows").asInteger(); y++ ) {
 			oss.str("");
-			oss << "rect " << x * dx - 5 << " " << y * dy - 5 << " 10 10";
+			oss << "circle " << x * dx << " " << y * dy << " 4";
 			this->gui.push_back(oss.str());
 		}
 	}
