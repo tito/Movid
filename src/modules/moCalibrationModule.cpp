@@ -25,6 +25,15 @@
 // XXX Desc
 MODULE_DECLARE(Calibration, "native", "Calibration");
 
+// callback used for rows and cols. if these properties is updated,
+// refresh the GUI.
+void mocalibrationmodule_update_size(moProperty *property, void *userdata)
+{
+	moCalibrationModule *module = static_cast<moCalibrationModule *>(userdata);
+	assert(userdata != NULL);
+	module->notifyGui();
+}
+
 moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT | MO_MODULE_GUI, 1, 1){
 
 	MODULE_INIT();
@@ -34,9 +43,14 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->output_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
 
 	this->properties["rows"] = new moProperty(3);
+	this->properties["rows"]->setMin(2);
+	this->properties["rows"]->addCallback(mocalibrationmodule_update_size, this);
 	this->properties["cols"] = new moProperty(3);
+	this->properties["cols"]->setMin(2);
+	this->properties["cols"]->addCallback(mocalibrationmodule_update_size, this);
 	this->properties["screenPoints"] = new moProperty(moPointList());
 	this->properties["calibrate"] = new moProperty(true);
+
 	// XXX
 	this->retriangulate = true;
 	this->rect = cvRect(0, 0, 5000, 5000);
@@ -52,14 +66,27 @@ moCalibrationModule::~moCalibrationModule() {
 }
 
 void moCalibrationModule::guiFeedback(const std::string& type, double x, double y) {
+	this->notifyGui();
+}
+
+void moCalibrationModule::guiBuild(void) {
 	// just a temporary ui playground
 	// draw only one rect that follow the mouse !
 	std::ostringstream oss;
+	int x, y, dx, dy;
 	this->gui.clear();
 	this->gui.push_back("viewport 100 100");
 	this->gui.push_back("color 255 255 255");
-	oss << "rect " << x - 10 << " " << y - 10 << " 20 20";
-	this->gui.push_back(oss.str());
+
+	dx = 100 / (this->property("cols").asInteger() - 1);
+	dy = 100 / (this->property("rows").asInteger() - 1);
+	for ( x = 0; x < this->property("cols").asInteger(); x++ ) {
+		for ( y = 0; y < this->property("rows").asInteger(); y++ ) {
+			oss.str("");
+			oss << "rect " << x * dx - 5 << " " << y * dy - 5 << " 10 10";
+			this->gui.push_back(oss.str());
+		}
+	}
 }
 
 CvSubdiv2D* init_delaunay(CvMemStorage* storage, CvRect rect) {

@@ -30,6 +30,7 @@ public:
 	moCalibrationModule();
 	virtual ~moCalibrationModule();
 	virtual void guiFeedback(const std::string& type, double x, double y);
+	virtual void guiBuild();
 	
 	virtual void setInput(moDataStream* stream, int n=0);
 	virtual moDataStream *getInput(int n=0);
@@ -46,7 +47,7 @@ private:
 	moDataStream *output;
 	bool retriangulate;
 	void triangulate();
-	int active_point;
+	unsigned int active_point;
 	std::vector<moPoint> surfacePoints;
 	CvRect rect;
 	CvMemStorage* storage;
