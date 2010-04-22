@@ -70,6 +70,7 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->use_thread	= false;
 	this->need_update	= false;
 	this->thread_trigger = NULL;
+	this->need_gui_build = false;
 	this->mtx			= new pt::mutex();
 
 	this->properties["use_thread"] = new moProperty(false);
@@ -405,8 +406,19 @@ bool moModule::serializeConnections(std::ostringstream &oss) {
 void moModule::guiFeedback(const std::string& type, double x, double y) {
 }
 
+void moModule::guiBuild() {
+}
+
+void moModule::notifyGui() {
+	this->need_gui_build = true;
+}
+
 std::vector<std::string> &moModule::getGui(void) {
 	assert(this->getCapabilities() & MO_MODULE_GUI);
+	if ( this->need_gui_build ) {
+		this->need_gui_build = false;
+		this->guiBuild();
+	}
 	return this->gui;
 }
 

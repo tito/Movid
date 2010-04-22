@@ -245,13 +245,23 @@ public:
 	 */
 	virtual bool serializeConnections(std::ostringstream &oss);
 
+
 	/*! \brief Receive some feedback on the configuration ui
 	 */
 	virtual void guiFeedback(const std::string &type, double x, double y);
 
+	/*! \brief Build the gui
+	 */
+	virtual void guiBuild();
+
 	/*! \brief Get instruction about how to draw the GUI
 	 */
-	std::vector<std::string> &getGui(void);
+	std::vector<std::string> &getGui();
+
+	/*! \brief Notify gui to rebuild itself
+	 */
+	void notifyGui();
+
 	
 private:
 	/*! \brief Capabilities flags
@@ -281,6 +291,10 @@ private:
 	/*! \brief Boolean to known if we need to call update or not
 	 */
 	bool need_update;
+
+	/*! \brief Boolean to known if the gui must be rebuild
+	 */
+	bool need_gui_build;
 
 	/*! \brief Mutex to protect part of the module
 	 */

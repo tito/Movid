@@ -8,7 +8,7 @@
 		widgetAddInput = null,
 		widgetAddOutput = null,
 		widgetClearConnectivity = null,
-		widgetConnect = null;
+		widgetConnect = null,
 		widgetConfigure = null;
 	</script>
 	<script type="text/javascript" src="js/processing.js"></script>
@@ -275,6 +275,8 @@ String connectivity_io;
 int connectivity_idx;
 int connectivity_ok = 0;
 int config_show = 0;
+int screen_w = 800;
+int screen_h = 600;
 color cok = color(50, 200, 50);
 color cko = color(200, 50, 50);
 color cwait = color(200, 200, 50);
@@ -294,15 +296,28 @@ void configDraw() {
 	if ( config_show == 0 )
 		return;
 
+	//mo_gui(mo_widget_selected);
+
 	// biggest task. decompile draw instruction
 	// and convert to processing one.
 	fill(255, 255, 255);
 	var y = 10;
+	var viewport_w = 1;
+	var viewport_h = 1;
+	function ttw(s) { return tw(parseInt(s)); }
+	function tth(s) { return th(parseInt(s)); }
+	function tw(x) { return x * screen_w / viewport_w; }
+	function th(x) { return x * screen_h / viewport_h; }
 	for ( var index in config_insts ) {
 		var args = config_insts[index].split(" ");
 
 		switch ( args[0] ) {
 			case '':
+				break;
+
+			case 'viewport':
+				viewport_w = parseInt(args[1]);
+				viewport_h = parseInt(args[2]);
 				break;
 				
 			case 'color':
@@ -310,12 +325,13 @@ void configDraw() {
 				break;
 
 			case 'rect':
-				rect(parseInt(args[1]), parseInt(args[2]), parseInt(args[3]), parseInt(args[4]));
+				rect(ttw(args[1]), tth(args[2]), ttw(args[3]), tth(args[4]));
 				break;
 
 			default:
+				fill(150, 150, 150);
+				text('cmd:' + args[0], 10, y);
 				fill(255, 255, 255);
-				text('not handled cmd:' + args[0], 10, y);
 				y += 10;
 		}
 	}
@@ -323,7 +339,7 @@ void configDraw() {
 
 void configSendFeedback(type, x, y) {
 	mo_set(mo_widget_selected, "gui_feedback", "" + type + ";" + x + ";" + y, function() {
-		mo_gui(mo_widget_selected);
+		// nothing.
 	});
 }
 
@@ -336,12 +352,19 @@ int textHeight(String s) {
 	return fontsize;
 }
 
+update = new function() {
+	setTimeout('update()', 500);
+	if ( config_show )
+		mo_gui(mo_widget_selected);
+}
+
 void setup() {
-	size(800,600);
+	size(screen_w,screen_h);
 	frameRate(2);
 	noStroke();
 	textFont(fontA, fontsize);
 	widgets = new ArrayList();
+	setTimeout('update()', 500);
 }
 
 void draw() {
