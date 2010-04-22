@@ -359,6 +359,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moCannyModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moCannyModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moCombineModule.cpp"
 					>
 				</File>
