@@ -100,7 +100,7 @@ void moCalibrationModule::update() {
 	bool calibrate = this->property("calibrate").asBool();
 	if (calibrate) {
 		moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
-		std::cout << "#Blobs in frame: " << blobs->size() << std::endl;
+		LOG(MO_DEBUG) << "#Blobs in frame: " << blobs->size();
 		// We only calibrate the current point if there is an unambiguous amount of touches
 		if (blobs->size() == 1) {
 			// We now want to assign each point its coordinates on the touch surface
@@ -109,14 +109,14 @@ void moCalibrationModule::update() {
 			moPointList screenPoints = this->property("screenPoints").asPointList();
 			if (this->active_point == screenPoints.size()) {
 				// We have calibrated all points, so we're done.
-				std::cout << "Calibration complete!" << std::endl;
+				LOG(MO_DEBUG) << "Calibration complete!";
 				this->active_point = 0;
 				this->property("calibrate").set(false);
 				this->input->unlock();
 				return;
 			}
-			std::cout << "# of screenPoints: " << screenPoints.size() << std::endl;
-			std::cout << "Processing point #" << this->active_point << std::endl;
+			LOG(MO_DEBUG) << "# of screenPoints: " << screenPoints.size();
+			LOG(MO_DEBUG) << "Processing point #" << this->active_point;
 			// We're starting calibration again, so discard all old calibration results
 			if (this->active_point == 0) this->surfacePoints.clear();
 			// screenPoints and corresponding surfacePoint have the same index in their respective vector
@@ -125,8 +125,8 @@ void moCalibrationModule::update() {
 			this->surfacePoints.push_back(surfacePoint);
 			
 			moPoint p = screenPoints[this->active_point];
-			std::cout << "(" << p.x << ", " << p.y << ") is mapped to";
-			std::cout << " (" << surfacePoint.x << ", " << surfacePoint.y << ")." << std::endl;
+			LOG(MO_DEBUG) << "(" << p.x << ", " << p.y << ") is mapped to (" \
+			<< surfacePoint.x << ", " << surfacePoint.y << ").";
 			// Proceed with the next grid point
 			this->active_point++;
 
@@ -187,4 +187,3 @@ moDataStream* moCalibrationModule::getInput(int n) {
 moDataStream* moCalibrationModule::getOutput(int n) {
 	return this->output;
 }
-
