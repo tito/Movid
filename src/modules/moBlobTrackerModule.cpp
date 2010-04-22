@@ -162,7 +162,7 @@ void moBlobTrackerModule::applyFilter() {
 				CV_RGB(c,255-c,0), cvRound(1+(3*0)/255), CV_AA, 8);
 		}
 
-		LOGM(MO_INFO) << "Blob: id="<< pB->ID <<" pos=" << pB->x \
+		LOGM(MO_DEBUG) << "Blob: id="<< pB->ID <<" pos=" << pB->x \
 			<< "," << pB->y << "size=" << pB->w << "," << pB->h;
 
 		// add the blob in data
