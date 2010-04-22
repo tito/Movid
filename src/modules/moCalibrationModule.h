@@ -41,6 +41,9 @@ public:
 	
 	void start();
 	void stop();
+	void buildScreenPoints();
+	void resetCalibration();
+	void calibrate();
 	
 private:
 	moDataStream *input;
@@ -48,6 +51,7 @@ private:
 	bool retriangulate;
 	void triangulate();
 	unsigned int active_point;
+	unsigned int last_id;
 	std::vector<moPoint> surfacePoints;
 	CvRect rect;
 	CvMemStorage* storage;
