@@ -252,6 +252,8 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	struct timeval when = { 0, 0 };
 	long unsigned int outlen;
 	unsigned char *outbuf;
+	IplImage* img;
+	bool convert = false;
 
 	when.tv_usec = state->delay * 1000;
 
@@ -268,10 +270,24 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 		return;
 	}
 
-	if ( state->stream->output_buffer->nChannels == 3 )
-		cvCvtColor(state->stream->output_buffer, state->stream->output_buffer, CV_BGR2RGB);
+	// convert the image from BRG to RGB
+	img = state->stream->output_buffer;
+	if ( img->nChannels == 3 )
+		cvCvtColor(img, img, CV_BGR2RGB);
 
-	ipl2jpeg(state->stream->output_buffer, &outbuf, &outlen);
+	// if the depth is not a 8, create a temporary image, and convert to 8 bytes depth
+	if ( img->depth != 8 ) {
+		convert = true;
+		img = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_8U, img->nChannels);
+		cvConvertScale(state->stream->output_buffer, img, 255, 0);
+	}
+
+	// convert the image to JPEG
+	ipl2jpeg(img, &outbuf, &outlen);
+
+	// release temporary image if created
+	if ( convert )
+		cvReleaseImage(&img);
 
 	evb = evbuffer_new();
 	evbuffer_add_printf(evb, "--mjpegstream\r\n");
