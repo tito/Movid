@@ -1,4 +1,22 @@
-var mo_baseurl = 'http://127.0.0.1:7500';
+/***********************************************************************
+ ** Copyright (C) 2010 Movid Authors.  All rights reserved.
+ **
+ ** This file is part of the Movid Software.
+ **
+ ** This file may be distributed under the terms of the Q Public License
+ ** as defined by Trolltech AS of Norway and appearing in the file
+ ** LICENSE included in the packaging of this file.
+ **
+ ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ **
+ ** Contact info@movid.org if any conditions of this licensing are
+ ** not clear to you.
+ **
+ **********************************************************************/
+
+// guess ourself the base url, needed for xhr
+var mo_baseurl = location.href.split('/', 3).join('/');
 var mo_available_inputs = [];
 var mo_available_outputs = [];
 var mo_streamscale = 2;
@@ -320,5 +338,7 @@ function mo_gui(elem, is_update) {
 	});
 }
 
-
-$(document).ready(function() { mo_bootstrap(); });
+// once our document is loaded, load our software.
+$(document).ready(function() {
+	mo_bootstrap();
+});
