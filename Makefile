@@ -1,28 +1,28 @@
 # contrib path
-CONTRIB_PATH = contrib
-LIBEVENT_PATH = ${CONTRIB_PATH}/libevent-1.4.13-stable
-LIBCJSON_PATH = ${CONTRIB_PATH}/cJSON
-LIBJPEG_PATH = ${CONTRIB_PATH}/jpeg-8
-LIBFIDTRACK_PATH = ${CONTRIB_PATH}/libfidtrack
-WOSCLIB_PATH = ${CONTRIB_PATH}/WOscLib-00.09
-PTYPES_PATH = ${CONTRIB_PATH}/ptypes-2.1.1
+CONTRIB_PATH ?= contrib
+LIBEVENT_PATH ?= ${CONTRIB_PATH}/libevent-1.4.13-stable
+LIBCJSON_PATH ?= ${CONTRIB_PATH}/cJSON
+LIBJPEG_PATH ?= ${CONTRIB_PATH}/jpeg-8
+LIBFIDTRACK_PATH ?= ${CONTRIB_PATH}/libfidtrack
+WOSCLIB_PATH ?= ${CONTRIB_PATH}/WOscLib-00.09
+PTYPES_PATH ?= ${CONTRIB_PATH}/ptypes-2.1.1
 
 #stuff we need to compile
-BLOB_BIN = blobtrack
-MOVID_BIN = movid
+BLOB_BIN ?= blobtrack
+MOVID_BIN ?= movid
 
-LIBEVENT_LIBS = ${LIBEVENT_PATH}/.libs/libevent.a
-LIBEVENT_CFLAGS = -I${LIBEVENT_PATH}
-LIBJPEG_LIBS = ${LIBJPEG_PATH}/.libs/libjpeg.a
-LIBJPEG_CFLAGS = -I${LIBJPEG_PATH}
-LIBCJSON_CFLAGS = -I${LIBCJSON_PATH}
-LIBFIDTRACK_LIBS = ${LIBFIDTRACK_PATH}/libfidtrack.a
-WOSCLIB_CFLAGS = -I${WOSCLIB_PATH}
-WOSCLIB_LIBS = ${WOSCLIB_PATH}/libwosclib.a
-PTYPES_CFLAGS = -I${PTYPES_PATH}/include
-PTYPES_LIB = ${PTYPES_PATH}/lib/libptypes.a
+LIBEVENT_LIBS ?= ${LIBEVENT_PATH}/.libs/libevent.a
+LIBEVENT_CFLAGS ?= -I${LIBEVENT_PATH}
+LIBJPEG_LIBS ?= ${LIBJPEG_PATH}/.libs/libjpeg.a
+LIBJPEG_CFLAGS ?= -I${LIBJPEG_PATH}
+LIBCJSON_CFLAGS ?= -I${LIBCJSON_PATH}
+LIBFIDTRACK_LIBS ?= ${LIBFIDTRACK_PATH}/libfidtrack.a
+WOSCLIB_CFLAGS ?= -I${WOSCLIB_PATH}
+WOSCLIB_LIBS ?= ${WOSCLIB_PATH}/libwosclib.a
+PTYPES_CFLAGS ?= -I${PTYPES_PATH}/include
+PTYPES_LIB ?= ${PTYPES_PATH}/lib/libptypes.a
 
-LIBMOVID_STATIC = libmovid.a
+LIBMOVID_STATIC ?= libmovid.a
 
 OBJ = moThread.o moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
       moDaemon.o moLog.o moDataGenericContainer.o moDumpModule.o \
