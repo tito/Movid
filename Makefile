@@ -58,7 +58,8 @@ newmodule:
 	cat src/modules/.dummy.h | sed "s/MO_DUMMY/MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
 	cat src/modules/.dummy.cpp | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.cpp
 	#cat Makefile | sed "s/#DoNotRemoveThisComment/mo${NAME}Module.o#DoNotRemoveThisComment/g" > Makefile
-	cat src/moFactory.cpp | sed "s/\/\/DoNotRemoveThisComment/REGISTER_MODULE(${NAME});\/\/DoNotRemoveThisComment/g" > src/moFactory.cpp
+	cat src/moFactory.cpp | sed "s/\/\/DoNotRemoveThisComment/REGISTER_MODULE(${NAME});\n\t\/\/DoNotRemoveThisComment/g" > src/moFactory.cpp.tmp
+	mv src/moFactory.cpp.tmp src/moFactory.cpp
 
 
 #rules for building targets
