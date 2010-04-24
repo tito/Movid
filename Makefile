@@ -31,7 +31,7 @@ OBJ = moThread.o moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o
       moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
       moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
       moImageModule.o moOSC.o moTuioModule.o moDilateModule.o moErodeModule.o \
-      moCannyModule.o
+      moCannyModule.o moHsvModule.o
       #DoNotRemoveThisComment
 
 #where the source is, and where to put the object files
@@ -57,7 +57,7 @@ all: movid
 newmodule:
 	cat src/modules/.dummy.h | sed "s/MO_DUMMY/MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
 	cat src/modules/.dummy.cpp | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.cpp
-	#cat Makefile | sed "s/#DoNotRemoveThisComment/mo${NAME}Module.o#DoNotRemoveThisComment/g" > Makefile
+	#cat Makefile | sed "s/#DoNotRemoveThisComment/mo${NAME}Module.o#DoNotRemoveThisComment/" > Makefile.tmp
 	cat src/moFactory.cpp | sed "s/\/\/DoNotRemoveThisComment/REGISTER_MODULE(${NAME});\n\t\/\/DoNotRemoveThisComment/g" > src/moFactory.cpp.tmp
 	mv src/moFactory.cpp.tmp src/moFactory.cpp
 
