@@ -33,19 +33,19 @@
 	switch ( this->type ) { \
 		case MO_PROPERTY_BOOL: \
 			*(static_cast<bool*>(this->val)) = convertToBool(typein, &value); \
-			return; \
+			break; \
 		case MO_PROPERTY_STRING: \
 			*(static_cast<std::string*>(this->val)) = convertToString(typein, &value); \
-			return; \
+			break; \
 		case MO_PROPERTY_INTEGER: \
 			*(static_cast<int*>(this->val)) = convertToInteger(typein, &value); \
-			return; \
+			break; \
 		case MO_PROPERTY_DOUBLE: \
 			*(static_cast<double*>(this->val)) = convertToDouble(typein, &value); \
-			return; \
+			break; \
 		case MO_PROPERTY_POINTLIST: \
 			*(static_cast<moPointList*>(this->val)) = convertToPointList(typein, &value); \
-			return; \
+			break; \
 		default:; \
 	}
 
