@@ -53,6 +53,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Dilate);
 	REGISTER_MODULE(Canny);
 	REGISTER_MODULE(Hsv);
+	REGISTER_MODULE(DistanceTransform);
 	//DoNotRemoveThisComment
 	LOG(MO_INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }
