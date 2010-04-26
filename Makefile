@@ -2,7 +2,6 @@
 CONTRIB_PATH ?= contrib
 LIBEVENT_PATH ?= ${CONTRIB_PATH}/libevent-1.4.13-stable
 LIBCJSON_PATH ?= ${CONTRIB_PATH}/cJSON
-LIBJPEG_PATH ?= ${CONTRIB_PATH}/jpeg-8
 LIBFIDTRACK_PATH ?= ${CONTRIB_PATH}/libfidtrack
 WOSCLIB_PATH ?= ${CONTRIB_PATH}/WOscLib-00.09
 PTYPES_PATH ?= ${CONTRIB_PATH}/ptypes-2.1.1
@@ -13,8 +12,6 @@ MOVID_BIN ?= movid
 
 LIBEVENT_LIBS ?= ${LIBEVENT_PATH}/.libs/libevent.a
 LIBEVENT_CFLAGS ?= -I${LIBEVENT_PATH}
-LIBJPEG_LIBS ?= ${LIBJPEG_PATH}/.libs/libjpeg.a
-LIBJPEG_CFLAGS ?= -I${LIBJPEG_PATH}
 LIBCJSON_CFLAGS ?= -I${LIBCJSON_PATH}
 LIBFIDTRACK_LIBS ?= ${LIBFIDTRACK_PATH}/libfidtrack.a
 WOSCLIB_CFLAGS ?= -I${WOSCLIB_PATH}
@@ -71,8 +68,8 @@ blobtrack: static src/blobtracker.cpp
 	
 movid: contribs static src/movid.cpp
 	${CXX} -o ${MOVID_BIN} src/movid.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
-		${LIBEVENT_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBJPEG_CFLAGS} ${ALL_CFLAGS} \
-		${LIBJPEG_LIBS} ${LIBEVENT_LIBS} ${ALL_LIBS}
+		${LIBEVENT_CFLAGS} ${LIBCJSON_CFLAGS} ${ALL_CFLAGS} \
+		${LIBEVENT_LIBS} ${ALL_LIBS}
 
 contribs:
 	${MAKE} -C contrib
