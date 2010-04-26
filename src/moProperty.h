@@ -22,6 +22,7 @@
 #include <ostream>
 #include <string>
 #include <vector>
+#include <map>
 
 typedef struct _moPoint {
 	double x;
@@ -38,6 +39,10 @@ typedef enum _moPropertyType {
 	MO_PROPERTY_DOUBLE,
 	MO_PROPERTY_POINTLIST,
 } moPropertyType;
+
+class moProperty;
+
+typedef void (*moPropertyCallback)(moProperty *property, void *userdata);
 
 class moProperty {
 public:
@@ -79,6 +84,9 @@ public:
 	void setMin(int val);
 	void setMax(int val);
 	void setChoices(const std::string &val);
+
+	void addCallback(moPropertyCallback callback, void *userdata);
+	void removeCallback(moPropertyCallback callback);
 	
 	friend std::ostream& operator<< (std::ostream& o, const moProperty& f);
 
@@ -87,6 +95,7 @@ public:
 private:
 	moProperty(const moProperty& property);
 	moPropertyType type;
+	std::map<moPropertyCallback, void*> callbacks;
 	std::string description;
 	void* val;
 	bool readonly;
@@ -99,6 +108,7 @@ private:
 	
 	void free();
 	void init(const std::string& description);
+	void fireCallback();
 };
 
 #endif
