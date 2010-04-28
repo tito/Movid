@@ -50,6 +50,8 @@ moMaskModule::moMaskModule() : moImageFilterModule(){
 }
 
 moMaskModule::~moMaskModule() {
+	if (this->mask_buffer != NULL)
+		cvReleaseImage(&(this->mask_buffer));
 }
 
 void moMaskModule::applyFilter() {

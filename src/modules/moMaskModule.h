@@ -16,8 +16,8 @@
  **********************************************************************/
 
 
-#ifndef MO_Mask_MODULE_H
-#define MO_Mask_MODULE_H
+#ifndef MO_MASK_MODULE_H
+#define MO_MASK_MODULE_H
 
 #include "moImageFilterModule.h"
 
