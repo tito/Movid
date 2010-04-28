@@ -64,6 +64,7 @@ SOURCES = \
 	src/modules/moImageFilterModule.cpp \
 	src/modules/moImageModule.cpp \
 	src/modules/moInvertModule.cpp \
+	src/modules/moMaskModule.cpp \
 	src/modules/moMirrorImageModule.cpp \
 	src/modules/moRoiModule.cpp \
 	src/modules/moSmoothModule.cpp \
