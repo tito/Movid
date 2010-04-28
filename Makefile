@@ -179,7 +179,7 @@ $(MOVID_LIB): $(OBJECTS)
 #
 
 newmodule:
-	cat src/modules/.dummy.h | sed "s/MO_DUMMY/MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
+	cat src/modules/.dummy.h | sed "s/MO_DUMMY/\U\MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
 	cat src/modules/.dummy.cpp | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.cpp
 	#cat Makefile | sed "s/#AUTOMODULE_DoNotRemoveThisComment/mo${NAME}Module.o#AUTOMODULE_DoNotRemoveThisComment/" > Makefile.tmp
 	cat src/moFactory.cpp | sed "s/\/\/AUTOMODULE_DoNotRemoveThisComment/REGISTER_MODULE(${NAME});\n\t\/\/AUTOMODULE_DoNotRemoveThisComment/g" > src/moFactory.cpp.tmp
