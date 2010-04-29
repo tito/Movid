@@ -138,6 +138,54 @@ void moCalibrationModule::guiBuild(void) {
 
 		index++;
 	}
+
+	// draw delaunay triangles ?
+	if ( this->subdiv == NULL )
+		return;
+
+	this->gui.push_back("color 255 255 255");
+
+    CvSeqReader  reader;
+    int i, total = this->subdiv->edges->total;
+    int elem_size = this->subdiv->edges->elem_size;
+    
+    cvStartReadSeq( (CvSeq*)(this->subdiv->edges), &reader, 0 );
+    
+    for( i = 0; i < total; i++ )
+    {
+        CvQuadEdge2D* edge = (CvQuadEdge2D*)(reader.ptr);
+        
+        if( CV_IS_SET_ELEM( edge ))
+        {
+			CvSubdiv2DPoint* org_pt;
+			CvSubdiv2DPoint* dst_pt;
+			CvPoint2D32f org;
+			CvPoint2D32f dst;
+			CvPoint iorg, idst;
+
+			org_pt = cvSubdiv2DEdgeOrg((CvSubdiv2DEdge)edge);
+			dst_pt = cvSubdiv2DEdgeDst((CvSubdiv2DEdge)edge);
+
+			if( org_pt && dst_pt )
+			{
+				org = org_pt->pt;
+				dst = dst_pt->pt;
+
+				iorg = cvPoint( cvRound( org.x ), cvRound( org.y ));
+				idst = cvPoint( cvRound( dst.x ), cvRound( dst.y ));
+
+				//cvLineAA( img, iorg, idst, color, 0 );
+				oss.str("");
+				oss << "line " << int(iorg.x / 15.);
+				oss << " " << int(iorg.y / 15.);
+				oss << " " << int(idst.x / 15.);
+				oss << " " << int(idst.y / 15.);
+				this->gui.push_back(oss.str());
+			}
+        }
+        
+        CV_NEXT_SEQ_ELEM( elem_size, reader );
+    }
 }
 
 CvSubdiv2D* init_delaunay(CvMemStorage* storage, CvRect rect) {
@@ -171,7 +219,9 @@ void moCalibrationModule::triangulate() {
 		LOG(MO_TRACE) << fp.x << "==" << delaunayPoint->pt.x;
 		this->delaunayToScreen[delaunayPoint] = (*its);
 	}
+	cvCalcSubdivVoronoi2D(this->subdiv);
 	this->retriangulate = false;
+	this->notifyGui();
 }
 
 void moCalibrationModule::calibrate() {
