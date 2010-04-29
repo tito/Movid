@@ -350,6 +350,10 @@ void configDraw() {
 				ellipse(ttw(args[1]), tth(args[2]), ttw(args[3]), ttw(args[3]));
 				break;
 
+			case 'line':
+				line(ttw(args[1]), tth(args[2]), ttw(args[3]), ttw(args[3]));
+				break;
+
 			default:
 				fill(150, 150, 150);
 				text('cmd:' + args[0], 10, y);
