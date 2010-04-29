@@ -48,14 +48,18 @@ public:
 private:
 	moDataStream *input;
 	moDataStream *output;
+	moDataGenericList blobs;
 	bool retriangulate;
 	void triangulate();
 	unsigned int active_point;
 	unsigned int last_id;
 	std::vector<moPoint> surfacePoints;
+//	std::map<CvSubdiv2DPoint*, moPoint> delaunayToSurface;
+	std::map<CvSubdiv2DPoint*, moPoint> delaunayToScreen;
 	CvRect rect;
 	CvMemStorage* storage;
 	CvSubdiv2D* subdiv;
+	void transformPoints();
 	
 	MODULE_INTERNALS();
 };
