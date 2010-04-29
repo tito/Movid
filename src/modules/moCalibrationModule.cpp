@@ -16,6 +16,16 @@
  **********************************************************************/
 
 
+// TODO:
+//		 * Cleanup
+//		 * Comments
+//		 * Tests & Fixes
+//		 * properly delete/release all objects in the destructor
+//		 * move variable declarations to the beginning of each function
+//		 * Add support for moving/adding/deleting points
+//		 * Add support for drawing transformed touches in the calibration grid
+
+
 #include <assert.h>
 #include "sstream"
 #include "moCalibrationModule.h"
@@ -98,6 +108,7 @@ void moCalibrationModule::buildScreenPoints() {
 }
 
 moCalibrationModule::~moCalibrationModule() {
+	cvReleaseMemStorage(&(this->storage));
 }
 
 void moCalibrationModule::guiFeedback(const std::string& type, double x, double y) {
@@ -140,25 +151,27 @@ CvSubdiv2D* init_delaunay(CvMemStorage* storage, CvRect rect) {
     return subdiv;
 }
 
-void moCalibrationModule::triangulate() {/*
-	std::cout << "Points:" << std::endl;
-	moPointList points = this->property("grid_points").asPointList();
-	moPointList::iterator it;
+void moCalibrationModule::triangulate() {
+	// We first triangulate all the surfacePoints.
+	// Afterwards, in transform mode when a new touch occurrs, we can
+	// simply look up the triangle in which the touch was performed
+	// and get the barycentric parameters of the touch in that triangle.
+	// We then use these to compute the on screen coordinate of the touch.
+	moPointList screenPoints = this->property("screenPoints").asPointList();
+	moPointList::iterator its;
+	std::vector<moPoint>::iterator it;
+	this->delaunayToScreen.clear();
 	this->subdiv = init_delaunay(this->storage, this->rect);
-	for(it = points.begin(); it != points.end() ; it++) {
-		std::cout << (*it).x << " " << (*it).y << std::endl;
-		// XXX crashes here. cvPoint2D32f is a convenience macro for double to cvp2d32f conversion
-		CvPoint2D32f fp = cvPoint2D32f((*it).x, (*it).y);
-		//{static_cast<float>((*it).x),
-		//static_cast<float>((*it).y)};
-		cvSubdivDelaunay2DInsert(subdiv, fp);
+	for(it = this->surfacePoints.begin(),
+		its = screenPoints.begin();
+		it != this->surfacePoints.end();
+		it++, its++) {
+		CvPoint2D32f fp = cvPoint2D32f(it->x, it->y);
+		CvSubdiv2DPoint *delaunayPoint = cvSubdivDelaunay2DInsert(subdiv, fp);
+		LOG(MO_TRACE) << fp.x << "==" << delaunayPoint->pt.x;
+		this->delaunayToScreen[delaunayPoint] = (*its);
 	}
-	// XXX Is triangulation performed now already?
-
-	// Take the result of the triangulation and put them into our triangle struct
-	// TODO
-	this->property("needs_retriangulation") = false;
-	*/
+	this->retriangulate = false;
 }
 
 void moCalibrationModule::calibrate() {
@@ -191,7 +204,6 @@ void moCalibrationModule::calibrate() {
 		return;
 	}
 
-
 	LOG(MO_DEBUG) << "# of screenPoints: " << screenPoints.size();
 	LOG(MO_DEBUG) << "Processing point #" << this->active_point;
 
@@ -211,13 +223,88 @@ void moCalibrationModule::calibrate() {
 	// Proceed with the next grid point
 	this->active_point++;
 
-	// Perhaps points were added, moved or deleted. If this is the case
-	// we have to triangulate again. 
-	if (this->retriangulate)
-		this->triangulate();
-
 	// Inform gui to update
 	this->notifyGui();
+}
+
+void moCalibrationModule::transformPoints() {
+	// Calibration & triangulation is done. Just convert the point coordinates.
+	moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
+	moDataGenericList::iterator it;
+	
+	this->blobs.clear();
+	for (it = blobs->begin(); it != blobs->end(); it++) {
+		CvSubdiv2DEdge e;
+		CvSubdiv2DEdge e0 = NULL;
+		//CvSubdiv2DEdge edges[3];
+		//CvSubdiv2DPoint* vertices[3];
+		CvSubdiv2DPoint* v;
+		CvSubdiv2DPoint* p = NULL;
+		double touch_x = (*it)->properties["x"]->asDouble();
+		double touch_y = (*it)->properties["y"]->asDouble();
+		CvPoint2D32f fp = cvPoint2D32f(touch_x, touch_y);
+		cvSubdiv2DLocate(this->subdiv, fp, &e0, &p);
+		CvSubdiv2DPoint* enclosingPoints[3];
+		
+		if (!e0) return; // XXX why is this necessary?
+		
+		//edges[0] = e0;
+		// Collect the vertices of the triangle enclosing the given surfacePoint
+		e = e0;
+		int i = 0;
+		v = cvSubdiv2DEdgeOrg(e0);
+		do {
+			e = cvSubdiv2DGetEdge(e, CV_NEXT_AROUND_LEFT);
+			//edges[i++] = e;
+			//vertices[i++] = cvSubdiv2DEdgeOrg(e);
+			enclosingPoints[i++] = v;
+			v = cvSubdiv2DEdgeOrg(e);			
+		}
+		while (e != e0);
+		for (i = 0; i < 3; i++) {
+			LOG(MO_TRACE) << "Found point " << i << " for touch " << 
+			(*it)->properties["id"]->asInteger() << ": " << (*enclosingPoints[i]).pt.x << "/" << (*enclosingPoints[i]).pt.y;
+		}
+		// Now that we found the three surfacePoints of the triangle enclosing the given point,
+		// we can do the barycentric conversion.
+		CvPoint2D32f surf_a, surf_b, surf_c;
+		moPoint screen_a, screen_b, screen_c;
+		double alpha, beta, gamma;
+		surf_a = enclosingPoints[0]->pt;
+		surf_b = enclosingPoints[1]->pt;
+		surf_c = enclosingPoints[2]->pt;
+		screen_a = this->delaunayToScreen[enclosingPoints[0]];
+		screen_b = this->delaunayToScreen[enclosingPoints[1]];
+		screen_c = this->delaunayToScreen[enclosingPoints[2]];
+		// TODO Should be vectors...
+		moPoint ab = {surf_b.x - surf_a.x, surf_b.y - surf_a.y};
+		moPoint ac = {surf_c.x - surf_a.x, surf_c.y - surf_a.y};
+		beta = (touch_x - surf_a.x) / ab.x;
+		gamma = (touch_y - surf_a.y) / ac.y;
+		alpha = (1.0 - beta - gamma);
+		double final_x = screen_a.x * alpha + screen_b.x * beta + screen_c.x * gamma;
+		double final_y = screen_a.y * alpha + screen_b.y * beta + screen_c.y * gamma;
+
+		LOG(MO_TRACE) << "Barycentric params for touch " << (*it)->properties["id"]->asInteger()
+					  << ": " << alpha << "/" << beta << "/" << gamma << " += " << alpha+beta+gamma;
+		LOG(MO_TRACE) << "Touch is at: " << screen_a.x << " " << screen_b.x << " " << screen_c.x << " "
+						 << final_x << "/" << final_y;
+		
+		// add the blob in data
+		moDataGenericContainer *touch = new moDataGenericContainer();
+		touch->properties["type"] = new moProperty("touch");
+		touch->properties["id"] = new moProperty((*it)->properties["id"]->asInteger());
+		touch->properties["x"] = new moProperty(final_x);
+		touch->properties["y"] = new moProperty(final_y);
+		// double correct?
+		touch->properties["w"] = new moProperty((*it)->properties["w"]->asDouble());
+		touch->properties["h"] = new moProperty((*it)->properties["h"]->asDouble());
+		this->blobs.push_back(touch);
+	}
+
+	if (this->output != NULL) delete this->output;
+	this->output = new moDataStream("GenericTouch");
+	this->output->push(&this->blobs);
 }
 
 void moCalibrationModule::update() {
@@ -230,9 +317,12 @@ void moCalibrationModule::update() {
 	if ( calibrate ) {
 		this->calibrate();
 	} else {
-		// Calibration & triangulation is done. Just convert the point coordinates.
-	}	
-	
+		// Perhaps points were added, moved or deleted. If this is the case
+		// we have to triangulate again. 
+		if (this->retriangulate)
+			this->triangulate();
+		this->transformPoints();
+	}
 	this->input->unlock();	
 }
 
