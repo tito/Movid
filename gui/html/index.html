@@ -322,10 +322,15 @@ void configDraw() {
 	var y = 10;
 	var viewport_w = 1;
 	var viewport_h = 1;
+	function tb(x, a) {
+		if (x <= 0) return 1;
+		if (x >= a) return a - 1;
+		return x
+	}
 	function ttw(s) { return tw(parseInt(s)); }
 	function tth(s) { return th(parseInt(s)); }
-	function tw(x) { return x * screen_w / viewport_w; }
-	function th(x) { return x * screen_h / viewport_h; }
+	function tw(x) { return tb(x * screen_w / viewport_w, screen_w); }
+	function th(x) { return tb(x * screen_h / viewport_h, screen_h); }
 	for ( var index in config_insts ) {
 		var args = config_insts[index].split(" ");
 

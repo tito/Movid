@@ -174,13 +174,16 @@ void moCalibrationModule::guiBuild(void) {
 				iorg = cvPoint( cvRound( org.x ), cvRound( org.y ));
 				idst = cvPoint( cvRound( dst.x ), cvRound( dst.y ));
 
-				//cvLineAA( img, iorg, idst, color, 0 );
-				oss.str("");
-				oss << "line " << int(iorg.x / 15.);
-				oss << " " << int(iorg.y / 15.);
-				oss << " " << int(idst.x / 15.);
-				oss << " " << int(idst.y / 15.);
-				this->gui.push_back(oss.str());
+				if ( abs(iorg.x) != 15000 &&
+					 abs(iorg.y) != 15000 )
+				{
+					oss.str("");
+					oss << "line " << int(iorg.x / 1000.);
+					oss << " " << int(iorg.y * 1000.);
+					oss << " " << int(idst.x * 1000.);
+					oss << " " << int(idst.y * 1000.);
+					this->gui.push_back(oss.str());
+				}
 			}
         }
         
@@ -216,7 +219,7 @@ void moCalibrationModule::triangulate() {
 		it++, its++) {
 		CvPoint2D32f fp = cvPoint2D32f(it->x, it->y);
 		CvSubdiv2DPoint *delaunayPoint = cvSubdivDelaunay2DInsert(subdiv, fp);
-		LOG(MO_TRACE) << fp.x << "==" << delaunayPoint->pt.x;
+		std::cout << fp.x << "," << fp.y << std::endl;
 		this->delaunayToScreen[delaunayPoint] = (*its);
 	}
 	cvCalcSubdivVoronoi2D(this->subdiv);
