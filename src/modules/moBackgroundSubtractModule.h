@@ -28,6 +28,7 @@ public:
 
 protected:
 	bool recapture;
+	bool toggle;
 	IplImage* bg_buffer;
 	
 	void applyFilter();

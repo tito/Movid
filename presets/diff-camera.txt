@@ -1,0 +1,10 @@
+#
+# Simple pipeline that show camera to a window
+#
+
+pipeline create Camera camera
+pipeline create BackgroundSubtract bgsub
+pipeline set bgsub toggle true
+pipeline create ImageDisplay window
+pipeline connect camera 0 bgsub 0
+pipeline connect bgsub 0 window 0

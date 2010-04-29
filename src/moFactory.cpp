@@ -43,6 +43,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Image);
 	REGISTER_MODULE(ImageDisplay);
 	REGISTER_MODULE(Invert);
+	REGISTER_MODULE(Mask);
 	REGISTER_MODULE(MirrorImage);
 	REGISTER_MODULE(Smooth);
 	REGISTER_MODULE(Roi);
@@ -53,6 +54,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Dilate);
 	REGISTER_MODULE(Canny);
 	REGISTER_MODULE(Calibration);
+	REGISTER_MODULE(Hsv);
 	//DoNotRemoveThisComment
 	LOG(MO_INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }

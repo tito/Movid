@@ -1,0 +1,11 @@
+#
+# Simple pipeline that show camera to a window
+#
+
+pipeline create Camera camera
+pipeline create Mask mask
+# pipeline set mask saveas media/masktest.png
+pipeline set mask filename media/masktest.png
+pipeline create ImageDisplay window
+pipeline connect camera 0 mask 0
+pipeline connect mask 0 window 0

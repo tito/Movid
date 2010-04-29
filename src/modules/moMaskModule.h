@@ -16,37 +16,27 @@
  **********************************************************************/
 
 
-#ifndef MO_IMAGE_H
-#define MO_IMAGE_H
+#ifndef MO_MASK_MODULE_H
+#define MO_MASK_MODULE_H
 
-#include "cv.h"
-#include "../moModule.h"
+#include "moImageFilterModule.h"
 
-class moDataStream;
-
-class moImageModule : public moModule {
+class moMaskModule : public moImageFilterModule{
 public:
-	moImageModule(); 
-	virtual ~moImageModule();
+	moMaskModule();
+	virtual ~moMaskModule();
 
-	virtual void setInput(moDataStream* stream, int n=0);
-	virtual moDataStream *getInput(int n=0);
-	virtual moDataStream *getOutput(int n=0);
+	void reloadMask();
 
-	void start();
-	void stop();
-	void update();
+	bool save_data;
+	
+protected:
+	IplImage* mask_buffer;
 
-	void reloadImage();
-
-private:
-	IplImage *image;
-	moDataStream *stream;
-
+	void applyFilter();
 
 	MODULE_INTERNALS();
 };
 
 #endif
-
 

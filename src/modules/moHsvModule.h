@@ -16,37 +16,21 @@
  **********************************************************************/
 
 
-#ifndef MO_IMAGE_H
-#define MO_IMAGE_H
+#ifndef MO_HSV_MODULE_H
+#define MO_HSV_MODULE_H
 
-#include "cv.h"
-#include "../moModule.h"
+#include "moImageFilterModule.h"
 
-class moDataStream;
-
-class moImageModule : public moModule {
+class moHsvModule : public moImageFilterModule{
 public:
-	moImageModule(); 
-	virtual ~moImageModule();
-
-	virtual void setInput(moDataStream* stream, int n=0);
-	virtual moDataStream *getInput(int n=0);
-	virtual moDataStream *getOutput(int n=0);
-
-	void start();
-	void stop();
-	void update();
-
-	void reloadImage();
-
-private:
-	IplImage *image;
-	moDataStream *stream;
-
-
+	moHsvModule();
+	virtual void allocateBuffers();
+	virtual ~moHsvModule();
+	
+protected:
+	void applyFilter();
 	MODULE_INTERNALS();
 };
 
 #endif
-
 
