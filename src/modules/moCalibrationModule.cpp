@@ -159,29 +159,25 @@ void moCalibrationModule::guiBuild(void) {
         {
 			CvSubdiv2DPoint* org_pt;
 			CvSubdiv2DPoint* dst_pt;
-			CvPoint2D32f org;
-			CvPoint2D32f dst;
-			CvPoint iorg, idst;
+			moPoint org;
+			moPoint dst;
 
 			org_pt = cvSubdiv2DEdgeOrg((CvSubdiv2DEdge)edge);
 			dst_pt = cvSubdiv2DEdgeDst((CvSubdiv2DEdge)edge);
 
 			if( org_pt && dst_pt )
 			{
-				org = org_pt->pt;
-				dst = dst_pt->pt;
+				org = this->delaunayToScreen[org_pt];
+				dst = this->delaunayToScreen[dst_pt];
 
-				iorg = cvPoint( cvRound( org.x ), cvRound( org.y ));
-				idst = cvPoint( cvRound( dst.x ), cvRound( dst.y ));
-
-				if ( abs(iorg.x) != 15000 &&
-					 abs(iorg.y) != 15000 )
+				if ( abs(org.x) != 15000 && abs(org.y) != 15000 &&
+					 abs(dst.x) != 15000 && abs(dst.y) != 15000)
 				{
 					oss.str("");
-					oss << "line " << int(iorg.x / 1000.);
-					oss << " " << int(iorg.y * 1000.);
-					oss << " " << int(idst.x * 1000.);
-					oss << " " << int(idst.y * 1000.);
+					oss << "line " << int(org.x * 1000.);
+					oss << " " << int(org.y * 1000.);
+					oss << " " << int(dst.x * 1000.);
+					oss << " " << int(dst.y * 1000.);
 					this->gui.push_back(oss.str());
 				}
 			}
