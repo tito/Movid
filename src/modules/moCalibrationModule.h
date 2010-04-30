@@ -44,6 +44,7 @@ public:
 	void buildScreenPoints();
 	void resetCalibration();
 	void calibrate();
+	void notifyTriangulate();
 	
 private:
 	moDataStream *input;

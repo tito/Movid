@@ -21,4 +21,5 @@ pipeline connect tracker 1 calib 0
 # thread ?
 #pipeline set video use_thread 1
 #pipeline set tracker use_thread 1
-#pipeline set calib screenPoints 1.09,2.09;2.09,3.09;4.09,5.09;5.09,6.09
+pipeline set calib screenPoints 0,0;0,0.5;0,1;0.5,0;0.5,0.5;0.5,1;1,0;1,0.5;1,1;
+pipeline set calib surfacePoints 0,0;0,0.5;0,1;0.5,0;0.5,0.5;0.5,1;1,0;1,0.5;1,1;

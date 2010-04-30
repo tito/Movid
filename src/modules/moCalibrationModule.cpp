@@ -52,6 +52,13 @@ void mocalibrationmodule_activate_calibration(moProperty *property, void *userda
 		module->resetCalibration();
 }
 
+void mocalibrationmodule_triangulate(moProperty *property, void *userdata)
+{
+	moCalibrationModule *module = static_cast<moCalibrationModule *>(userdata);
+	assert(userdata != NULL);
+	module->notifyTriangulate();
+}
+
 moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT | MO_MODULE_GUI, 1, 1){
 
 	MODULE_INIT();
@@ -67,11 +74,12 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->properties["cols"]->setMin(2);
 	this->properties["cols"]->addCallback(mocalibrationmodule_update_size, this);
 	this->properties["screenPoints"] = new moProperty(moPointList());
-	this->properties["calibrate"] = new moProperty(true);
+	this->properties["surfacePoints"] = new moProperty(moPointList());
+	this->properties["surfacePoints"]->addCallback(mocalibrationmodule_triangulate, this);
+	this->properties["calibrate"] = new moProperty(false);
 	this->properties["calibrate"]->addCallback(mocalibrationmodule_activate_calibration, this);
 
-	// XXX
-	this->retriangulate = true;
+	this->retriangulate = false;
 	this->rect = cvRect(0, 0, 5000, 5000);
 	this->storage = cvCreateMemStorage(0);
 	this->active_point = 0;
@@ -170,8 +178,8 @@ void moCalibrationModule::guiBuild(void) {
 				org = this->delaunayToScreen[org_pt];
 				dst = this->delaunayToScreen[dst_pt];
 
-				if ( abs(org.x) != 15000 && abs(org.y) != 15000 &&
-					 abs(dst.x) != 15000 && abs(dst.y) != 15000)
+				//if ( abs(org.x) != 15000 && abs(org.y) != 15000 &&
+				//	 abs(dst.x) != 15000 && abs(dst.y) != 15000)
 				{
 					oss.str("");
 					oss << "line " << int(org.x * 1000.);
@@ -204,21 +212,23 @@ void moCalibrationModule::triangulate() {
 	// simply look up the triangle in which the touch was performed
 	// and get the barycentric parameters of the touch in that triangle.
 	// We then use these to compute the on screen coordinate of the touch.
-	moPointList screenPoints = this->property("screenPoints").asPointList();
+	moPointList screenPoints = this->property("screenPoints").asPointList(),
+				surfacePoints = this->property("surfacePoints").asPointList();
 	moPointList::iterator its;
 	std::vector<moPoint>::iterator it;
 	this->delaunayToScreen.clear();
 	this->subdiv = init_delaunay(this->storage, this->rect);
-	for(it = this->surfacePoints.begin(),
+	for(it = surfacePoints.begin(),
 		its = screenPoints.begin();
-		it != this->surfacePoints.end();
+		it != surfacePoints.end();
 		it++, its++) {
 		CvPoint2D32f fp = cvPoint2D32f(it->x, it->y);
 		CvSubdiv2DPoint *delaunayPoint = cvSubdivDelaunay2DInsert(subdiv, fp);
-		std::cout << fp.x << "," << fp.y << std::endl;
+		std::cout << delaunayPoint << ":" << delaunayPoint->pt.x << "," << delaunayPoint->pt.y << std::endl;
+		std::cout << "+> " << its->x << "," << its->y << std::endl;
 		this->delaunayToScreen[delaunayPoint] = (*its);
 	}
-	cvCalcSubdivVoronoi2D(this->subdiv);
+	//cvCalcSubdivVoronoi2D(this->subdiv);
 	this->retriangulate = false;
 	this->notifyGui();
 }
@@ -239,7 +249,7 @@ void moCalibrationModule::calibrate() {
 	touch = (*blobs)[0];
 
 	// Don't reuse the same touch id as before
-	if ( touch->properties["id"]->asInteger() == this->last_id )
+	if ( touch->properties["id"]->asInteger() == (int)this->last_id )
 		return;
 	this->last_id = touch->properties["id"]->asInteger();
 
@@ -257,13 +267,15 @@ void moCalibrationModule::calibrate() {
 	LOG(MO_DEBUG) << "Processing point #" << this->active_point;
 
 	// We're starting calibration again, so discard all old calibration results
-	if (this->active_point == 0)
-		this->surfacePoints.clear();
+	if ( this->active_point == 0 )
+		this->property("surfacePoints").set("");
 
 	// screenPoints and corresponding surfacePoint have the same index in their respective vector
+	moPointList surfacePoints = this->property("surfacePoints").asPointList();
 	surfacePoint.x = touch->properties["x"]->asDouble();
 	surfacePoint.y = touch->properties["y"]->asDouble();
-	this->surfacePoints.push_back(surfacePoint);
+	surfacePoints.push_back(surfacePoint);
+	this->property("surfacePoints").set(surfacePoints);
 	
 	p = screenPoints[this->active_point];
 	LOG(MO_DEBUG) << "(" << p.x << ", " << p.y << ") is mapped to (" \
@@ -354,6 +366,10 @@ void moCalibrationModule::transformPoints() {
 	if (this->output != NULL) delete this->output;
 	this->output = new moDataStream("GenericTouch");
 	this->output->push(&this->blobs);
+}
+
+void moCalibrationModule::notifyTriangulate() {
+	this->retriangulate = true;
 }
 
 void moCalibrationModule::update() {
