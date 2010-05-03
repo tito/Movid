@@ -77,7 +77,7 @@ void moImageModule::stop() {
 	moModule::stop();
 	if ( this->image != NULL ) {
 		LOGM(MO_TRACE) << "release Image";
-		cvReleaseImage((IplImage **)this->image);
+		cvReleaseImage(&(this->image));
 		this->image = NULL;
 	}
 }
