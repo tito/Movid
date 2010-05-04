@@ -193,6 +193,35 @@ void moCalibrationModule::guiBuild(void) {
         
         CV_NEXT_SEQ_ELEM( elem_size, reader );
     }
+
+	// draw touches (since touch can be changed, if we lock input
+	// we'll not hve trouble)
+	if ( this->input != NULL ) {
+		moDataGenericList::iterator it;
+		int x, y;
+		this->input->lock();
+		for ( it = blobs.begin(); it != this->blobs.end(); it++ ) {
+			x = (int)((*it)->properties["x"]->asDouble() * 1000.);
+			y = (int)((*it)->properties["y"]->asDouble() * 1000.);
+
+			this->gui.push_back("color 121 0 184");
+
+			oss.str("");
+			oss << "circle " << x << " " << y << " 80";
+			this->gui.push_back(oss.str());
+
+			this->gui.push_back("color 255 255 255");
+
+			oss.str("");
+			oss << "line " << x - 160 << " " << y << " " << x + 160 << " " << y;
+			this->gui.push_back(oss.str());
+
+			oss.str("");
+			oss << "line " << x << " " << y - 160 << " " << x << " " << y + 160;
+			this->gui.push_back(oss.str());
+		}
+		this->input->unlock();
+	}
 }
 
 CvSubdiv2D* init_delaunay(CvMemStorage* storage, CvRect rect) {
@@ -366,6 +395,9 @@ void moCalibrationModule::transformPoints() {
 	if (this->output != NULL) delete this->output;
 	this->output = new moDataStream("GenericTouch");
 	this->output->push(&this->blobs);
+
+	// new blobs... gui must be updated
+	this->notifyGui();
 }
 
 void moCalibrationModule::notifyTriangulate() {
