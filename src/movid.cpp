@@ -999,6 +999,18 @@ int main(int argc, char **argv) {
 
 	moFactory::init();
 
+#ifdef WIN32
+	{
+		WSADATA wsaData;
+		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 ) {
+			std::cout << "unable to initialize WinSock (v2.2)" << std::endl;
+			return -1;
+		}
+	}
+#else
+		signal(SIGPIPE, SIG_IGN);
+#endif
+
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
 
@@ -1017,15 +1029,6 @@ int main(int argc, char **argv) {
 		pipeline = new moPipeline();
 
 	if ( config_httpserver ) {
-		#ifdef WIN32
-			WORD wVersionRequested;
-			WSADATA wsaData;
-			int	err;
-			wVersionRequested = MAKEWORD( 2, 2 );
-			err = WSAStartup( wVersionRequested, &wsaData );
-		#else
-			signal(SIGPIPE, SIG_IGN);
-		#endif
 
 		base = event_init();
 		server = evhttp_new(NULL);
@@ -1079,4 +1082,8 @@ int main(int argc, char **argv) {
 	delete pipeline;
 
 	moFactory::cleanup();
+
+#ifdef _WIN32
+	WSACleanup();
+#endif
 }

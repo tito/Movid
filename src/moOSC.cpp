@@ -50,7 +50,15 @@ moOSC::~moOSC() {
 }
 
 void moOSC::init() {
-	this->sock = socket(AF_INET, SOCK_DGRAM, 0);
+	this->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if ( this->sock == -1 ) {
+		LOG(MO_ERROR) << "unable to open socket (ret=" << this->sock << ")";
+#ifdef _WIN32
+		LOG(MO_ERROR) << "=> WSALastError=" << WSAGetLastError();
+#else
+		LOG(MO_ERROR) << "=> errno=" << errno;
+#endif 
+	}
 }
 
 void moOSC::send(WOscMessage *msg) {
