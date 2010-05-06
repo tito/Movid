@@ -25,10 +25,11 @@
 	#define ssize_t SSIZE_T
 	#define close(s) shutdown(s, SD_BOTH)
 #else // OTHERS
-   #include <sys/types.h>
-   #include <sys/socket.h>
-   #include <netinet/in.h>
-   #include <arpa/inet.h>
+	#include <errno.h>
+	#include <sys/types.h>
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <arpa/inet.h>
 #endif // ifdef WIN32
 
 #include "moOSC.h"
@@ -57,7 +58,7 @@ void moOSC::init() {
 		LOG(MO_ERROR) << "=> WSALastError=" << WSAGetLastError();
 #else
 		LOG(MO_ERROR) << "=> errno=" << errno;
-#endif 
+#endif
 	}
 }
 
