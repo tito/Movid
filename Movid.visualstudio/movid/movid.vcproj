@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\OpenCV\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
+				AdditionalIncludeDirectories="c:\OpenCV\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
 				PreprocessorDefinitions="WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -59,7 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib jpeg.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
+				AdditionalDependencies="WS2_32.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(TargetDir)&quot;;&quot;$(SolutionDir)..\contrib\ptypes-2.1.1\win32\$(ConfigurationName)&quot;;&quot;$(SolutionDir)..\contrib\libevent-1.4.13-stable\WIN32-Prj\$(ConfigurationName)&quot;;C:\OpenCV\lib"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
@@ -203,6 +203,10 @@
 				RelativePath="..\..\src\moThread.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\moUtils.h"
+				>
+			</File>
 			<Filter
 				Name="modules"
 				>
@@ -251,6 +255,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moHsvModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moImageDisplayModule.h"
 					>
 				</File>
@@ -264,6 +272,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moInvertModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moMaskModule.h"
 					>
 				</File>
 				<File
@@ -336,6 +348,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\moUtils.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\contrib\XgetOpt\XGetopt.cxx"
 				>
 			</File>
@@ -395,6 +411,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moHsvModule.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moImageDisplayModule.cpp"
 					>
 				</File>
@@ -408,6 +428,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moInvertModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moMaskModule.cpp"
 					>
 				</File>
 				<File
