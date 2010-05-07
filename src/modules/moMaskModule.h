@@ -16,23 +16,27 @@
  **********************************************************************/
 
 
-#include "moDilateModule.h"
-#include "../moLog.h"
-#include "cv.h"
+#ifndef MO_MASK_MODULE_H
+#define MO_MASK_MODULE_H
 
-MODULE_DECLARE(Dilate, "native", "Dilates the image (make bright regions bigger)");
+#include "moImageFilterModule.h"
 
-moDilateModule::moDilateModule() {
-	MODULE_INIT();
-	this->properties["iterations"] = new moProperty(1);
-}
+class moMaskModule : public moImageFilterModule{
+public:
+	moMaskModule();
+	virtual ~moMaskModule();
 
-moDilateModule::~moDilateModule() {
-}
+	void reloadMask();
 
-void moDilateModule::applyFilter(IplImage *src) {
-	int iter = this->property("iterations").asInteger();
-	cvDilate(src, this->output_buffer, NULL, iter);
-}
+	bool save_data;
+	
+protected:
+	IplImage* mask_buffer;
 
+	void applyFilter(IplImage *);
+
+	MODULE_INTERNALS();
+};
+
+#endif
 

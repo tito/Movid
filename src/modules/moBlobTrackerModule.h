@@ -38,7 +38,7 @@ protected:
 	moDataStream *output_data;
 	CvBlobTrackerAutoParam1 param;
 	
-	void applyFilter();	
+	void applyFilter(IplImage *);
 	void allocateBuffers();
 	void clearBlobs();
 

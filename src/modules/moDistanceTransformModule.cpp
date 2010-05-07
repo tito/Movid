@@ -86,8 +86,7 @@ int moDistanceTransformModule::toCvMaskSize(const std::string &mask_size) {
 	return 0;
 }
 
-void moDistanceTransformModule::applyFilter() {
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
+void moDistanceTransformModule::applyFilter(IplImage *src) {
 	cvConvertImage(src, this->converted);
 
 	cvDistTransform(

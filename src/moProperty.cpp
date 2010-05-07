@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <sstream>
 #include "moProperty.h"
+#include "moUtils.h"
 
 #ifdef _WIN32
 	#define snprintf _snprintf
@@ -32,19 +33,19 @@
 	switch ( this->type ) { \
 		case MO_PROPERTY_BOOL: \
 			*(static_cast<bool*>(this->val)) = convertToBool(typein, &value); \
-			return; \
+			break; \
 		case MO_PROPERTY_STRING: \
 			*(static_cast<std::string*>(this->val)) = convertToString(typein, &value); \
-			return; \
+			break; \
 		case MO_PROPERTY_INTEGER: \
 			*(static_cast<int*>(this->val)) = convertToInteger(typein, &value); \
-			return; \
+			break; \
 		case MO_PROPERTY_DOUBLE: \
 			*(static_cast<double*>(this->val)) = convertToDouble(typein, &value); \
-			return; \
+			break; \
 		case MO_PROPERTY_POINTLIST: \
 			*(static_cast<moPointList*>(this->val)) = convertToPointList(typein, &value); \
-			return; \
+			break; \
 		default:; \
 	}
 
@@ -194,44 +195,15 @@ static int convertToInteger(moPropertyType type, void *val) {
 	return 0;
 }
 
-std::vector<std::string> tokenize(const std::string& str, const std::string& delimiters)
-{
-	std::string client = str;
-	std::vector<std::string> result;
-
-	while ( !client.empty() )
-	{
-		std::string::size_type dPos = client.find_first_of( delimiters );
-		if ( dPos == 0 ) {
-			client = client.substr(delimiters.length());
-			result.push_back("");
-		} else {
-			std::string::size_type dPos = client.find_first_of(delimiters);
-			std::string element = client.substr(0, dPos);
-			result.push_back(element);
-
-			if (dPos == std::string::npos)
-				return result;
-			else
-				client = client.substr(dPos+delimiters.length());
-		}
-	}
-
-	if ( client.empty() )
-		result.push_back("");
-
-	return result;
-}
-
 static moPointList convertToPointList(moPropertyType type, void *val) {
 	moPointList output = moPointList();
 	switch ( type ) {
 		case MO_PROPERTY_STRING: {
 			CASTEDGET(std::string);
-			std::vector<std::string> points = tokenize(value, ";");
+			std::vector<std::string> points = moUtils::tokenize(value, ";");
 			std::vector<std::string>::iterator it;
 			for ( it = points.begin(); it != points.end(); it++ ) {
-				std::vector<std::string> point = tokenize((*it), ",");
+				std::vector<std::string> point = moUtils::tokenize((*it), ",");
 				moPoint p;
 
 				// it's an error, not 2 points. just forget it.
@@ -313,6 +285,7 @@ void moProperty::init(const std::string &description) {
 	this->have_min = false;
 	this->have_max = false;
 	this->have_choices = false;
+	this->callbacks = std::map<moPropertyCallback,void*>();
 	this->setDescription(description);
 }
 
@@ -320,12 +293,14 @@ void moProperty::set(bool value) {
 	if ( this->isReadOnly() )
 		return;
 	AUTOCONVERT(MO_PROPERTY_BOOL, value);
+	this->fireCallback();
 }
 
 void moProperty::set(std::string value) {
 	if ( this->isReadOnly() )
 		return;
 	AUTOCONVERT(MO_PROPERTY_STRING, value);
+	this->fireCallback();
 }
 
 void moProperty::set(const char *value) {
@@ -333,24 +308,28 @@ void moProperty::set(const char *value) {
 		return;
 	std::string s = std::string(value);
 	AUTOCONVERT(MO_PROPERTY_STRING, s);
+	this->fireCallback();
 }
 
 void moProperty::set(int value) {
 	if ( this->isReadOnly() )
 		return;
 	AUTOCONVERT(MO_PROPERTY_INTEGER, value);
+	this->fireCallback();
 }
 
 void moProperty::set(double value) {
 	if ( this->isReadOnly() )
 		return;
 	AUTOCONVERT(MO_PROPERTY_DOUBLE, value);
+	this->fireCallback();
 }
 
 void moProperty::set(moPointList value) {
 	if ( this->isReadOnly() )
 		return;
 	AUTOCONVERT(MO_PROPERTY_POINTLIST, value);
+	this->fireCallback();
 }
 
 moProperty::~moProperty() {
@@ -489,3 +468,25 @@ void moProperty::setChoices(const std::string &val) {
 	this->have_choices = true;
 }
 
+void moProperty::addCallback(moPropertyCallback callback, void *userdata) {
+	std::map<moPropertyCallback, void*>::iterator it;
+	// ensure no callback already exist for this property
+	assert( this->callbacks.find(callback) == this->callbacks.end() );
+	this->callbacks[callback] = userdata;
+}
+
+void moProperty::removeCallback(moPropertyCallback callback) {
+	std::map<moPropertyCallback, void*>::iterator it;
+	for ( it = this->callbacks.begin(); it != this->callbacks.end(); it++ ) {
+		if ( it->first == callback ) {
+			this->callbacks.erase(it);
+			return;
+		}
+	}
+}
+
+void moProperty::fireCallback() {
+	std::map<moPropertyCallback, void*>::iterator it;
+	for ( it = this->callbacks.begin(); it != this->callbacks.end(); it++ )
+		it->first(this, it->second);
+}

@@ -23,7 +23,8 @@
 
 MODULE_DECLARE(BackgroundSubtract, "native",
 	"Subtracts the background from the current input image.\n" \
-	"Stores next frame as background once when 'recapture is set to true.'");
+	"If 'toggle' is set to true, subtract each second frame.\n" \
+	"Otherwise stores next frame as background once when 'recapture is set to true.'");
 
 moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule() {
 
@@ -31,6 +32,7 @@ moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule()
 
 	// declare properties
 	this->properties["recapture"] = new moProperty(true);
+	this->properties["toggle"] = new moProperty(false);
 }
 
 moBackgroundSubtractModule::~moBackgroundSubtractModule() {
@@ -59,22 +61,20 @@ void moBackgroundSubtractModule::allocateBuffers() {
 	LOGM(MO_TRACE) << "allocated output and background buffers";
 }
 
-void moBackgroundSubtractModule::applyFilter() {
+void moBackgroundSubtractModule::applyFilter(IplImage *src) {
 	assert( this->bg_buffer != NULL );
 	assert( this->output_buffer != NULL );
-
-	IplImage* src = (IplImage*)(this->input->getData());
-	if ( src == NULL )
-		return;
 
 	// check for recapture
 	if (this->property("recapture").asBool()) {
 		cvCopy(src, this->bg_buffer);
 		this->property("recapture").set(false);
 		LOGM(MO_TRACE) << "recaptured background";
+	} else {
+		// do subtraction
+		cvAbsDiff(src, this->bg_buffer, this->output_buffer);
+		// check for next frame to recapture
+		this->property("recapture").set(this->property("toggle").asBool());
 	}
-
-	// do subtraction
-	cvSub(src, this->bg_buffer, this->output_buffer);
 }
 

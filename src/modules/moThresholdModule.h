@@ -27,7 +27,7 @@ public:
 	virtual ~moThresholdModule();
 	
 protected:
-	void applyFilter();
+	void applyFilter(IplImage *);
 	double threshold;
 	
 	MODULE_INTERNALS();

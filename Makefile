@@ -1,99 +1,203 @@
-# contrib path
-CONTRIB_PATH ?= contrib
-LIBEVENT_PATH ?= ${CONTRIB_PATH}/libevent-1.4.13-stable
-LIBCJSON_PATH ?= ${CONTRIB_PATH}/cJSON
-LIBJPEG_PATH ?= ${CONTRIB_PATH}/jpeg-8
-LIBFIDTRACK_PATH ?= ${CONTRIB_PATH}/libfidtrack
-WOSCLIB_PATH ?= ${CONTRIB_PATH}/WOscLib-00.09
-PTYPES_PATH ?= ${CONTRIB_PATH}/ptypes-2.1.1
+######################################################################
+#
+# Copyright (C) 2010 Movid Authors.  All rights reserved.
+#
+# This file is part of the Movid Software.
+#
+# This file may be distributed under the terms of the Q Public License
+# as defined by Trolltech AS of Norway and appearing in the file
+# LICENSE included in the packaging of this file.
+#
+# This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+# WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Contact info@movid.org if any conditions of this licensing are
+# not clear to you.
+#
+######################################################################
 
-#stuff we need to compile
-BLOB_BIN ?= blobtrack
-MOVID_BIN ?= movid
+#
+# Configuration
+#
+MOVID_BIN			= movid
+MOVID_LIB			= libmovid.a
+CONTRIB_PATH		= contrib
 
-LIBEVENT_LIBS ?= ${LIBEVENT_PATH}/.libs/libevent.a
-LIBEVENT_CFLAGS ?= -I${LIBEVENT_PATH}
-LIBJPEG_LIBS ?= ${LIBJPEG_PATH}/.libs/libjpeg.a
-LIBJPEG_CFLAGS ?= -I${LIBJPEG_PATH}
-LIBCJSON_CFLAGS ?= -I${LIBCJSON_PATH}
-LIBFIDTRACK_LIBS ?= ${LIBFIDTRACK_PATH}/libfidtrack.a
-WOSCLIB_CFLAGS ?= -I${WOSCLIB_PATH}
-WOSCLIB_LIBS ?= ${WOSCLIB_PATH}/libwosclib.a
-PTYPES_CFLAGS ?= -I${PTYPES_PATH}/include
-PTYPES_LIB ?= ${PTYPES_PATH}/lib/libptypes.a
+#
+# Contribs
+#
+LIBEVENT_PATH		= $(CONTRIB_PATH)/libevent-1.4.13-stable
+LIBCJSON_PATH 		= $(CONTRIB_PATH)/cJSON
+LIBFIDTRACK_PATH 	= $(CONTRIB_PATH)/libfidtrack
+WOSCLIB_PATH 		= $(CONTRIB_PATH)/WOscLib-00.09
+PTYPES_PATH 		= $(CONTRIB_PATH)/ptypes-2.1.1
 
-LIBMOVID_STATIC ?= libmovid.a
+#
+# Source files
+#
+SOURCES = \
+	src/moDaemon.cpp \
+	src/moDataGenericContainer.cpp \
+	src/moDataStream.cpp \
+	src/moFactory.cpp \
+	src/moLog.cpp \
+	src/moModule.cpp \
+	src/moOSC.cpp \
+	src/moPipeline.cpp \
+	src/moProperty.cpp \
+	src/moThread.cpp \
+	src/moUtils.cpp \
+	src/modules/moAmplifyModule.cpp \
+	src/modules/moBackgroundSubtractModule.cpp \
+	src/modules/moBlobTrackerModule.cpp \
+	src/modules/moCameraModule.cpp \
+	src/modules/moCannyModule.cpp \
+	src/modules/moCombineModule.cpp \
+	src/modules/moDilateModule.cpp \
+	src/modules/moDistanceTransformModule.cpp \
+	src/modules/moDumpModule.cpp \
+	src/modules/moErodeModule.cpp \
+	src/modules/moFiducialTrackerModule.cpp \
+	src/modules/moGrayScaleModule.cpp \
+	src/modules/moHighpassModule.cpp \
+	src/modules/moHsvModule.cpp \
+	src/modules/moImageDisplayModule.cpp \
+	src/modules/moImageFilterModule.cpp \
+	src/modules/moImageModule.cpp \
+	src/modules/moInvertModule.cpp \
+	src/modules/moMaskModule.cpp \
+	src/modules/moMirrorImageModule.cpp \
+	src/modules/moRoiModule.cpp \
+	src/modules/moSmoothModule.cpp \
+	src/modules/moThresholdModule.cpp \
+	src/modules/moTuioModule.cpp \
+	src/modules/moVideoModule.cpp \
+	#AUTOMODULE_DoNotRemoveThisComment
 
-OBJ = moThread.o moDataStream.o moModule.o moPipeline.o moFactory.o moProperty.o \
-      moDaemon.o moLog.o moDataGenericContainer.o moDumpModule.o \
-      moCameraModule.o moImageDisplayModule.o moSmoothModule.o moRoiModule.o \
-      moImageFilterModule.o moInvertModule.o moVideoModule.o moBackgroundSubtractModule.o \
-      moGrayScaleModule.o moThresholdModule.o moAmplifyModule.o moHighpassModule.o \
-      moBlobTrackerModule.o moCombineModule.o moMirrorImageModule.o moFiducialTrackerModule.o \
-      moImageModule.o moOSC.o moTuioModule.o moDilateModule.o moErodeModule.o \
-      moCannyModule.o moHsvModule.o moDistanceTransformModule.o
-      #DoNotRemoveThisComment
 
-#where the source is, and where to put the object files
-SRC_DIR = src
-MOD_DIR = ${SRC_DIR}/modules
-BIN_DIR = bin
+#
+# Compiler flags
+#
+CFLAGS 				?= -O0 -g -Wall -I$(CONTRIB_PATH)
+LIBS   				?=
 
-# compiler flags
-CFLAGS ?= -O0 -g -Wall -I${CONTRIB_PATH}
-LIBS   ?=
 
-OPENCV_CFLAGS ?= `pkg-config --cflags opencv`
-OPENCV_LIBS   ?= `pkg-config --libs opencv`
+#
+# Internal variables, to make the Makefile easier to read
+#
 
-ALL_CFLAGS = ${CFLAGS} ${OPENCV_CFLAGS} ${WOSCLIB_CFLAGS} ${PTYPES_CFLAGS}
-ALL_LIBS   = ${LIBS} ${OPENCV_LIBS}
-ALL_LIBS_STATIC = ${LIBMOVID_STATIC} ${LIBFIDTRACK_LIBS} ${WOSCLIB_LIBS} ${PTYPES_LIB}
+OBJECTS				= $(SOURCES:.cpp=.o)
 
-BIN = $(addprefix ${BIN_DIR}/, ${OBJ})
+OPENCV_CFLAGS		?= `pkg-config --cflags opencv`
+OPENCV_LIBS			?= `pkg-config --libs opencv`
+LIBEVENT_LIB		?= $(LIBEVENT_PATH)/.libs/libevent.a
+LIBEVENT_CFLAGS		?= -I$(LIBEVENT_PATH)
+LIBCJSON_CFLAGS		?= -I$(LIBCJSON_PATH)
+LIBFIDTRACK_LIB		?= $(LIBFIDTRACK_PATH)/libfidtrack.a
+WOSCLIB_CFLAGS		?= -I$(WOSCLIB_PATH)
+WOSCLIB_LIB			?= $(WOSCLIB_PATH)/libwosclib.a
+PTYPES_CFLAGS		?= -I$(PTYPES_PATH)/include
+PTYPES_LIB			?= $(PTYPES_PATH)/lib/libptypes.a
+
+ALL_CFLAGS			= $(CFLAGS) $(OPENCV_CFLAGS) $(WOSCLIB_CFLAGS) $(PTYPES_CFLAGS)
+ALL_LIBS			= $(LIBS) $(OPENCV_LIBS)
+ALL_LIBS_CONTRIB	= $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB)
+ALL_LIBS_STATIC		= $(MOVID_LIB) $(ALL_LIBS_CONTRIB)
+
+#
+# Global rules
+#
 
 all: movid
+distclean: cleandepend cleancontrib clean
+
+
+#
+# Dependices
+#
+
+include Makefile.depend
+
+depend: Makefile.depend
+
+cleandepend:
+	-rm Makefile.depend
+
+Makefile.depend: $(SOURCES)
+	@touch Makefile.depend
+	-makedepend -fMakefile.depend -- $(ALL_CFLAGS) $(SOURCES) 2>/dev/null
+	-rm Makefile.depend.bak
+
+#
+# Contribs
+#
+
+contrib: $(LIBEVENT_LIB) $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB)
+
+cleancontrib:
+	-$(MAKE) -C $(LIBEVENT_PATH) distclean
+	-$(MAKE) -C $(WOSCLIB_PATH) clean
+	-$(MAKE) -C $(PTYPES_PATH) clean
+	-$(MAKE) -C $(LIBFIDTRACK_PATH) clean
+
+$(LIBEVENT_LIB):
+	cd $(LIBEVENT_PATH) && sh ./configure --disable-shared && $(MAKE)
+
+$(LIBFIDTRACK_LIB):
+	$(MAKE) -C $(LIBFIDTRACK_PATH)
+
+$(WOSCLIB_LIB):
+	cd $(WOSCLIB_PATH) && sh ./configure && $(MAKE) libwosclib.a
+
+$(PTYPES_LIB):
+	cd $(PTYPES_PATH) && make
+
+
+#
+# Movid
+#
+
+%.o: %.cpp
+	$(CXX) $(ALL_CFLAGS) -c $< -o $@
+
+clean:
+	-rm $(OBJECTS) 2>/dev/null
+	-rm $(MOVID_LIB) 2>/dev/null
+	-rm $(MOVID_BIN) 2>/dev/null
+
+movid: Makefile.depend contrib $(MOVID_LIB) src/movid.cpp
+	$(CXX) -o $(MOVID_BIN) src/movid.cpp contrib/cJSON/cJSON.c \
+		$(ALL_LIBS_STATIC) \
+		$(LIBEVENT_CFLAGS) $(LIBCJSON_CFLAGS) $(ALL_CFLAGS) \
+		$(LIBEVENT_LIB) $(ALL_LIBS)
+
+$(MOVID_LIB): $(OBJECTS)
+	$(AR) rcs $(MOVID_LIB) $(OBJECTS)
+
+
+#
+# Create a new module
+#
 
 newmodule:
-	cat src/modules/.dummy.h | sed "s/MO_DUMMY/MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
+	cat src/modules/.dummy.h | sed "s/MO_DUMMY/\U\MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
 	cat src/modules/.dummy.cpp | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.cpp
-	#cat Makefile | sed "s/#DoNotRemoveThisComment/mo${NAME}Module.o#DoNotRemoveThisComment/" > Makefile.tmp
-	cat src/moFactory.cpp | sed "s/\/\/DoNotRemoveThisComment/REGISTER_MODULE(${NAME});\n\t\/\/DoNotRemoveThisComment/g" > src/moFactory.cpp.tmp
+	#cat Makefile | sed "s/#AUTOMODULE_DoNotRemoveThisComment/mo${NAME}Module.o#AUTOMODULE_DoNotRemoveThisComment/" > Makefile.tmp
+	cat src/moFactory.cpp | sed "s/\/\/AUTOMODULE_DoNotRemoveThisComment/REGISTER_MODULE(${NAME});\n\t\/\/AUTOMODULE_DoNotRemoveThisComment/g" > src/moFactory.cpp.tmp
 	mv src/moFactory.cpp.tmp src/moFactory.cpp
 
 
-#rules for building targets
-static: ${BIN}
-	${AR} rcs ${LIBMOVID_STATIC} ${BIN}
+#
+# Help
+#
 
-blobtrack: static src/blobtracker.cpp
-	${CXX} ${ALL_LIBS} ${ALL_CFLAGS} -o ${BLOB_BIN} src/blobtracker.cpp
-	
-movid: contribs static src/movid.cpp
-	${CXX} -o ${MOVID_BIN} src/movid.cpp contrib/cJSON/cJSON.c ${ALL_LIBS_STATIC} \
-		${LIBEVENT_CFLAGS} ${LIBCJSON_CFLAGS} ${LIBJPEG_CFLAGS} ${ALL_CFLAGS} \
-		${LIBJPEG_LIBS} ${LIBEVENT_LIBS} ${ALL_LIBS}
-
-contribs:
-	${MAKE} -C contrib
-
-doc:
-	${MAKE} -C docs
-
-# how to build stuff in SRC_DIR
-${BIN_DIR}/%.o : ${SRC_DIR}/%.cpp
-	${CXX} ${ALL_CFLAGS} -c $< -o $@
-
-# how to build stuff in MOD_DIR
-${BIN_DIR}/%.o : ${MOD_DIR}/%.cpp
-	${CXX} ${ALL_CFLAGS} -c $< -o $@
-
-clean:
-	-rm ${BIN_DIR}/*.o
-	-rm ${BLOB_BIN}
-	-rm ${MOVID_BIN}
-	-rm -r *.dSYM build
-	-rm ${LIBMOVID_STATIC}
-
-distclean: clean
-	${MAKE} -C contrib clean
+help:
+	@echo "List of availables target                                   "
+	@echo "   all                 Build dependices and the movid binary"
+	@echo "   clean               Clean movid objects                  "
+	@echo "   cleandepend         Clean the dependice file             "
+	@echo "   contrib             Build contribs                       "
+	@echo "   depend              Build dependices                     "
+	@echo "   distclean           Clean contrib + movid objects        "
+	@echo "   help                You actually read it                 "
+	@echo "   newmodule NAME=aa   Create a new module named aa         "

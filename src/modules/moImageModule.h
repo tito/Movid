@@ -19,6 +19,7 @@
 #ifndef MO_IMAGE_H
 #define MO_IMAGE_H
 
+#include "cv.h"
 #include "../moModule.h"
 
 class moDataStream;
@@ -36,8 +37,10 @@ public:
 	void stop();
 	void update();
 
+	void reloadImage();
+
 private:
-	void *image;
+	IplImage *image;
 	moDataStream *stream;
 
 

@@ -1,0 +1,5 @@
+pipeline create Image img
+pipeline set img filename media/fidtest1.jpg
+pipeline create ImageDisplay imgdisp
+
+pipeline connect img 0 imgdisp 0

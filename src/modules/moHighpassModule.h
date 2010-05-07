@@ -27,7 +27,7 @@ public:
 	virtual ~moHighpassModule();
 	
 protected:
-	void applyFilter();
+	void applyFilter(IplImage *);
 	int size;
 	MODULE_INTERNALS();
 };

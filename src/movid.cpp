@@ -41,9 +41,6 @@
 #include <string>
 #include <map>
 
-// jpeg !
-#include <jpeglib.h>
-
 // opencv (for cvWaitKey)
 #include "cv.h"
 #include "highgui.h"
@@ -148,45 +145,6 @@ static void signal_term(int signal) {
 	want_quit = true;
 }
 
-static bool ipl2jpeg(IplImage *frame, unsigned char **outbuffer, long unsigned int *outlen) {
-	unsigned char *outdata = (uchar *) frame->imageData;
-	struct jpeg_compress_struct cinfo = {0};
-	struct jpeg_error_mgr jerr;
-	JSAMPROW row_ptr[1];
-	int row_stride;
-
-	*outbuffer = NULL;
-	*outlen = 0;
-
-	cinfo.err = jpeg_std_error(&jerr);
-	jpeg_create_compress(&cinfo);
-	jpeg_mem_dest(&cinfo, outbuffer, outlen);
-
-	cinfo.image_width = frame->width;
-	cinfo.image_height = frame->height;
-	cinfo.input_components = frame->nChannels;
-	if ( frame->nChannels == 1 )
-		cinfo.in_color_space = JCS_GRAYSCALE;
-	else
-		cinfo.in_color_space = JCS_RGB;
-
-	jpeg_set_defaults(&cinfo);
-	jpeg_start_compress(&cinfo, TRUE);
-	row_stride = frame->width * frame->nChannels;
-
-	while (cinfo.next_scanline < cinfo.image_height) {
-		row_ptr[0] = &outdata[cinfo.next_scanline * row_stride];
-		jpeg_write_scanlines(&cinfo, row_ptr, 1);
-	}
-
-	jpeg_finish_compress(&cinfo);
-	jpeg_destroy_compress(&cinfo);
-
-	return true;
-
-}
-
-
 //
 // WEB CALLBACKS
 //
@@ -251,7 +209,8 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
 	struct timeval when = { 0, 0 };
 	long unsigned int outlen;
-	unsigned char *outbuf;
+	std::vector<uchar>outbuf;
+	std::vector<int> params;
 	IplImage* img;
 	bool convert = false;
 
@@ -283,7 +242,11 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	}
 
 	// convert the image to JPEG
-	ipl2jpeg(img, &outbuf, &outlen);
+	params.push_back(CV_IMWRITE_JPEG_QUALITY);
+	params.push_back(100);
+	cv::imencode(".jpg", img, outbuf, params);
+	outlen = outbuf.size();
+
 
 	// release temporary image if created
 	if ( convert )
@@ -293,11 +256,12 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	evbuffer_add_printf(evb, "--mjpegstream\r\n");
 	evbuffer_add_printf(evb, "Content-Type: image/jpeg\r\n");
 	evbuffer_add_printf(evb, "Content-Length: %lu\r\n\r\n", outlen);
-	evbuffer_add(evb, outbuf, outlen);
+	evbuffer_add(evb, &outbuf[0], outlen);
 	evhttp_send_reply_chunk(state->req, evb);
 	evbuffer_free(evb);
 
-	free(outbuf);
+	outbuf.clear();
+	params.clear();
 
 	event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
 	/**
@@ -383,6 +347,33 @@ void web_pipeline_create(struct evhttp_request *req, void *arg) {
 
 	evhttp_clear_headers(&headers);
 	web_message(req, module->property("id").asString().c_str());
+}
+
+void web_pipeline_stats(struct evhttp_request *req, void *arg) {
+	moModule *module;
+	cJSON *root, *data, *mod;
+
+	root = cJSON_CreateObject();
+	cJSON_AddNumberToObject(root, "success", 1);
+	cJSON_AddStringToObject(root, "message", "ok");
+	cJSON_AddItemToObject(root, "stats", data=cJSON_CreateObject());
+
+	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
+		module = pipeline->getModule(i);
+
+		cJSON_AddItemToObject(data,
+			module->property("id").asString().c_str(),
+			mod=cJSON_CreateObject());
+
+		cJSON_AddNumberToObject(mod, "average_fps", module->stats.average_fps);
+		cJSON_AddNumberToObject(mod, "average_process_time", module->stats.average_process_time);
+		cJSON_AddNumberToObject(mod, "average_wait_time", module->stats.average_wait_time);
+		cJSON_AddNumberToObject(mod, "total_process_frame", module->stats.total_process_frame);
+		cJSON_AddNumberToObject(mod, "total_process_time", module->stats.total_process_time);
+		cJSON_AddNumberToObject(mod, "total_wait_time", module->stats.total_wait_time);
+	}
+
+	web_json(req, root);
 }
 
 void web_pipeline_status(struct evhttp_request *req, void *arg) {
@@ -1035,6 +1026,18 @@ int main(int argc, char **argv) {
 
 	moFactory::init();
 
+#ifdef WIN32
+	{
+		WSADATA wsaData;
+		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 ) {
+			std::cout << "unable to initialize WinSock (v2.2)" << std::endl;
+			return -1;
+		}
+	}
+#else
+	signal(SIGPIPE, SIG_IGN);
+#endif
+
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
 
@@ -1053,15 +1056,6 @@ int main(int argc, char **argv) {
 		pipeline = new moPipeline();
 
 	if ( config_httpserver ) {
-		#ifdef WIN32
-			WORD wVersionRequested;
-			WSADATA wsaData;
-			int	err;
-			wVersionRequested = MAKEWORD( 2, 2 );
-			err = WSAStartup( wVersionRequested, &wsaData );
-		#else
-			signal(SIGPIPE, SIG_IGN);
-		#endif
 
 		base = event_init();
 		server = evhttp_new(NULL);
@@ -1082,6 +1076,7 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
 		evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
 		evhttp_set_cb(server, "/pipeline/dump", web_pipeline_dump, NULL);
+		evhttp_set_cb(server, "/pipeline/stats", web_pipeline_stats, NULL);
 
 		evhttp_set_gencb(server, web_file, NULL);
 	}
@@ -1115,4 +1110,8 @@ int main(int argc, char **argv) {
 	delete pipeline;
 
 	moFactory::cleanup();
+
+#ifdef _WIN32
+	WSACleanup();
+#endif
 }

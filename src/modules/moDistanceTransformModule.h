@@ -27,7 +27,7 @@ public:
 	virtual ~moDistanceTransformModule();
 
 protected:
-	void applyFilter();
+	void applyFilter(IplImage*);
 	void allocateBuffers();
 	int toCvType(const std::string&);
 	int toCvMaskSize(const std::string&);

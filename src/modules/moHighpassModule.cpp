@@ -35,10 +35,9 @@ moHighpassModule::moHighpassModule() : moImageFilterModule(){
 moHighpassModule::~moHighpassModule() {
 }
 
-void moHighpassModule::applyFilter(){
+void moHighpassModule::applyFilter(IplImage *src) {
 	int b1 = this->property("size").asInteger()*2+1; //make sure its odd
 	int b2 = this->property("blur").asInteger()*2+1; //make sure its odd
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	cvSmooth(src, this->output_buffer, CV_GAUSSIAN, b1);
 	cvSub(src, this->output_buffer, this->output_buffer);
 	cvSmooth(this->output_buffer, this->output_buffer, CV_GAUSSIAN, b2);

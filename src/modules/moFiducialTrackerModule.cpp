@@ -85,8 +85,7 @@ void moFiducialTrackerModule::allocateBuffers() {
 	initialize_segmenter( &fids->segmenter, src->width, src->height, fids->treeidmap.max_adjacencies );
 }
 
-void moFiducialTrackerModule::applyFilter() {
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
+void moFiducialTrackerModule::applyFilter(IplImage *src) {
 	fiducials_data_t *fids = static_cast<fiducials_data_t*>(this->internal);
 	moDataGenericContainer *fiducial;
 	FiducialX *fdx;

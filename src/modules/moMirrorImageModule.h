@@ -28,7 +28,7 @@ public:
 	
 protected:
 	int toCvType(const std::string &axis);
-	void applyFilter();
+	void applyFilter(IplImage *);
 	int width, height;
 	
 	MODULE_INTERNALS();

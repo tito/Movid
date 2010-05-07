@@ -38,8 +38,7 @@ void moGrayScaleModule::allocateBuffers() {
 	LOG(MO_DEBUG) << "allocated output buffer for GrayScale module.";
 }
 
-void moGrayScaleModule::applyFilter() {
-	IplImage* src = (IplImage*)(this->input->getData());
+void moGrayScaleModule::applyFilter(IplImage *src) {
 	cvCvtColor(src, this->output_buffer, CV_RGB2GRAY);
 }
 

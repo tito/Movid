@@ -30,6 +30,21 @@ class moDataStream;
 class moDataStreamInfo;
 class moPipeline;
 
+typedef struct {
+	double average_fps;
+	double average_process_time;
+	double average_wait_time;
+	double total_process_time;
+	double total_wait_time;
+	unsigned long long total_process_frame;
+
+	// used for calculation of fps and update time
+	unsigned long long _process_frame;
+	double _process_time;
+	double _wait_time;
+	double _last_time;
+} mo_module_stats_t;
+
 
 /*! \brief Declare a new module (create all needed informations) + Log declaration
  *
@@ -243,6 +258,10 @@ public:
 	/*! \brief Export connections of the module to a file
 	 */
 	virtual bool serializeConnections(std::ostringstream &oss);
+
+	/*! \brief Module statistics
+	 */
+	mo_module_stats_t stats;
 	
 private:
 	/*! \brief Capabilities flags

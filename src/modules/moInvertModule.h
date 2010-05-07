@@ -28,7 +28,7 @@ public:
 	virtual ~moInvertModule();
 
 protected:
-	void applyFilter();
+	void applyFilter(IplImage *);
 
 	MODULE_INTERNALS();
 };

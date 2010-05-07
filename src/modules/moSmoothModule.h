@@ -27,7 +27,7 @@ public:
 	virtual ~moSmoothModule();
 	
 protected:
-	void applyFilter();
+	void applyFilter(IplImage *);
 	int toCvType(const std::string&);
 	int width, height;
 

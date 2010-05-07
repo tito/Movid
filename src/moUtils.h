@@ -16,23 +16,16 @@
  **********************************************************************/
 
 
-#include "moDilateModule.h"
-#include "../moLog.h"
-#include "cv.h"
+#ifndef MO_UTILS_H
+#define MO_UTILS_H
 
-MODULE_DECLARE(Dilate, "native", "Dilates the image (make bright regions bigger)");
+#include <string>
+#include <vector>
 
-moDilateModule::moDilateModule() {
-	MODULE_INIT();
-	this->properties["iterations"] = new moProperty(1);
-}
+class moUtils {
+public:
+	static std::vector<std::string> tokenize(const std::string& str, const std::string& delimiters);
+	static double time();
+};
 
-moDilateModule::~moDilateModule() {
-}
-
-void moDilateModule::applyFilter(IplImage *src) {
-	int iter = this->property("iterations").asInteger();
-	cvDilate(src, this->output_buffer, NULL, iter);
-}
-
-
+#endif

@@ -20,6 +20,7 @@
 #include <sstream>
 #include <iostream>
 #include <errno.h>
+#include <strings.h>
 
 #include "pasync.h"
 
@@ -27,10 +28,50 @@
 #include "moDataStream.h"
 #include "moLog.h"
 #include "moThread.h"
+#include "moUtils.h"
 
 LOG_DECLARE("Module");
 
 static unsigned int idcount = 0;
+
+static void stats_init(mo_module_stats_t *s) {
+	s->_last_time = moUtils::time();
+}
+
+static void stats_wait(mo_module_stats_t *s) {
+	double curtime = moUtils::time();
+	s->_wait_time += curtime - s->_last_time;
+	s->_last_time = curtime;
+}
+
+static void stats_process(mo_module_stats_t *s) {
+	double curtime = moUtils::time();
+	s->_process_time += curtime - s->_last_time;
+	s->_last_time = curtime;
+	s->_process_frame ++;
+
+	// calculate average fps every 1s
+	if ( (s->_process_time + s->_wait_time) > 1. )
+	{
+		// average is on the last period
+		s->average_process_time	= s->_process_time / (double)s->_process_frame;
+		s->average_wait_time	= s->_wait_time / (double)s->_process_frame;
+
+		// calculate fps
+		s->average_fps			= (double)s->_process_frame / (
+				s->_process_time + s->_wait_time);
+
+		// update totals
+		s->total_wait_time		+= s->_wait_time;
+		s->total_process_time	+= s->_process_time;
+		s->total_process_frame	+= s->_process_frame;
+
+		// reset period
+		s->_process_frame		= 0;
+		s->_process_time		= 0;
+		s->_wait_time			= 0;
+	}
+}
 
 moModule::moModule(unsigned int capabilities, int input_count, int output_count) {
 	this->capabilities	= capabilities;
@@ -45,6 +86,8 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->need_update	= false;
 	this->thread_trigger = NULL;
 	this->mtx			= new pt::mutex();
+
+	bzero(&this->stats, sizeof(mo_module_stats_t));
 
 	this->properties["use_thread"] = new moProperty(false);
 }
@@ -116,15 +159,20 @@ void moModule::notifyData(moDataStream *source) {
 
 void _thread_process(moThread *thread) {
 	moModule *module = (moModule *)thread->getUserData();
+	stats_init(&module->stats);
 	while ( !thread->wantQuit() ) {
 		if ( !module->needUpdate(true) )
 			continue;
+
+		stats_wait(&module->stats);
 		module->update();
+		stats_process(&module->stats);
 	}
 }
 
 void moModule::start() {
 	this->use_thread = this->property("use_thread").asBool();
+	stats_init(&this->stats);
 	if ( this->use_thread ) {
 		if ( this->thread_trigger == NULL ) {
 			LOGM(MO_TRACE) << "create trigger";
@@ -276,8 +324,11 @@ std::string moModule::getLastError() {
 void moModule::poll() {
 	if ( this->use_thread )
 		return;
-	if ( this->needUpdate() )
+	if ( this->needUpdate() ) {
+		stats_wait(&this->stats);
 		this->update();
+		stats_process(&this->stats);
+	}
 }
 
 void moModule::notifyUpdate() {

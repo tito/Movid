@@ -26,6 +26,11 @@
 
 MODULE_DECLARE(Image, "native", "Use a static image as source");
 
+void fileChangedCallback(moProperty *prop, void *_inst) {
+	moImageModule *inst = static_cast<moImageModule*> (_inst);
+	inst->reloadImage();
+}
+
 moImageModule::moImageModule() : moModule(MO_MODULE_OUTPUT, 0, 1) {
 
 	MODULE_INIT();
@@ -39,9 +44,25 @@ moImageModule::moImageModule() : moModule(MO_MODULE_OUTPUT, 0, 1) {
 
 	// declare properties
 	this->properties["filename"] = new moProperty("");
+	this->properties["filename"]->addCallback(fileChangedCallback, this);
 }
 
 moImageModule::~moImageModule() {
+}
+
+void moImageModule::reloadImage() {
+	if (this->image != NULL) {
+		cvReleaseImage(&(this->image));
+		this->image = NULL;
+	}
+	this->image = cvLoadImage(this->property("filename").asString().c_str());
+	if ( this->image == NULL ) {
+		LOGM(MO_ERROR) << "could not load image: " << this->property("filename").asString();
+		this->setError("unable to load image");
+	}
+	else {
+		this->notifyUpdate();
+	}
 }
 
 void moImageModule::start() {
@@ -49,19 +70,14 @@ void moImageModule::start() {
 		this->stop();
 
 	moModule::start();
-
-	this->image = cvLoadImage(this->property("filename").asString().c_str());
-	if ( this->image == NULL ) {
-		LOGM(MO_ERROR) << "could not load image: " << this->property("filename").asString();
-		this->setError("unable to load image");
-	}
+	this->reloadImage();
 }
 
 void moImageModule::stop() {
 	moModule::stop();
 	if ( this->image != NULL ) {
 		LOGM(MO_TRACE) << "release Image";
-		cvReleaseImage((IplImage **)this->image);
+		cvReleaseImage(&(this->image));
 		this->image = NULL;
 	}
 }
