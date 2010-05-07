@@ -45,9 +45,9 @@ int moMirrorImageModule::toCvType(const std::string &axis) {
 	return 0;
 }
 
-void moMirrorImageModule::applyFilter(){
+void moMirrorImageModule::applyFilter(IplImage *src) {
 	cvFlip(
-		static_cast<IplImage*>(this->input->getData()),
+		src,
 		this->output_buffer,
 		this->toCvType(this->property("mirrorAxis").asString())
 	);

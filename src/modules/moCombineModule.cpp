@@ -76,6 +76,9 @@ void moCombineModule::update() {
 		return;
 	}
 
+	d1 = cvCloneImage(d1);
+	this->input1->unlock();
+
 	if ( this->input2 == NULL ) {
 		cvCopy(d1, this->output_buffer);
 	} else {
@@ -83,17 +86,22 @@ void moCombineModule::update() {
 		d2 = (IplImage *)this->input2->getData();
 		if ( d2 == NULL ) {
 			this->input2->unlock();
-			this->input1->unlock();
+			cvReleaseImage(&d1);
 			return;
 		}
+
+		d2 = cvCloneImage(d2);
+		this->input2->unlock();
+
 		cvSplit(d2, this->split, NULL, NULL, NULL);
 		cvCopy(d1, this->output_buffer);
 		cvCopy(d2, this->output_buffer, this->split);
-		this->input2->unlock();
 	}
 
 	this->output->push(this->output_buffer);
-	this->input1->unlock();
+
+	cvReleaseImage(&d1);
+	cvReleaseImage(&d2);
 }
 
 void moCombineModule::setInput(moDataStream *stream, int n) {

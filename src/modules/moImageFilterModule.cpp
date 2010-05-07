@@ -114,6 +114,8 @@ void moImageFilterModule::allocateBuffers() {
 }
 
 void moImageFilterModule::update() {
+	IplImage *dup = NULL;
+
 	if ( this->input == NULL )
 		return;
 
@@ -121,9 +123,17 @@ void moImageFilterModule::update() {
 
 	// don't pass data to filter if source is NULL
 	if ( this->input->getData() != NULL ) {
-		this->applyFilter();
+		// duplicate the image, and release as fast as we can the input lock.
+		dup = cvCloneImage(static_cast<IplImage *>(this->input->getData()));
 		this->input->unlock();
 
+		// apply the filter
+		this->applyFilter(dup);
+
+		// release the duplicated image
+		cvReleaseImage(&dup);
+
+		// push the new data
 		this->output->push(this->output_buffer);
 	} else {
 		this->input->unlock();

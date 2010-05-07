@@ -31,7 +31,7 @@ protected:
 	bool toggle;
 	IplImage* bg_buffer;
 	
-	void applyFilter();
+	void applyFilter(IplImage *);
 	void allocateBuffers();
 	void stop();
 

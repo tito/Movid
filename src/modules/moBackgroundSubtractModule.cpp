@@ -61,13 +61,9 @@ void moBackgroundSubtractModule::allocateBuffers() {
 	LOGM(MO_TRACE) << "allocated output and background buffers";
 }
 
-void moBackgroundSubtractModule::applyFilter() {
+void moBackgroundSubtractModule::applyFilter(IplImage *src) {
 	assert( this->bg_buffer != NULL );
 	assert( this->output_buffer != NULL );
-
-	IplImage* src = (IplImage*)(this->input->getData());
-	if ( src == NULL )
-		return;
 
 	// check for recapture
 	if (this->property("recapture").asBool()) {

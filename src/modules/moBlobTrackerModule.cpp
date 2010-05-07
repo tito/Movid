@@ -127,9 +127,9 @@ void moBlobTrackerModule::allocateBuffers() {
 	LOGM(MO_TRACE) << "allocated output buffer for BlobTracker module.";
 }
 
-void moBlobTrackerModule::applyFilter() {
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
+void moBlobTrackerModule::applyFilter(IplImage *src) {
 	IplImage* fg_map = NULL;
+
 	assert( src != NULL );
 	CvSize size = cvGetSize(src);
 

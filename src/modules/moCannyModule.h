@@ -27,7 +27,7 @@ public:
 	virtual ~moCannyModule();
 
 protected:
-	void applyFilter();
+	void applyFilter(IplImage *);
 
 	MODULE_INTERNALS();
 };

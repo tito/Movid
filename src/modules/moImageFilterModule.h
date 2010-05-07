@@ -43,7 +43,7 @@ protected:
 	moDataStream* output;
 	IplImage* output_buffer;
 	
-	virtual void applyFilter()=0;
+	virtual void applyFilter(IplImage *)=0;
 	virtual void allocateBuffers();
 	
 	bool need_update;

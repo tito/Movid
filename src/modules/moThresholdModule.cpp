@@ -36,8 +36,7 @@ moThresholdModule::moThresholdModule() : moImageFilterModule(){
 moThresholdModule::~moThresholdModule() {
 }
 
-void moThresholdModule::applyFilter(){
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
+void moThresholdModule::applyFilter(IplImage *src){
 
 	if ( src->nChannels != 1 ) {
 		this->setError("Threshold input image must be a single channel binary image.");

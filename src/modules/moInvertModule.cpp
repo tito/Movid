@@ -29,8 +29,8 @@ moInvertModule::moInvertModule() {
 moInvertModule::~moInvertModule() {
 }
 
-void moInvertModule::applyFilter() {
-	cvNot(static_cast<IplImage*>(this->input->getData()), this->output_buffer);
+void moInvertModule::applyFilter(IplImage *src) {
+	cvNot(src, this->output_buffer);
 }
 
 

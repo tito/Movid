@@ -39,14 +39,14 @@ moCannyModule::moCannyModule() : moImageFilterModule(){
 moCannyModule::~moCannyModule() {
 }
 
-void moCannyModule::applyFilter() {
+void moCannyModule::applyFilter(IplImage *src) {
 	cvCanny(
-			static_cast<IplImage*>(this->input->getData()),
-			this->output_buffer,
-			this->property("lower_threshold").asInteger(),
-			this->property("upper_threshold").asInteger(),
-			3
-			);
+		src,
+		this->output_buffer,
+		this->property("lower_threshold").asInteger(),
+		this->property("upper_threshold").asInteger(),
+		3
+	);
 }
 
 

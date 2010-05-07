@@ -30,8 +30,7 @@ moAmplifyModule::moAmplifyModule() : moImageFilterModule(){
 moAmplifyModule::~moAmplifyModule() {
 }
 
-void moAmplifyModule::applyFilter() {
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
+void moAmplifyModule::applyFilter(IplImage *src) {
 	cvMul(src, src, this->output_buffer, this->property("amplification").asDouble());
 }
 

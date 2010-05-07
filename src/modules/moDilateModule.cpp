@@ -30,8 +30,7 @@ moDilateModule::moDilateModule() {
 moDilateModule::~moDilateModule() {
 }
 
-void moDilateModule::applyFilter(){
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
+void moDilateModule::applyFilter(IplImage *src) {
 	int iter = this->property("iterations").asInteger();
 	cvDilate(src, this->output_buffer, NULL, iter);
 }

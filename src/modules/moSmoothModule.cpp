@@ -53,9 +53,9 @@ int moSmoothModule::toCvType(const std::string &filter) {
 	return 0;
 }
 
-void moSmoothModule::applyFilter() {
+void moSmoothModule::applyFilter(IplImage *src) {
 	cvSmooth(
-		static_cast<IplImage*>(this->input->getData()),
+		src,
 		this->output_buffer,
 		this->toCvType(this->property("filter").asString()),
 		this->property("size").asInteger()*2+1 //make sure its odd

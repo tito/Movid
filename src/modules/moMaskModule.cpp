@@ -54,10 +54,9 @@ moMaskModule::~moMaskModule() {
 		cvReleaseImage(&(this->mask_buffer));
 }
 
-void moMaskModule::applyFilter() {
+void moMaskModule::applyFilter(IplImage *src) {
 	assert( this->output_buffer != NULL );
 
-	IplImage* src = (IplImage*)(this->input->getData());
 	if ( src == NULL )
 		return;
 

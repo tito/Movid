@@ -59,8 +59,7 @@ void moHsvModule::allocateBuffers() {
 	LOG(MO_DEBUG) << "allocated output buffer for Hsv module.";
 }
 
-void moHsvModule::applyFilter() {
-	IplImage *image = static_cast<IplImage*>(this->input->getData());
+void moHsvModule::applyFilter(IplImage *image) {
 	IplImage *mask = this->output_buffer;
 	IplImage* hsv = cvCloneImage(image);
 	int hmin = this->property("hmin").asInteger(),
