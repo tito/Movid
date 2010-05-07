@@ -1,0 +1,18 @@
+pipeline create Camera cam
+pipeline create GrayScale gray
+pipeline create Threshold thresh
+pipeline create DistanceTransform dist
+pipeline create PeakFinder peaks
+pipeline create ImageDisplay win
+
+pipeline set cam index 1
+pipeline set thresh threshold 120
+pipeline set dist scale 0
+pipeline set peaks min_radius 100
+pipeline set peaks max_radius 200
+
+pipeline connect cam 0 gray 0
+pipeline connect gray 0 thresh 0
+pipeline connect thresh 0 dist 0
+pipeline connect thresh 0 win 0
+pipeline connect dist 0 peaks 0
