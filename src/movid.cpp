@@ -349,6 +349,33 @@ void web_pipeline_create(struct evhttp_request *req, void *arg) {
 	web_message(req, module->property("id").asString().c_str());
 }
 
+void web_pipeline_stats(struct evhttp_request *req, void *arg) {
+	moModule *module;
+	cJSON *root, *data, *mod;
+
+	root = cJSON_CreateObject();
+	cJSON_AddNumberToObject(root, "success", 1);
+	cJSON_AddStringToObject(root, "message", "ok");
+	cJSON_AddItemToObject(root, "stats", data=cJSON_CreateObject());
+
+	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
+		module = pipeline->getModule(i);
+
+		cJSON_AddItemToObject(data,
+			module->property("id").asString().c_str(),
+			mod=cJSON_CreateObject());
+
+		cJSON_AddNumberToObject(mod, "average_fps", module->stats.average_fps);
+		cJSON_AddNumberToObject(mod, "average_process_time", module->stats.average_process_time);
+		cJSON_AddNumberToObject(mod, "average_wait_time", module->stats.average_wait_time);
+		cJSON_AddNumberToObject(mod, "total_process_frame", module->stats.total_process_frame);
+		cJSON_AddNumberToObject(mod, "total_process_time", module->stats.total_process_time);
+		cJSON_AddNumberToObject(mod, "total_wait_time", module->stats.total_wait_time);
+	}
+
+	web_json(req, root);
+}
+
 void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	std::map<std::string, moProperty*>::iterator it;
 	char buffer[64];
@@ -1008,7 +1035,7 @@ int main(int argc, char **argv) {
 		}
 	}
 #else
-		signal(SIGPIPE, SIG_IGN);
+	signal(SIGPIPE, SIG_IGN);
 #endif
 
 	signal(SIGTERM, signal_term);
@@ -1049,6 +1076,7 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
 		evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
 		evhttp_set_cb(server, "/pipeline/dump", web_pipeline_dump, NULL);
+		evhttp_set_cb(server, "/pipeline/stats", web_pipeline_stats, NULL);
 
 		evhttp_set_gencb(server, web_file, NULL);
 	}

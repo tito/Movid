@@ -25,6 +25,7 @@
 class moUtils {
 public:
 	static std::vector<std::string> tokenize(const std::string& str, const std::string& delimiters);
+	static double time();
 };
 
 #endif
