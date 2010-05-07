@@ -35,11 +35,6 @@ moPeakFinderModule::~moPeakFinderModule() {
 }
 
 void moPeakFinderModule::applyFilter(IplImage *src) {
-	double minVal, maxVal;
-	CvPoint minLoc, maxLoc;
-	cvMinMaxLoc(src, &minVal, &maxVal, &minLoc, &maxLoc);
-	std::cout << minVal << "/" << maxVal << std::endl;
-
 	int step = src->widthStep;
 	int height = src->height;
 	int width = src->width;
@@ -52,15 +47,13 @@ void moPeakFinderModule::applyFilter(IplImage *src) {
 
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
-			//cur_val = ((int) data[i * step + j]) / scale;
-			cur_val = ((int) data[i * step + j]);
+			cur_val = ((int) data[j * step + i]);
 			if ((min < cur_val) && (cur_val < max)) {
-				std::cout << "Cur val: " << cur_val << " is between " << min << " & " << max << " at " << i << ", " << j << std::endl;
-				return;
 				peaks.push_back(std::pair<double, moPoint>(cur_val, (moPoint) {i, j}));
 			}
 		}
 	}
+	cvSet(this->output_buffer, cvScalar(0, 0, 0));
 	for (unsigned int i = 0; i < peaks.size(); i++) {
 		// Coordinate system is flipped
 		CvPoint p = cvPoint(cvRound(peaks[i].second.x),
