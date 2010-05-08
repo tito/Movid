@@ -21,12 +21,19 @@
 
 #include "moImageFilterModule.h"
 
+typedef std::pair<double, moPoint> doubleToPoint;
+
 class moPeakFinderModule : public moImageFilterModule{
 public:
 	moPeakFinderModule();
 	virtual ~moPeakFinderModule();
 
 protected:
+	std::vector<doubleToPoint> peaks;
+	void findRange(IplImage*);
+	void removeDuplicates();
+	void findMaxima();
+	void drawPeaks();
 	void applyFilter(IplImage*);
 
 	MODULE_INTERNALS();

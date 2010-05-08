@@ -24,8 +24,6 @@
 
 MODULE_DECLARE(PeakFinder, "native", "PeakFinder Description");
 
-typedef std::pair<double, moPoint> doubleToPoint;
-
 moPeakFinderModule::moPeakFinderModule() : moImageFilterModule(){
 
 	MODULE_INIT();
@@ -55,8 +53,9 @@ bool _in(std::vector<int> &vec, int e) {
 	return false;
 }
 
-void moPeakFinderModule::applyFilter(IplImage *src) {
-	LOG(MO_TRACE) << "----------------------------------------------- BEGINNING FRAME";
+void moPeakFinderModule::findRange(IplImage *src) {
+	// Find all pixels whose value is between min_value and max_value
+	// and consider it a peak.
 	int step = src->widthStep;
 	int height = src->height;
 	int width = src->width;
@@ -64,32 +63,31 @@ void moPeakFinderModule::applyFilter(IplImage *src) {
 	double max = this->property("max_value").asDouble();
 	double cur_val;
 	char *data = src->imageData;
-	std::vector<doubleToPoint> peaks;
 
-	// Find all pixels whose value is between min_value and max_value
-	// and consider it a peak.
 	for (int i = 0; i < width; i++) {
 		for (int j = 0; j < height; j++) {
 			cur_val = ((int) data[j * step + i]);
 			if ((min < cur_val) && (cur_val < max)) {
-				peaks.push_back(doubleToPoint(cur_val, (moPoint) {i, j}));
+				this->peaks.push_back(doubleToPoint(cur_val, (moPoint) {i, j}));
 			}
 		}
 	}
+}
 
+void moPeakFinderModule::removeDuplicates() {
 	// Remove duplicate peaks.
 	double distance;
 	double merge_distance = this->property("merge_distance").asDouble();
 	doubleToPoint p1, p2;
 	std::vector<int> suppressed;
-	for (unsigned int i = 0; i < peaks.size(); i++) {
-		p1 = peaks[i];
-		for (unsigned int j = i+1; j < peaks.size(); j++) {
+	for (unsigned int i = 0; i < this->peaks.size(); i++) {
+		p1 = this->peaks[i];
+		for (unsigned int j = i+1; j < this->peaks.size(); j++) {
 			if (i == j) continue;
 			if (_in(suppressed, j)) continue;
 			LOG(MO_TRACE) << "---------";
-			LOG(MO_TRACE) << "i/j/size: " << i << ", " << j << ", " << peaks.size();
-			p2 = peaks[j];
+			LOG(MO_TRACE) << "i/j/size: " << i << ", " << j << ", " << this->peaks.size();
+			p2 = this->peaks[j];
 			distance = sqrt(pow(p1.second.x - p2.second.x, 2) + pow(p1.second.y - p2.second.y, 2));
 			LOG(MO_TRACE) << "distance((" << p1.second.x << "/" << p1.second.y << "), (" << p2.second.x << "/" << p2.second.y << ") == " << distance;
 			if (distance <= merge_distance) {
@@ -100,32 +98,45 @@ void moPeakFinderModule::applyFilter(IplImage *src) {
 	}
 	if (suppressed.size() > 0) {
 		std::vector<doubleToPoint> good_peaks;
-		unsigned int orig_size = peaks.size();
 		for (unsigned int i = 0; i < suppressed.size(); i++) {
-			if (!_in(suppressed, i)) good_peaks.push_back(peaks[i]);
+			if (!_in(suppressed, i)) good_peaks.push_back(this->peaks[i]);
 		}
-		peaks = good_peaks;
+		this->peaks = good_peaks;
 	}
+}
 
+void moPeakFinderModule::findMaxima() {
 	// If the max_peaks option was set, we only give back the $max_peaks strongest peaks.
 	unsigned int max_peaks = this->property("max_peaks").asInteger();
-	if (max_peaks != 0 && max_peaks < peaks.size()) {
-		std::sort(peaks.begin(), peaks.end(), _sort_pred);
+	if (max_peaks != 0 && max_peaks < this->peaks.size()) {
+		std::sort(this->peaks.begin(), this->peaks.end(), _sort_pred);
 		// We do so by erasing the weak peaks.
-		peaks.erase(peaks.begin()+max_peaks, peaks.end());
+		this->peaks.erase(this->peaks.begin()+max_peaks, this->peaks.end());
 	}
+}
 
+void moPeakFinderModule::drawPeaks() {
 	// Draw the peaks that we've found so we can see if it makes sense
 	cvSet(this->output_buffer, cvScalar(0, 0, 0));
-	LOG(MO_TRACE) << "--- " << peaks.size() << " peaks";
+	LOG(MO_TRACE) << "--- " << this->peaks.size() << " peaks";
 	int radius;
-	for (unsigned int i = 0; i < peaks.size(); i++) {
-		LOG(MO_TRACE) << peaks[i].first << " @ " << peaks[i].second.x << "/" << peaks[i].second.y << std::endl;
+	for (unsigned int i = 0; i < this->peaks.size(); i++) {
+		LOG(MO_TRACE) << this->peaks[i].first << " @ " << this->peaks[i].second.x << "/" << this->peaks[i].second.y << std::endl;
 		// Coordinate system is flipped
-		CvPoint p = cvPoint(cvRound(peaks[i].second.x),
-							cvRound(peaks[i].second.y));
-		radius = cvRound(peaks[i].first);
+		CvPoint p = cvPoint(cvRound(this->peaks[i].second.x),
+							cvRound(this->peaks[i].second.y));
+		radius = cvRound(this->peaks[i].first);
 		cvCircle(this->output_buffer, p, radius, CV_RGB(255, 255, 255), -1);
 	}
+}
+
+void moPeakFinderModule::applyFilter(IplImage *src) {
+	LOG(MO_TRACE) << "----------------------------------------------- BEGINNING FRAME";
+	this->peaks.clear();
+
+	this->findRange(src);
+	this->removeDuplicates();
+	this->findMaxima();
+	this->drawPeaks();
 }
 
