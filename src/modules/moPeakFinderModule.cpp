@@ -37,6 +37,10 @@ moPeakFinderModule::moPeakFinderModule() : moImageFilterModule(){
 	this->properties["max_peaks"] = new moProperty(10);
 	// Avoid duplicate peaks that are close to each other.
 	this->properties["merge_distance"] = new moProperty(4.);
+
+	this->output_data = new moDataStream("GenericBlob");
+	this->output_count = 2;
+	this->output_infos[1] = new moDataStreamInfo("data", "GenericBlob", "Data stream with Blob info");
 }
 
 moPeakFinderModule::~moPeakFinderModule() {
@@ -138,5 +142,26 @@ void moPeakFinderModule::applyFilter(IplImage *src) {
 	this->removeDuplicates();
 	this->findMaxima();
 	this->drawPeaks();
+
+	// Push the peaks as blobs
+	doubleToPoint peak;
+	CvSize size = cvGetSize(src);
+	for (unsigned int i = 0; i < this->peaks.size(); i++) {
+		peak = peaks[i];
+		moDataGenericContainer *blob = new moDataGenericContainer();
+		blob->properties["type"] = new moProperty("blob");
+		blob->properties["x"] = new moProperty(peak.second.x / size.width);
+		blob->properties["y"] = new moProperty(peak.second.y / size.height);
+		// We interpret the peak's value as its dimensions
+		blob->properties["w"] = new moProperty(peak.first);
+		blob->properties["h"] = new moProperty(peak.first);
+		this->blobs->push_back(blob);
+	}
+	this->output_data->push(this->blobs);
 }
 
+moDataStream* moPeakFinderModule::getOutput(int n) {
+	if ( n == 1 )
+		return this->output_data;
+	return moImageFilterModule::getOutput(n);
+}
