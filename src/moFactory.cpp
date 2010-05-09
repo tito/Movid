@@ -56,6 +56,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Hsv);
 	REGISTER_MODULE(DistanceTransform);
 	REGISTER_MODULE(PeakFinder);
+	REGISTER_MODULE(ContourFinder);
 	//DoNotRemoveThisComment
 	LOG(MO_INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
 }
