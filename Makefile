@@ -77,7 +77,14 @@ SOURCES = \
 #
 # Compiler flags
 #
-CFLAGS 				?= -O0 -g -Wall -I$(CONTRIB_PATH)
+target				?= debug
+ifeq ($(target),release)
+CFLAGS_TARGET		?= -O2 -DNDEBUG
+else
+CFLAGS_TARGET 		?= -O0 -ggdb
+endif
+
+CFLAGS				?= $(CFLAGS_TARGET) -I$(CONTRIB_PATH) -Wall
 LIBS   				?=
 
 
