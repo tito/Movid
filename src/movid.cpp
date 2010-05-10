@@ -49,6 +49,7 @@
 #include "cJSON.h"
 
 // Movid
+#include "moLog.h"
 #include "moDaemon.h"
 #include "moPipeline.h"
 #include "moModule.h"
@@ -62,6 +63,8 @@
 
 #define MO_DAEMON "movid"
 #define MO_GUIDIR "gui/html"
+
+LOG_DECLARE("App");
 
 static moPipeline *pipeline = NULL;
 static bool want_quit = false;
@@ -808,8 +811,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 // pipeline create objectname id
 // pipeline set id key value
 // pipeline connect out_id out_idx in_id in_idx
-#define WRITE_ERROR std::cerr << __LINE__ << "] Error at line " << ln << ": "
-#define LN std::endl
+#define WRITE_ERROR(x) LOG(MO_ERROR, __LINE__ << "] Error at line " << ln << ": " << x)
 moPipeline *pipeline_parse_file(const std::string &filename) {
 	moPipeline *pipeline = NULL;
 	moModule *module1, *module2;
@@ -839,16 +841,14 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 				std::istream_iterator<std::string>(),
 				std::back_inserter<std::vector<std::string> >(tokens));
 
-		//std::cout << "LINE: tokens=" << tokens.size() << ", line=<" << line << ">" << std::endl;
-
 		if ( tokens.size() <= 1 ) {
-			WRITE_ERROR << "invalid line command" << LN;
+			WRITE_ERROR("invalid line command");
 			goto parse_error;
 		}
 
 		if ( tokens[0] == "config" ) {
 			if ( tokens.size() < 3 ) {
-				WRITE_ERROR << "not enough parameters" << LN;
+				WRITE_ERROR("not enough parameters");
 				goto parse_error;
 			}
 			if ( tokens[1] == "delay" ) {
@@ -856,30 +856,30 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 			}
 		} else if ( tokens[0] == "pipeline" ) {
 			if ( tokens.size() < 2 ) {
-				WRITE_ERROR << "not enough parameters" << LN;
+				WRITE_ERROR("not enough parameters");
 				goto parse_error;
 			}
 
 			if ( tokens[1] == "create" ) {
 				if ( tokens.size() != 4 ) {
-					WRITE_ERROR << "not enough parameters" << LN;
+					WRITE_ERROR("not enough parameters");
 					goto parse_error;
 				}
 
 				module1 = module_search(tokens[3], pipeline);
 				if ( module1 != NULL ) {
-					WRITE_ERROR << "id already used" << LN;
+					WRITE_ERROR("id already used");
 					goto parse_error;
 				}
 
 				module1 = moFactory::getInstance()->create(tokens[2]);
 				if ( module1 == NULL ) {
-					WRITE_ERROR << "unknown module " << tokens[2] << LN;
+					WRITE_ERROR("unknown module " << tokens[2]);
 					goto parse_error;
 				}
 
 				if ( module1->haveError() ) {
-					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
+					WRITE_ERROR("module error:" << module1->getLastError());
 					goto parse_error;
 				}
 
@@ -887,7 +887,7 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 				module1->property("id").setReadOnly(true);
 
 				if ( module1->haveError() ) {
-					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
+					WRITE_ERROR("module error:" << module1->getLastError());
 					goto parse_error;
 				}
 
@@ -895,39 +895,39 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 
 			} else if ( tokens[1] == "set" ) {
 				if ( tokens.size() != 5 ) {
-					WRITE_ERROR << "not enough parameters" << LN;
+					WRITE_ERROR("not enough parameters");
 					goto parse_error;
 				}
 
 				module1 = module_search(tokens[2], pipeline);
 				if ( module1 == NULL ) {
-					WRITE_ERROR << "unable to find module with id " << tokens[2] << LN;
+					WRITE_ERROR("unable to find module with id " << tokens[2]);
 					goto parse_error;
 				}
 
 				module1->property(tokens[3]).set(tokens[4]);
 
 				if ( module1->haveError() ) {
-					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
+					WRITE_ERROR("module error:" << module1->getLastError());
 					goto parse_error;
 				}
 
 
 			} else if ( tokens[1] == "connect" ) {
 				if ( tokens.size() != 6 ) {
-					WRITE_ERROR << "not enough parameters" << LN;
+					WRITE_ERROR("not enough parameters");
 					goto parse_error;
 				}
 
 				module1 = module_search(tokens[2], pipeline);
 				if ( module1 == NULL ) {
-					WRITE_ERROR << "unable to find module with id " << tokens[2] << LN;
+					WRITE_ERROR("unable to find module with id " << tokens[2]);
 					goto parse_error;
 				}
 
 				module2 = module_search(tokens[4], pipeline);
 				if ( module2 == NULL ) {
-					WRITE_ERROR << "unable to find module with id " << tokens[4] << LN;
+					WRITE_ERROR("unable to find module with id " << tokens[4]);
 					goto parse_error;
 				}
 
@@ -937,21 +937,21 @@ moPipeline *pipeline_parse_file(const std::string &filename) {
 				module2->setInput(module1->getOutput(outidx), inidx);
 
 				if ( module1->haveError() ) {
-					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
+					WRITE_ERROR("module error:" << module1->getLastError());
 					goto parse_error;
 				}
 
 				if ( module2->haveError() ) {
-					WRITE_ERROR << "module error:" << module2->getLastError() << LN;
+					WRITE_ERROR("module error:" << module2->getLastError());
 					goto parse_error;
 				}
 
 			} else {
-				WRITE_ERROR << "unknown pipeline subcommand: " << tokens[1] << LN;
+				WRITE_ERROR("unknown pipeline subcommand: " << tokens[1]);
 				goto parse_error;
 			}
 		} else {
-			WRITE_ERROR << "unknown command: " << tokens[0] << LN;
+			WRITE_ERROR("unknown command: " << tokens[0]);
 			goto parse_error;
 		}
 	}
@@ -979,7 +979,7 @@ void describe(const char *name) {
 	moModule *module;
 	module = moFactory::getInstance()->create(name);
 	if ( module == NULL ) {
-		std::cerr << "Error: unable to found object named <" << name << ">" << std::endl;
+		LOG(MO_ERROR, "error: unable to found object named <" << name << ">");
 		return;
 	}
 	module->describe();
@@ -1031,7 +1031,7 @@ int main(int argc, char **argv) {
 	{
 		WSADATA wsaData;
 		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 ) {
-			std::cout << "unable to initialize WinSock (v2.2)" << std::endl;
+			LOG(MO_CRITICAL, "unable to initialize WinSock (v2.2)");
 			return -1;
 		}
 	}
@@ -1048,7 +1048,7 @@ int main(int argc, char **argv) {
 			return 2;
 		}
 	} else if ( config_httpserver == false ) {
-		std::cerr << "ERROR : no pipeline or webserver to start!" << std::endl;
+		LOG(MO_CRITICAL, "no pipeline or webserver to start !");
 		return 3;
 	}
 
@@ -1061,7 +1061,16 @@ int main(int argc, char **argv) {
 		base = event_init();
 		server = evhttp_new(NULL);
 
-		evhttp_bind_socket(server, "127.0.0.1", 7500);
+		int ret = -1;
+		while ( ret == -1 ) {
+			ret = evhttp_bind_socket(server, "127.0.0.1", 7500);
+			if ( ret == -1 ) {
+				perror("HTTP server");
+				LOG(MO_ERROR, "unable to open socket for 127.0.0.1:7500... retry in 3s");
+				sleep(3);
+			}
+		}
+		LOG(MO_INFO, "Http server running at http://127.0.0.1:7500/");
 
 		evhttp_set_cb(server, "/", web_index, NULL);
 		evhttp_set_cb(server, "/factory/list", web_factory_list, NULL);
@@ -1092,7 +1101,7 @@ int main(int argc, char **argv) {
 
 			// check for error in pipeline
 			while ( pipeline->haveError() ) {
-				std::cerr << "Pipeline error: " << pipeline->getLastError() << std::endl;
+				LOG(MO_ERROR, "Pipeline error: " << pipeline->getLastError());
 				if ( test_mode )
 					want_quit = true;
 			}
