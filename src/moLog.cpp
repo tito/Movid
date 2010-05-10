@@ -22,8 +22,9 @@
 #include "moLog.h"
 #include "pasync.h"
 
-static moLog* instance = NULL;
 static pt::mutex(logmtx);
+
+int g_loglevel = MO_INFO;
 
 moLogMessage::moLogMessage(std::string name, std::string filename,
 						   int line, int level) {
@@ -36,13 +37,13 @@ moLogMessage::moLogMessage(std::string name, std::string filename,
 	strftime(buffer, sizeof(buffer), "%H:%M:%S", tmp);
 
 	this->os << buffer << " | ";
-	this->os << moLog::getInstance()->getLogLevelName(level) << " | ";
+	this->os << moLog::getLogLevelName(level) << " | ";
 	this->os << (const char *)name.c_str() << " | ";
 	this->level = level;
 }
 
 moLogMessage::~moLogMessage() {
-	if ( this->level <= moLog::getInstance()->getLogLevel() ) {
+	if ( this->level <= g_loglevel ) {
 		logmtx.lock();
 		std::cout << this->os.str() << std::endl;
 		logmtx.unlock();
@@ -50,29 +51,23 @@ moLogMessage::~moLogMessage() {
 }
 
 
-moLog::moLog() {
-	this->loglevel = MO_INFO;
+void moLog::init() {
+	g_loglevel = MO_INFO;
 	if ( getenv("MO_DEBUG") )
-		this->loglevel = MO_DEBUG;
+		g_loglevel = MO_DEBUG;
 	if ( getenv("MO_TRACE") )
-		this->loglevel = MO_TRACE;
+		g_loglevel = MO_TRACE;
 }
 
-moLog::~moLog() {
-}
-
-moLog *moLog::getInstance() {
-	if ( instance == NULL )
-		instance = new moLog();
-	return instance;
+void moLog::cleanup() {
 }
 
 int moLog::getLogLevel() {
-	return this->loglevel;
+	return g_loglevel;
 }
 
 void moLog::setLogLevel(int n) {
-	this->loglevel = n;
+	g_loglevel = n;
 }
 
 std::string moLog::getLogLevelName(int n) {

@@ -21,14 +21,8 @@
 
 class moDaemon {
 public:
-	static moDaemon *getInstance();
-
-	void init();
-	void cleanup();
-
-private:
-	moDaemon();
-	virtual ~moDaemon();
+	static void init();
+	static void cleanup();
 };
 
 #endif

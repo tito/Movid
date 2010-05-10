@@ -46,7 +46,7 @@ moVideoModule::~moVideoModule() {
 
 void moVideoModule::start() {
 	assert( this->video == NULL );
-	LOGM(MO_TRACE) << "start video";
+	LOGM(MO_TRACE, "start video");
 	this->video = cvCaptureFromAVI(this->property("filename").asString().c_str());
 	this->numframes = (int)cvGetCaptureProperty(static_cast<CvCapture *>(this->video), CV_CAP_PROP_FRAME_COUNT);
 	moModule::start();
@@ -55,7 +55,7 @@ void moVideoModule::start() {
 void moVideoModule::stop() {
 	moModule::stop();
 	if ( this->video != NULL ) {
-		LOGM(MO_TRACE) << "release video";
+		LOGM(MO_TRACE, "release video");
 		cvReleaseCapture((CvCapture **)&this->video);
 		this->video = NULL;
 	}
@@ -63,7 +63,7 @@ void moVideoModule::stop() {
 
 void moVideoModule::update() {
 	// push a new image on the stream
-	LOGM(MO_TRACE) << "push a new image on the stream";
+	LOGM(MO_TRACE, "push a new image on the stream");
 	this->stream->push(cvQueryFrame(static_cast<CvCapture *>(this->video)));
 
 	if ( this->numframes-- > 0 )

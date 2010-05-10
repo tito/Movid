@@ -46,11 +46,11 @@ moCameraModule::~moCameraModule() {
 
 void moCameraModule::start() {
 	assert( this->camera == NULL );
-	LOGM(MO_TRACE) << "start camera";
+	LOGM(MO_TRACE, "start camera");
 
 	this->camera = cvCaptureFromCAM(this->property("index").asInteger());
 	if ( this->camera == NULL ) {
-		LOGM(MO_ERROR) << "could not load camera: " << this->property("index").asInteger();
+		LOGM(MO_ERROR, "could not load camera: " << this->property("index").asInteger());
 		this->setError("Unable to open camera");
 	}
 	moModule::start();
@@ -59,7 +59,7 @@ void moCameraModule::start() {
 void moCameraModule::stop() {
 	moModule::stop();
 	if ( this->camera != NULL ) {
-		LOGM(MO_TRACE) << "release camera";
+		LOGM(MO_TRACE, "release camera");
 		cvReleaseCapture((CvCapture **)&this->camera);
 		this->camera = NULL;
 	}
@@ -68,7 +68,7 @@ void moCameraModule::stop() {
 void moCameraModule::update() {
 	if ( this->camera != NULL ) {
 		// push a new image on the stream
-		LOGM(MO_TRACE) << "push a new image on the stream";
+		LOGM(MO_TRACE, "push a new image on the stream");
 		IplImage *img = cvQueryFrame(static_cast<CvCapture *>(this->camera));
 		this->stream->push(img);
 		this->notifyUpdate();

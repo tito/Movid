@@ -79,11 +79,14 @@ SOURCES = \
 #
 target				?= debug
 ifeq ($(target),release)
-CFLAGS_TARGET		?= -O2 -DNDEBUG
+CFLAGS_TARGET		?= -O2 -DNDEBUG -DNO_LOG
+else
+ifeq ($(target),debug-optimized)
+CFLAGS_TARGET 		?= -O2 -ggdb
 else
 CFLAGS_TARGET 		?= -O0 -ggdb
 endif
-
+endif
 CFLAGS				?= $(CFLAGS_TARGET) -I$(CONTRIB_PATH) -Wall
 LIBS   				?=
 

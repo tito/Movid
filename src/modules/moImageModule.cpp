@@ -57,7 +57,7 @@ void moImageModule::reloadImage() {
 	}
 	this->image = cvLoadImage(this->property("filename").asString().c_str());
 	if ( this->image == NULL ) {
-		LOGM(MO_ERROR) << "could not load image: " << this->property("filename").asString();
+		LOGM(MO_ERROR, "could not load image: " << this->property("filename").asString());
 		this->setError("unable to load image");
 	}
 	else {
@@ -76,7 +76,7 @@ void moImageModule::start() {
 void moImageModule::stop() {
 	moModule::stop();
 	if ( this->image != NULL ) {
-		LOGM(MO_TRACE) << "release Image";
+		LOGM(MO_TRACE, "release Image");
 		cvReleaseImage(&(this->image));
 		this->image = NULL;
 	}
@@ -85,7 +85,7 @@ void moImageModule::stop() {
 void moImageModule::update() {
 	if ( this->image != NULL ) {
 		// push a new image on the stream
-		LOGM(MO_TRACE) << "push a new image on the stream";
+		LOGM(MO_TRACE, "push a new image on the stream");
 		this->stream->push(this->image);
 	}
 }

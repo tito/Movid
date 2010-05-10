@@ -49,6 +49,7 @@
 #include "cJSON.h"
 
 // Movid
+#include "moDaemon.h"
 #include "moPipeline.h"
 #include "moModule.h"
 #include "moFactory.h"
@@ -1024,7 +1025,7 @@ int main(int argc, char **argv) {
 	if ( ret >= 0 )
 		return ret;
 
-	moFactory::init();
+	moDaemon::init();
 
 #ifdef WIN32
 	{
@@ -1109,7 +1110,7 @@ int main(int argc, char **argv) {
 
 	delete pipeline;
 
-	moFactory::cleanup();
+	moDaemon::cleanup();
 
 #ifdef _WIN32
 	WSACleanup();

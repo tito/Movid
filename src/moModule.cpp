@@ -175,14 +175,14 @@ void moModule::start() {
 	stats_init(&this->stats);
 	if ( this->use_thread ) {
 		if ( this->thread_trigger == NULL ) {
-			LOGM(MO_TRACE) << "create trigger";
+			LOGM(MO_TRACE, "create trigger");
 			this->thread_trigger = new pt::trigger(true, false);
 		}
 
-		LOGM(MO_TRACE) << "start thread";
+		LOGM(MO_TRACE, "start thread");
 		this->thread = new moThread(_thread_process, this);
 		if ( this->thread == NULL ) {
-			LOGM(MO_ERROR) << "unable to create thread";
+			LOGM(MO_ERROR, "unable to create thread");
 			this->setError("Error while creating thread");
 			this->use_thread = false;
 		} else {
@@ -191,7 +191,7 @@ void moModule::start() {
 	}
 
 	this->is_started = true;
-	LOGM(MO_DEBUG) << "start";
+	LOGM(MO_DEBUG, "start");
 }
 
 void moModule::stop() {
@@ -206,7 +206,7 @@ void moModule::stop() {
 
 	this->need_update = false;
 	this->is_started = false;
-	LOG(MO_DEBUG) << "stop <" << this->property("id").asString() << ">";
+	LOG(MO_DEBUG, "stop <" << this->property("id").asString() << ">");
 }
 
 void moModule::lock() {

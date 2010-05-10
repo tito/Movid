@@ -66,7 +66,7 @@ void moFiducialTrackerModule::clearFiducials() {
 void moFiducialTrackerModule::allocateBuffers() {
 	IplImage* src = (IplImage*)(this->input->getData());
 	this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, 3);	// only one channel
-	LOG(MO_DEBUG) << "allocated output buffer for FiducialTracker module.";
+	LOG(MO_DEBUG, "allocated output buffer for FiducialTracker module.");
 
 	// first time, initialize fids
 	fiducials_data_t *fids = (fiducials_data_t *)this->internal;
@@ -130,8 +130,8 @@ void moFiducialTrackerModule::applyFilter(IplImage *src) {
 		// got a valid fiducial ! process...
 		valid_fiducials++;
 
-		LOGM(MO_DEBUG) << "fid:" << i << " id=" << fdx->id << " pos=" \
-			<< fdx->x << "," << fdx->y << " angle=" << fdx->angle;
+		LOGM(MO_DEBUG, "fid:" << i << " id=" << fdx->id << " pos=" \
+			<< fdx->x << "," << fdx->y << " angle=" << fdx->angle);
 
 		fiducial = new moDataGenericContainer();
 		fiducial->properties["type"] = new moProperty("fiducial");
@@ -163,7 +163,7 @@ void moFiducialTrackerModule::applyFilter(IplImage *src) {
 		}
 	}
 
-	LOGM(MO_DEBUG) << "-> Found " << valid_fiducials << " fiducials";
+	LOGM(MO_DEBUG, "-> Found " << valid_fiducials << " fiducials");
 	this->output_data->push(&this->fiducials);
 }
 

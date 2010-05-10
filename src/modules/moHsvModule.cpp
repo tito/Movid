@@ -56,7 +56,7 @@ void moHsvModule::allocateBuffers() {
 	if ( src == NULL )
 		return;
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, 1);	//only one channel
-	LOG(MO_DEBUG) << "allocated output buffer for Hsv module.";
+	LOG(MO_DEBUG, "allocated output buffer for Hsv module.");
 }
 
 void moHsvModule::applyFilter(IplImage *image) {

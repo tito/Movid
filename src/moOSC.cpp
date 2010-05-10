@@ -53,11 +53,11 @@ moOSC::~moOSC() {
 void moOSC::init() {
 	this->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if ( this->sock == -1 ) {
-		LOG(MO_ERROR) << "unable to open socket (ret=" << this->sock << ")";
+		LOG(MO_ERROR, "unable to open socket (ret=" << this->sock << ")");
 #ifdef _WIN32
-		LOG(MO_ERROR) << "=> WSALastError=" << WSAGetLastError();
+		LOG(MO_ERROR, "=> WSALastError=" << WSAGetLastError());
 #else
-		LOG(MO_ERROR) << "=> errno=" << errno;
+		LOG(MO_ERROR, "=> errno=" << errno);
 #endif
 	}
 }
@@ -84,6 +84,6 @@ void moOSC::send(WOscBundle *msg) {
 	ret = sendto(this->sock, msg->GetBuffer(), msg->GetBufferLen(), 0,
 		 (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-	LOG(MO_TRACE) << "send " << ret << " vs " << msg->GetBufferLen();
+	LOG(MO_TRACE, "send " << ret << " vs " << msg->GetBufferLen());
 }
 

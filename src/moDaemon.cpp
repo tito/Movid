@@ -19,27 +19,16 @@
 #include <iostream>
 
 #include "moDaemon.h"
-
+#include "moLog.h"
 #include "moFactory.h"
 
-static moDaemon *instance = NULL;
-
-moDaemon::moDaemon() {
-}
-
-moDaemon::~moDaemon() {
-}
-
-moDaemon *moDaemon::getInstance() {
-	if ( instance == NULL )
-		instance = new moDaemon();
-	return instance;
-}
-
 void moDaemon::init() {
+	moLog::init();
 	moFactory::init();
 }
 
 void moDaemon::cleanup() {
+	moFactory::cleanup();
+	moLog::cleanup();
 }
 

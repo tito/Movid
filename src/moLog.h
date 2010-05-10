@@ -23,20 +23,43 @@
 #include <iostream>
 #include <string>
 
+#ifdef NO_LOG
+
+#define LOG_DECLARE(x)
+#define LOG(level, x)
+#define LOGX(level, x)
+#define LOGM(level, x)
+
+#else // NO_LOG
+
 #define LOG_DECLARE(x) \
 	static char log_name[] = x;
 
+#define LOG(level, x) do { \
+	if ( level <= g_loglevel ) \
+		moLogMessage(log_name, __FILE__, __LINE__, level) << x; \
+} while (0);
 
-#define LOG(x) moLogMessage(log_name, __FILE__, __LINE__, x)
-#define LOGX(x) moLogMessage(this->getName(), __FILE__, __LINE__, x)
-#define LOGM(x) LOG(x) << "<" << this->property("id").asString() << "> "
+#define LOGX(level, x) do { \
+	if ( level <= g_loglevel ) \
+		moLogMessage(this->getName(), __FILE__, __LINE__, level) << x; \
+} while (0);
+
+#define LOGM(level, x) do { \
+	if ( level <= g_loglevel ) \
+		moLogMessage(log_name, __FILE__, __LINE__, level) \
+		<< "<" << this->property("id").asString() << "> " << x; \
+} while(0);
+
+#endif // NO_LOG
 
 #define _LOG_FUNC { \
-	if ( this->level <= moLog::getInstance()->getLogLevel() ) \
+	if ( this->level <= g_loglevel ) \
 		this->os << __n; \
 	return *this; \
 }
 
+extern int g_loglevel;
 
 enum {
 	MO_CRITICAL		= 0,
@@ -49,15 +72,11 @@ enum {
 
 class moLog {
 public:
-	static moLog *getInstance();
-	void setLogLevel(int n);
-	int getLogLevel();
-	std::string getLogLevelName(int n);
-
-private:
-	moLog();
-	~moLog();
-	int loglevel;
+	static void init();
+	static void cleanup();
+	static void setLogLevel(int n);
+	static int getLogLevel();
+	static std::string getLogLevelName(int n);
 };
 
 class moLogMessage {

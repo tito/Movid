@@ -61,7 +61,7 @@ void moMaskModule::applyFilter(IplImage *src) {
 		return;
 
 	if (this->save_data) {
-		LOGM(MO_INFO) << "saving current image as " << this->property("saveas").asString();
+		LOGM(MO_INFO, "saving current image as " << this->property("saveas").asString());
 		cvSaveImage(this->property("saveas").asString().c_str(), src);
 		this->save_data = false;
 	}
@@ -82,7 +82,7 @@ void moMaskModule::reloadMask() {
 
 	this->mask_buffer = cvLoadImage(this->property("filename").asString().c_str());
 	if ( this->mask_buffer == NULL ) {
-		LOGM(MO_ERROR) << "could not load mask file: " << this->property("filename").asString();
+		LOGM(MO_ERROR, "could not load mask file: " << this->property("filename").asString());
 		this->setError("unable to load mask file");
 	}
 	else {

@@ -57,7 +57,7 @@ void moCombineModule::notifyData(moDataStream *input) {
 	} else {
 		if ( this->output_buffer->width != src->width ||
 			 this->output_buffer->height != src->height ) {
-			LOG(MO_CRITICAL) << "cannot combine image with different size";
+			LOG(MO_CRITICAL, "cannot combine image with different size");
 		}
 	}
 

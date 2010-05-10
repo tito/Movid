@@ -77,8 +77,8 @@ typedef struct {
  */
 #define MODULE_INIT() \
 	this->properties["id"] = new moProperty(moModule::createId(module_name)); \
-	LOG(MO_DEBUG) << "create object <" << module_name << "> with id <" \
-			   << this->property("id").asString() << ">";
+	LOG(MO_DEBUG, "create object <" << module_name << "> with id <" \
+			   << this->property("id").asString() << ">");
 
 /*! \brief Declare needed functions for a module (must be inserted at end of a module)
  */

@@ -56,16 +56,16 @@ moModule *moPipeline::lastModule() {
 
 void moPipeline::addElement(moModule *module) {
 	assert( module != NULL );
-	LOG(MO_TRACE) << "add <" << module->property("id").asString() << "> to <" \
-		<< this->property("id").asString() << ">";
+	LOG(MO_TRACE, "add <" << module->property("id").asString() << "> to <" \
+		<< this->property("id").asString() << ">");
 	module->owner = this;
 	this->modules.push_back(module);
 }
 
 void moPipeline::removeElement(moModule *module) {
 	std::vector<moModule *>::iterator it;
-	LOG(MO_TRACE) << "remove <" << module->property("id").asString() << "> from <" \
-		<< this->property("id").asString() << ">";
+	LOG(MO_TRACE, "remove <" << module->property("id").asString() << "> from <" \
+		<< this->property("id").asString() << ">");
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
 		if ( *it == module ) {
 			this->modules.erase(it);
@@ -130,7 +130,7 @@ void moPipeline::update() {
 void moPipeline::poll() {
 	std::vector<moModule *>::iterator it;
 
-	LOGM(MO_TRACE) << "poll";
+	LOGM(MO_TRACE, "poll");
 
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ ) {
 		(*it)->poll();

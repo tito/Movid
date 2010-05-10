@@ -48,7 +48,7 @@ int moSmoothModule::toCvType(const std::string &filter) {
 	if ( filter == "blur_no_scale" )
 		return CV_BLUR_NO_SCALE;
 
-	LOGM(MO_ERROR) << "Unsupported filter type: " << filter;
+	LOGM(MO_ERROR, "Unsupported filter type: " << filter);
 	this->setError("Unsupported filter type");
 	return 0;
 }
