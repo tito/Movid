@@ -29,14 +29,18 @@ moPeakFinderModule::moPeakFinderModule() : moImageFilterModule(){
 	MODULE_INIT();
 
 	// The minimum value a peak must have
-	this->properties["min_value"] = new moProperty(5.);
+	this->properties["min_value"] = new moProperty(0.);
 	// The maximum value a peak may have
-	this->properties["max_value"] = new moProperty(10.);
+	this->properties["max_value"] = new moProperty(255.);
 	// The maximum number of peaks that you want. Takes the strongest peaks.
 	// If this is set to 0, it returns all peaks.
-	this->properties["max_peaks"] = new moProperty(10);
+	this->properties["max_peaks"] = new moProperty(1);
 	// Avoid duplicate peaks that are close to each other.
 	this->properties["merge_distance"] = new moProperty(4.);
+
+//	this->output_data = new moDataStream("GenericBlob");
+//	this->output_count = 2;
+//	this->output_infos[1] = new moDataStreamInfo("data", "GenericBlob", "Data stream with Blob info");
 }
 
 moPeakFinderModule::~moPeakFinderModule() {
@@ -85,20 +89,16 @@ void moPeakFinderModule::removeDuplicates() {
 		for (unsigned int j = i+1; j < this->peaks.size(); j++) {
 			if (i == j) continue;
 			if (_in(suppressed, j)) continue;
-			LOG(MO_TRACE) << "---------";
-			LOG(MO_TRACE) << "i/j/size: " << i << ", " << j << ", " << this->peaks.size();
 			p2 = this->peaks[j];
 			distance = sqrt(pow(p1.second.x - p2.second.x, 2) + pow(p1.second.y - p2.second.y, 2));
-			LOG(MO_TRACE) << "distance((" << p1.second.x << "/" << p1.second.y << "), (" << p2.second.x << "/" << p2.second.y << ") == " << distance;
 			if (distance <= merge_distance) {
-				LOG(MO_TRACE) << "Suppressing " << j;
 				suppressed.push_back(j);
 			}
 		}
 	}
 	if (suppressed.size() > 0) {
 		std::vector<doubleToPoint> good_peaks;
-		for (unsigned int i = 0; i < suppressed.size(); i++) {
+		for (unsigned int i = 0; i < this->peaks.size(); i++) {
 			if (!_in(suppressed, i)) good_peaks.push_back(this->peaks[i]);
 		}
 		this->peaks = good_peaks;
@@ -118,25 +118,44 @@ void moPeakFinderModule::findMaxima() {
 void moPeakFinderModule::drawPeaks() {
 	// Draw the peaks that we've found so we can see if it makes sense
 	cvSet(this->output_buffer, cvScalar(0, 0, 0));
-	LOG(MO_TRACE) << "--- " << this->peaks.size() << " peaks";
-	int radius;
+	int radius = 5;
 	for (unsigned int i = 0; i < this->peaks.size(); i++) {
-		LOG(MO_TRACE) << this->peaks[i].first << " @ " << this->peaks[i].second.x << "/" << this->peaks[i].second.y << std::endl;
 		// Coordinate system is flipped
-		CvPoint p = cvPoint(cvRound(this->peaks[i].second.x),
-							cvRound(this->peaks[i].second.y));
-		radius = cvRound(this->peaks[i].first);
-		cvCircle(this->output_buffer, p, radius, CV_RGB(255, 255, 255), -1);
+		CvPoint p1 = cvPoint(cvRound(this->peaks[i].second.x-radius),
+							cvRound(this->peaks[i].second.y-radius));
+		CvPoint p2 = cvPoint(cvRound(this->peaks[i].second.x+radius),
+							cvRound(this->peaks[i].second.y+radius));
+		cvRectangle(this->output_buffer, p1, p2, CV_RGB(255, 255, 255));
 	}
 }
 
 void moPeakFinderModule::applyFilter(IplImage *src) {
-	LOG(MO_TRACE) << "----------------------------------------------- BEGINNING FRAME";
 	this->peaks.clear();
 
 	this->findRange(src);
-	this->removeDuplicates();
+	//this->removeDuplicates();
 	this->findMaxima();
 	this->drawPeaks();
+
+	// Push the peaks as blobs
+//	doubleToPoint peak;
+//	CvSize size = cvGetSize(src);
+//	for (unsigned int i = 0; i < this->peaks.size(); i++) {
+//		peak = peaks[i];
+//		moDataGenericContainer *blob = new moDataGenericContainer();
+//		blob->properties["type"] = new moProperty("blob");
+//		blob->properties["x"] = new moProperty(peak.second.x / size.width);
+//		blob->properties["y"] = new moProperty(peak.second.y / size.height);
+//		// We interpret the peak's value as its dimensions
+//		blob->properties["w"] = new moProperty(peak.first);
+//		blob->properties["h"] = new moProperty(peak.first);
+//		this->blobs->push_back(blob);
+//	}
+//	this->output_data->push(this->blobs);
 }
 
+moDataStream* moPeakFinderModule::getOutput(int n) {
+	if ( n == 1 )
+		return this->output_data;
+	return moImageFilterModule::getOutput(n);
+}

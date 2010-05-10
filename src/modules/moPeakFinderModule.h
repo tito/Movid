@@ -20,6 +20,7 @@
 #define MO_PeakFinder_MODULE_H
 
 #include "moImageFilterModule.h"
+#include "../moDataGenericContainer.h"
 
 typedef std::pair<double, moPoint> doubleToPoint;
 
@@ -30,11 +31,14 @@ public:
 
 protected:
 	std::vector<doubleToPoint> peaks;
+	moDataGenericList *blobs;
+	moDataStream *output_data;
 	void findRange(IplImage*);
 	void removeDuplicates();
 	void findMaxima();
 	void drawPeaks();
 	void applyFilter(IplImage*);
+	moDataStream* getOutput(int);
 
 	MODULE_INTERNALS();
 };
