@@ -84,15 +84,15 @@ public:
 	moLogMessage(std::string name, std::string filename, int line, int level);
 	~moLogMessage();
 
-	moLogMessage &operator<<(unsigned char __n) _LOG_FUNC;
-	moLogMessage &operator<<(char __n) _LOG_FUNC;
-	moLogMessage &operator<<(size_t __n) _LOG_FUNC;
-	moLogMessage &operator<<(ssize_t __n) _LOG_FUNC;
-    moLogMessage &operator<<(long __n) _LOG_FUNC;
-    moLogMessage &operator<<(unsigned long __n) _LOG_FUNC;
     moLogMessage &operator<<(bool __n) _LOG_FUNC;
+	moLogMessage &operator<<(char __n) _LOG_FUNC;
     moLogMessage &operator<<(short __n) _LOG_FUNC;
+    moLogMessage &operator<<(int __n) _LOG_FUNC;
+    moLogMessage &operator<<(long __n) _LOG_FUNC;
+	moLogMessage &operator<<(unsigned char __n) _LOG_FUNC;
     moLogMessage &operator<<(unsigned short __n) _LOG_FUNC;
+    moLogMessage &operator<<(unsigned int __n) _LOG_FUNC;
+    moLogMessage &operator<<(unsigned long __n) _LOG_FUNC;
     moLogMessage &operator<<(float __n) _LOG_FUNC;
     moLogMessage &operator<<(double __n) _LOG_FUNC;
 	moLogMessage &operator<<(std::string __n) _LOG_FUNC;
