@@ -24,19 +24,28 @@
 // XXX This is currently rather the scratchspace for a fingertip finder...
 MODULE_DECLARE(ContourFinder, "native", "ContourFinder finds contours in an image");
 
+typedef std::pair<float, CvConvexityDefect*> depthToDefect;
+
 moContourFinderModule::moContourFinderModule() : moImageFilterModule(){
 
 	MODULE_INIT();
 
 	this->storage = cvCreateMemStorage(0);
+	this->properties["min_distance"] = new moProperty(20.);
+	this->properties["min_area"] = new moProperty(150.);
 }
 
 moContourFinderModule::~moContourFinderModule() {
 	cvReleaseMemStorage(&this->storage);
 }
 
+bool _sort_pred(const depthToDefect &left, const depthToDefect &right) {
+	return left.first > right.first;
+}
+
 void moContourFinderModule::applyFilter(IplImage *src) {
 	// Create a copy since cvFindContours will manipulate its input
+	std::cout << "BEGINNING FRAME ================================================" << std::endl;
 	cvCopy(src, this->output_buffer);
 	CvSeq *contours = 0;
 	cvFindContours(this->output_buffer, this->storage, &contours, sizeof(CvContour), CV_RETR_CCOMP);
@@ -54,6 +63,9 @@ void moContourFinderModule::applyFilter(IplImage *src) {
 			}
 			cur_cont = cur_cont->h_next;
 		}
+		// Ignore contours whose area is too small, they're likely not hands anyway
+		if (max_area < this->property("min_area").asDouble())
+			return;
 		contours = max_cont;
 
 		cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
@@ -69,10 +81,26 @@ void moContourFinderModule::applyFilter(IplImage *src) {
 		CvSeq* defects = 0;
 		defects = cvConvexityDefects(contours, hull, defects_storage);
 
-		for(int i=0; i<defects->total; ++i) {
-			CvConvexityDefect* d = (CvConvexityDefect*)cvGetSeqElem (defects, i);
+		// Find the 5 best defects
+		std::vector<depthToDefect> def_depths;
+		for(int i=0; i < defects->total; ++i) {
+			CvConvexityDefect* defect = (CvConvexityDefect*)cvGetSeqElem (defects, i);
+			def_depths.push_back(depthToDefect(defect->depth, defect));
+		}
+		std::sort(def_depths.begin(), def_depths.end(), _sort_pred);
+		for (unsigned int i=0; i < def_depths.size(); i++) {
+			// 5 Fingers max
+			if (i == 5)
+				break;
+			float depth = def_depths[i].first;
+			double min_dist = this->property("min_distance").asDouble();
+			if (min_dist > depth)
+				continue;
+			CvConvexityDefect *defect = def_depths[i].second;
+			std::cout << depth << std::endl;
 			int radius = cvRound(10);
-			cvCircle(this->output_buffer, *(d->start), radius, CV_RGB(255, 255, 255), -1);
+			cvCircle(this->output_buffer, *(defect->start), radius, CV_RGB(255, 255, 255), -1);
+			cvCircle(this->output_buffer, *(defect->end), radius, CV_RGB(255, 255, 255), -1);
 		}
 	}
 }
