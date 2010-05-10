@@ -128,7 +128,6 @@ void moContourFinderModule::applyFilter(IplImage *src) {
 				}
 			}
 		}
-		std::cout << std::endl;
 		std::vector<CvPoint*> good_points;
 		for (unsigned int i = 0; i < points.size(); i++) {
 			if (!_in2(suppressed, i)) good_points.push_back(points[i]);
