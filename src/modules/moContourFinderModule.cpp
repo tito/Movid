@@ -33,6 +33,7 @@ moContourFinderModule::moContourFinderModule() : moImageFilterModule(){
 	this->storage = cvCreateMemStorage(0);
 	this->properties["min_distance"] = new moProperty(20.);
 	this->properties["min_area"] = new moProperty(150.);
+	this->properties["merge_distance"] = new moProperty(10.);
 }
 
 moContourFinderModule::~moContourFinderModule() {
@@ -43,9 +44,15 @@ bool _sort_pred(const depthToDefect &left, const depthToDefect &right) {
 	return left.first > right.first;
 }
 
+bool _in2(std::vector<int> &vec, int e) {
+	for (unsigned int i = 0; i < vec.size(); i++) {
+		if (vec[i] == e) return true;
+	}
+	return false;
+}
+
 void moContourFinderModule::applyFilter(IplImage *src) {
 	// Create a copy since cvFindContours will manipulate its input
-	std::cout << "BEGINNING FRAME ================================================" << std::endl;
 	cvCopy(src, this->output_buffer);
 	CvSeq *contours = 0;
 	cvFindContours(this->output_buffer, this->storage, &contours, sizeof(CvContour), CV_RETR_CCOMP);
@@ -81,13 +88,16 @@ void moContourFinderModule::applyFilter(IplImage *src) {
 		CvSeq* defects = 0;
 		defects = cvConvexityDefects(contours, hull, defects_storage);
 
-		// Find the 5 best defects
+		// Sort the defects based on their distance from the convex hull
 		std::vector<depthToDefect> def_depths;
 		for(int i=0; i < defects->total; ++i) {
 			CvConvexityDefect* defect = (CvConvexityDefect*)cvGetSeqElem (defects, i);
 			def_depths.push_back(depthToDefect(defect->depth, defect));
 		}
 		std::sort(def_depths.begin(), def_depths.end(), _sort_pred);
+
+		// Find the start and end points of the 5 best defects
+		std::vector<CvPoint*> points;
 		for (unsigned int i=0; i < def_depths.size(); i++) {
 			// 5 Fingers max
 			if (i == 5)
@@ -97,12 +107,40 @@ void moContourFinderModule::applyFilter(IplImage *src) {
 			if (min_dist > depth)
 				continue;
 			CvConvexityDefect *defect = def_depths[i].second;
-			std::cout << depth << std::endl;
+			points.push_back(defect->start);
+			points.push_back(defect->end);
+		}
+
+		// Merge almost coinciding points
+		double distance;
+		double merge_distance = this->property("merge_distance").asDouble();
+		CvPoint *p1, *p2;
+		std::vector<int> suppressed;
+		for (unsigned int i = 0; i < points.size(); i++) {
+			p1 = points[i];
+			for (unsigned int j = i+1; j < points.size(); j++) {
+				if (i == j) continue;
+				if (_in2(suppressed, j)) continue;
+				p2 = points[j];
+				distance = sqrt(pow(p1->x - p2->x, 2) + pow(p1->y - p2->y, 2));
+				if (distance <= merge_distance) {
+					suppressed.push_back(j);
+				}
+			}
+		}
+		std::cout << std::endl;
+		std::vector<CvPoint*> good_points;
+		for (unsigned int i = 0; i < points.size(); i++) {
+			if (!_in2(suppressed, i)) good_points.push_back(points[i]);
+		}
+
+		// Draw the points
+		CvPoint *p;
+		for (unsigned int i = 0; i < good_points.size(); i++) {
+			p = good_points[i];
 			int radius = cvRound(10);
-			cvCircle(this->output_buffer, *(defect->start), radius, CV_RGB(255, 255, 255), -1);
-			cvCircle(this->output_buffer, *(defect->end), radius, CV_RGB(255, 255, 255), -1);
+			cvCircle(this->output_buffer, *p, radius, CV_RGB(255, 255, 255), -1);
 		}
 	}
 }
-
 
