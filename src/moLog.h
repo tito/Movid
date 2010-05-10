@@ -27,9 +27,16 @@
 	static char log_name[] = x;
 
 
-#define LOG(x) moLogMessage(log_name, __FILE__, __LINE__, x).get()
-#define LOGX(x) moLogMessage(this->getName(), __FILE__, __LINE__, x).get()
+#define LOG(x) moLogMessage(log_name, __FILE__, __LINE__, x)
+#define LOGX(x) moLogMessage(this->getName(), __FILE__, __LINE__, x)
 #define LOGM(x) LOG(x) << "<" << this->property("id").asString() << "> "
+
+#define _LOG_FUNC { \
+	if ( this->level <= moLog::getInstance()->getLogLevel() ) \
+		this->os << __n; \
+	return *this; \
+}
+
 
 enum {
 	MO_CRITICAL		= 0,
@@ -38,18 +45,6 @@ enum {
 	MO_INFO			= 3,
 	MO_DEBUG		= 4,
 	MO_TRACE		= 5,
-};
-
-class moLogMessage {
-public:
-	moLogMessage(std::string name, std::string filename, int line, int level);
-	~moLogMessage();
-
-	std::ostringstream &get();
-
-private:
-	std::ostringstream os;
-	int level;
 };
 
 class moLog {
@@ -63,6 +58,30 @@ private:
 	moLog();
 	~moLog();
 	int loglevel;
+};
+
+class moLogMessage {
+public:
+	moLogMessage(std::string name, std::string filename, int line, int level);
+	~moLogMessage();
+
+	moLogMessage &operator<<(unsigned char __n) _LOG_FUNC;
+	moLogMessage &operator<<(char __n) _LOG_FUNC;
+	moLogMessage &operator<<(size_t __n) _LOG_FUNC;
+	moLogMessage &operator<<(ssize_t __n) _LOG_FUNC;
+    moLogMessage &operator<<(long __n) _LOG_FUNC;
+    moLogMessage &operator<<(unsigned long __n) _LOG_FUNC;
+    moLogMessage &operator<<(bool __n) _LOG_FUNC;
+    moLogMessage &operator<<(short __n) _LOG_FUNC;
+    moLogMessage &operator<<(unsigned short __n) _LOG_FUNC;
+    moLogMessage &operator<<(float __n) _LOG_FUNC;
+    moLogMessage &operator<<(double __n) _LOG_FUNC;
+	moLogMessage &operator<<(std::string __n) _LOG_FUNC;
+	moLogMessage &operator<<(const char *__n) _LOG_FUNC;
+
+private:
+	std::ostringstream os;
+	int level;
 };
 
 #endif

@@ -49,10 +49,6 @@ moLogMessage::~moLogMessage() {
 	}
 }
 
-std::ostringstream &moLogMessage::get() {
-	return this->os;
-}
-
 
 moLog::moLog() {
 	this->loglevel = MO_INFO;
