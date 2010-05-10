@@ -78,15 +78,13 @@ void moContourFinderModule::applyFilter(IplImage *src) {
 		cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
 
 		// Compute the convex hull of the contour
-		CvMemStorage *hull_storage = cvCreateMemStorage(0);
 		CvSeq* hull = 0;
-		hull = cvConvexHull2(contours, hull_storage, CV_CLOCKWISE, 0);
+		hull = cvConvexHull2(contours, contours->storage, CV_CLOCKWISE, 0);
 
 		// Compute the convexity defects of the convex contour with respect to the convex hull.
 		// The fingertips are at the start and endpoints of the defects
-		CvMemStorage *defects_storage = cvCreateMemStorage(0);
 		CvSeq* defects = 0;
-		defects = cvConvexityDefects(contours, hull, defects_storage);
+		defects = cvConvexityDefects(contours, hull, contours->storage);
 
 		// Sort the defects based on their distance from the convex hull
 		std::vector<depthToDefect> def_depths;
