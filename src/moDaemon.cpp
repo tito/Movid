@@ -27,6 +27,10 @@
 #include <windows.h>
 #endif
 
+#ifdef WIN32
+LOG_DECLARE("Daemon");
+#endif
+
 void moDaemon::init() {
 	moLog::init();
 	moFactory::init();
@@ -35,10 +39,8 @@ void moDaemon::init() {
 	// initialize network for Win32 platform
 	{
 		WSADATA wsaData;
-		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 ) {
+		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 )
 			LOG(MO_CRITICAL, "unable to initialize WinSock (v2.2)");
-			return -1;
-		}
 	}
 #endif
 }
