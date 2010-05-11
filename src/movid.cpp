@@ -118,12 +118,15 @@ public:
 	}
 
 	bool copy() {
+		IplImage *src;
 		if ( this->output_buffer == NULL || this->input == NULL )
 			return false;
 		this->input->lock();
-		IplImage* src = (IplImage*)(this->input->getData());
-		if ( src == NULL || src->imageData == NULL )
+		src = (IplImage*)(this->input->getData());
+		if ( src == NULL || src->imageData == NULL ) {
+			this->input->unlock();
 			return false;
+		}
 		if ( this->property("scale").asInteger() == 1 )
 			cvCopy(src, this->output_buffer);
 		else
@@ -140,6 +143,15 @@ public:
 	moDataStream *input;
 	IplImage* output_buffer;
 };
+
+struct chunk_req_state {
+	struct evhttp_request *req;
+	otStreamModule *stream;
+	int i;
+	bool closed;
+	int delay;
+};
+
 
 static void signal_term(int signal) {
 	want_quit = true;
@@ -179,21 +191,12 @@ void web_status(struct evhttp_request *req, void *arg) {
 	web_message(req, "ok");
 }
 
-struct chunk_req_state {
-	struct evhttp_request *req;
-	otStreamModule *stream;
-	int i;
-	bool closed;
-	int delay;
-};
-
 static void web_pipeline_stream_close(struct evhttp_connection *conn, void *arg) {
 	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
 	state->closed = true;
 }
 
-static void web_pipeline_stream_trickle(int fd, short events, void *arg)
-{
+static void web_pipeline_stream_trickle(int fd, short events, void *arg) {
 	struct evbuffer *evb = NULL;
 	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
 	struct timeval when = { 0, 0 };
@@ -205,21 +208,25 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 
 	when.tv_usec = state->delay * 1000;
 
+	// stream is closed, clean the state.
 	if ( state->closed ) {
-		// free !
 		state->stream->setInput(NULL);
 		delete state->stream;
 		free(state);
 		return;
 	}
 
-	if ( !state->stream->copy() ) {
-		event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
-		return;
-	}
+	// nothing to copy, schedule the next event
+	if ( !state->stream->copy() )
+		goto stream_trickle_end;
 
 	// convert the image from BRG to RGB
 	img = state->stream->output_buffer;
+	if ( img == NULL ) {
+		LOG(MO_ERROR, "stream: output_buffer is null !");
+		goto stream_trickle_end;
+	}
+
 	if ( img->nChannels == 3 )
 		cvCvtColor(img, img, CV_BGR2RGB);
 
@@ -227,6 +234,10 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	if ( img->depth != 8 ) {
 		convert = true;
 		img = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_8U, img->nChannels);
+		if ( img == NULL ) {
+			LOG(MO_ERROR, "stream: unable to create a new image");
+			goto stream_trickle_end;
+		}
 		cvConvertScale(state->stream->output_buffer, img, 255, 0);
 	}
 
@@ -236,12 +247,16 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	cv::imencode(".jpg", img, outbuf, params);
 	outlen = outbuf.size();
 
-
 	// release temporary image if created
 	if ( convert )
 		cvReleaseImage(&img);
 
+	// create and send the buffer
 	evb = evbuffer_new();
+	if ( evb == NULL ) {
+		LOG(MO_ERROR, "stream: unable to create a libevent buffer");
+		goto stream_trickle_end;
+	}
 	evbuffer_add_printf(evb, "--mjpegstream\r\n");
 	evbuffer_add_printf(evb, "Content-Type: image/jpeg\r\n");
 	evbuffer_add_printf(evb, "Content-Length: %lu\r\n\r\n", outlen);
@@ -252,21 +267,24 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	outbuf.clear();
 	params.clear();
 
+stream_trickle_end:;
 	event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
-	/**
-		evhttp_send_reply_end(state->req);
-		free(state);
-	**/
 }
 
 void web_pipeline_stream(struct evhttp_request *req, void *arg) {
-	struct timeval when = { 0, 20 };
-	struct evkeyvalq headers;
 	const char *uri;
 	int	idx = 0;
 	moModule *module = NULL;
+	struct chunk_req_state *state = NULL;
+	struct evkeyvalq headers;
+	struct timeval when = { 0, 20 };
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -288,13 +306,22 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 		return web_error(req, "invalid index");
 	}
 
-	struct chunk_req_state *state = (struct chunk_req_state*)malloc(sizeof(struct chunk_req_state));
+	state = (struct chunk_req_state*)malloc(sizeof(struct chunk_req_state));
+	if ( state == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to allocate state");
+	}
 
 	memset(state, 0, sizeof(struct chunk_req_state));
-	state->req = req;
-	state->closed = false;
-	state->stream = new otStreamModule();
-	state->delay = 100;
+	state->req		= req;
+	state->closed	= false;
+	state->delay	= 100;
+	state->stream	= new otStreamModule();
+	if ( state->stream == NULL ) {
+		evhttp_clear_headers(&headers);
+		free(state);
+		return web_error(req, "unable to allocate stream module");
+	}
 
 	if ( evhttp_find_header(&headers, "scale") != NULL )
 		state->stream->property("scale").set(evhttp_find_header(&headers, "scale"));
@@ -304,13 +331,13 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 
 	state->stream->setInput(module->getOutput(idx));
 
+	// prepare connection
 	evhttp_add_header(req->output_headers, "Content-Type", "multipart/x-mixed-replace; boundary=mjpegstream");
 	evhttp_send_reply_start(req, HTTP_OK, "Everything is fine");
-
 	evhttp_connection_set_closecb(req->evcon, web_pipeline_stream_close, state);
 
+	// reschedule a future event for next call
 	event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
-
 }
 
 void web_pipeline_create(struct evhttp_request *req, void *arg) {
@@ -319,6 +346,11 @@ void web_pipeline_create(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -367,6 +399,8 @@ void web_pipeline_stats(struct evhttp_request *req, void *arg) {
 
 void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	std::map<std::string, moProperty*>::iterator it;
+	unsigned int i, j;
+	int k;
 	char buffer[64];
 	cJSON *root, *data, *modules, *mod, *properties, *io, *observers, *array, *property;
 	moDataStream *ds;
@@ -379,7 +413,7 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	cJSON_AddNumberToObject(data, "running", pipeline->isStarted() ? 1 : 0);
 	cJSON_AddItemToObject(data, "modules", modules=cJSON_CreateObject());
 
-	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
+	for ( i = 0; i < pipeline->size(); i++ ) {
 		moModule *module = pipeline->getModule(i);
 		assert( module != NULL );
 
@@ -415,8 +449,8 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 
 		if ( module->getInputCount() ) {
 			cJSON_AddItemToObject(mod, "inputs", array=cJSON_CreateArray());
-			for ( int i = 0; i < module->getInputCount(); i++ ) {
-				ds = module->getInput(i);
+			for ( k = 0; k < module->getInputCount(); k++ ) {
+				ds = module->getInput(k);
 				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 				cJSON_AddNumberToObject(io, "index", i);
 				cJSON_AddStringToObject(io, "name", module->getInputInfos(i)->getName().c_str());
@@ -427,8 +461,8 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 
 		if ( module->getOutputCount() ) {
 			cJSON_AddItemToObject(mod, "outputs", array=cJSON_CreateArray());
-			for ( int i = 0; i < module->getOutputCount(); i++ ) {
-				ds = module->getOutput(i);
+			for ( k = 0; k < module->getOutputCount(); k++ ) {
+				ds = module->getOutput(k);
 				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 				cJSON_AddNumberToObject(io, "index", i);
 				cJSON_AddStringToObject(io, "name", module->getOutputInfos(i)->getName().c_str());
@@ -436,7 +470,7 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
 				cJSON_AddItemToObject(io, "observers", observers=cJSON_CreateObject());
 				if ( ds != NULL ) {
-					for ( unsigned int j = 0; j < ds->getObserverCount(); j++ ) {
+					for ( j = 0; j < ds->getObserverCount(); j++ ) {
 						snprintf(buffer, sizeof(buffer), "%d", j);
 						cJSON_AddStringToObject(observers, buffer,
 							ds->getObserver(j)->property("id").asString().c_str());
@@ -459,9 +493,8 @@ void web_factory_list(struct evhttp_request *req, void *arg) {
 	cJSON_AddStringToObject(root, "message", "ok");
 	cJSON_AddItemToObject(root, "list", data=cJSON_CreateArray());
 
-	for ( it = list.begin(); it != list.end(); it++ ) {
+	for ( it = list.begin(); it != list.end(); it++ )
 		cJSON_AddItemToArray(data, cJSON_CreateString(it->c_str()));
-	}
 
 	web_json(req, root);
 }
@@ -473,8 +506,14 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 	moModule *module;
 	struct evkeyvalq headers;
 	const char *uri;
+	int i;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "name") == NULL ) {
@@ -506,7 +545,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 
 	if ( module->getInputCount() ) {
 		cJSON_AddItemToObject(mod, "inputs", array=cJSON_CreateArray());
-		for ( int i = 0; i < module->getInputCount(); i++ ) {
+		for ( i = 0; i < module->getInputCount(); i++ ) {
 			ds = module->getInput(i);
 			cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 			cJSON_AddNumberToObject(io, "index", i);
@@ -517,7 +556,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 
 	if ( module->getOutputCount() ) {
 		cJSON_AddItemToObject(mod, "outputs", array=cJSON_CreateArray());
-		for ( int i = 0; i < module->getOutputCount(); i++ ) {
+		for ( i = 0; i < module->getOutputCount(); i++ ) {
 			ds = module->getOutput(i);
 			cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 			cJSON_AddNumberToObject(io, "index", i);
@@ -539,6 +578,11 @@ void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "out") == NULL ) {
@@ -584,6 +628,11 @@ void web_pipeline_get(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -612,6 +661,11 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -649,6 +703,11 @@ void web_pipeline_remove(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -748,7 +807,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 	snprintf(filename, sizeof(filename), "%s/%s",
 		MO_GUIDIR, req->uri + sizeof("/gui/") - 1);
 
-	printf("GET %s\n", filename);
+	LOG(MO_INFO, "web: GET " << filename);
 	fd = fopen(filename, "rb");
 	if ( fd == NULL ) {
 		evhttp_send_error(req, 404, "Not found");
