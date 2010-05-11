@@ -11,17 +11,75 @@ function mo_uniq() {
 	return 'mo' + mo_uniqidx;
 }
 
+function mo_resize() {
+	$('#movidcanvas').attr('width', 10);
+	$('#movidcanvas').attr('height', 10);
+
+	// hardcoded...
+	var h = $(window).height() - 100;
+	var w = $(window).width() - 82;
+	w -= $('#leftcolumn').width();
+	w -= $('#rightcolumn').width();
+	$('#movidcanvas').attr('width', w);
+	$('#movidcanvas').attr('height', h);
+	if ( widgetCanvasResize != null )
+		widgetCanvasResize(w, h);
+}
+
 function mo_bootstrap() {
-	$('#b_start').hide();
-	$('#b_stop').hide();
-	$('#modules').toggle();
-	$('#video').toggle();
-	$('#properties').toggle();
+	$('#container-preview').hide();
+	$('#container-properties').hide();
+	$('#btn-create').addClass('ui-state-active');
+
+	$(window).resize(mo_resize);
+
+	// prepare buttons (hover + actions)
+	$(function(){
+		//all hover and click logic for buttons
+		$('.fg-button:not(.ui-state-disabled,.ui-fake)')
+		.hover(
+			function(){ 
+				$(this).addClass('ui-state-hover'); 
+			},
+			function(){ 
+				$(this).removeClass('ui-state-hover'); 
+			}
+		)
+		.mousedown(function(){
+			switch ($(this).attr('id')) {
+				case 'btn-start':
+					if ( $(this).hasClass('ui-state-active') )
+						mo_stop();
+					else
+						mo_start();
+					break;
+				case 'btn-create':
+				case 'btn-properties':
+				case 'btn-preview':
+					var container = '#container-' + $(this).attr('id').split('-')[1];
+					if ( $(this).hasClass('ui-state-active') ) {
+						$(container).hide();
+						$(this).removeClass('ui-state-active');
+					} else {
+						$(container).show();
+						$(this).addClass('ui-state-active');
+					}
+					mo_resize();
+					break;
+
+				default:
+					break;
+			}
+		});
+
+	});
 
 	Processing($('#movidcanvas')[0], $('#movidpjs')[0].text);
 
+	mo_resize();
 	mo_modules();
 	mo_status();
+	mo_stats();
 }
 
 function mo_modules() {
@@ -44,16 +102,10 @@ function mo_status() {
 		mo_available_outputs = [];
 
 		mo_status_text = data['status']['running'] == '0' ? 'stopped' : 'running'
-		$('#statusinfo').html(mo_status_text);
-
-		if ( mo_status_text == 'stopped' ) {
-			$('#b_start').show();
-			$('#b_stop').hide();
-		} else {
-			$('#b_start').hide();
-			$('#b_stop').show();
-		}
-
+		$('#btn-start').removeClass('ui-state-active');
+		if ( data['status']['running'] != '0' )
+			$('#btn-start').addClass('ui-state-active');
+		$('#version').html(data['status']['version']);
 
 		widgetClearConnectivity();
 
@@ -103,7 +155,6 @@ function mo_create(elem) {
 		mo_status();
 		mo_select(data['message']);
 	});
-	$('#modules').slideToggle('fast');
 }
 
 function mo_remove(elem) {
@@ -287,6 +338,13 @@ function mo_select(elem) {
 	mo_widget_selected = elem;
 	mo_properties(elem);
 	mo_stream(elem);
+}
+
+function mo_stats() {
+	$.get(mo_baseurl + '/pipeline/stats', function(data) {
+		$('resumereport').html(data);
+		setTimeout(mo_stats, 2000);
+	});
 }
 
 

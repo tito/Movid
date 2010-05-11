@@ -8,7 +8,8 @@
 		widgetAddInput = null,
 		widgetAddOutput = null,
 		widgetClearConnectivity = null,
-		widgetConnect = null;
+		widgetConnect = null,
+		widgetCanvasResize = null;
 	</script>
 	<script type="text/javascript" src="js/processing.js"></script>
 	<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
@@ -19,30 +20,47 @@
 </head>
 <body>
 
-<div id="sidebar">
-	<h3><a onclick="$('#status').slideToggle('fast'); return false;">Status</a></h3>
-	<div id="status">
-		<p>
-			Status: <span id="statusinfo">Stopped</span>
-			<br/>
-			<a id="b_start" href="#" onclick="mo_start()">Start</a>
-			<a id="b_stop" href="#" onclick="mo_stop()">Stop</a>
-		</p>
+<div class="fg-toolbar ui-widget-header ui-corner-bottom ui-helper-clearfix">
+	<div class="fg-buttonset ui-helper-clearfix">
+		<div class="fg-button ui-fake">Movid <span id="version">??</span></div>
 	</div>
-	<h3><a onclick="$('#modules').slideToggle('fast')">Create</a></h3>
-	<div id="modules">
+	<div class="fg-buttonset ui-helper-clearfix">
+		<a class="fg-button ui-state-default ui-corner-all" id="btn-start">Start</a>
 	</div>
-	<h3><a onclick="$('#video').slideToggle('fast')">Video</a></h3>
-	<div id="video">
-		<p id="streamid">No video</p>
-		<img src="/gui/nostream.png" id="streamimg"/>
+	<div class="fg-buttonset ui-helper-clearfix">
+		<a class="fg-button ui-state-default ui-corner-all" id="btn-preview">Preview</a>
+		<a class="fg-button ui-state-default ui-corner-all" id="btn-create">Create</a>
+		<a class="fg-button ui-state-default ui-corner-all" id="btn-properties">Properties</a>
 	</div>
-	<h3><a onclick="$('#properties').slideToggle('fast')">Properties</a></h3>
-	<div id="properties">
+	<div class="fg-buttonset ui-helper-clearfix">
+		<div class="fg-button ui-fake" id="resumereport"></div>
 	</div>
 </div>
 
-<div id="pjs">
+<div id="wrapper">
+
+<div id="leftcolumn">
+	<div class="ui-widget ui-widget-sidebar" id="container-preview">
+		<div class="ui-widget-header ui-state-default ui-corner-top"><a href="#" onclick="$('#video').slideToggle('fast')">Preview</a></div>
+		<div id="video" class="ui-widget-content ui-corner-bottom">
+			<p id="streamid">No video</p>
+			<img src="/gui/nostream.png" id="streamimg"/>
+		</div>
+	</div>
+	<div class="ui-widget ui-widget-sidebar" id="container-create">
+		<div class="ui-widget-header ui-state-default ui-corner-top"><a href="#" onclick="$('#modules').slideToggle('fast')">Create</a></div>
+		<div id="modules" class="ui-widget-content ui-corner-bottom">
+		</div>
+	</div>
+
+</div>
+
+<div id="content" class="ui-widget ui-widget-sidebar">
+
+<div class="ui-widget-header ui-state-default ui-corner-top">
+	<a href="#">Playground</a>
+</div>
+<div class="ui-widget-content">
 <script id="movidpjs" type="application/processing" target="movidcanvas">
 
 class IOWidget {
@@ -252,6 +270,11 @@ widgetConnect = function(_out, _outidx, _in, _inidx) {
 	wout.outputs.get(parseInt(_outidx)).connect(win, parseInt(_inidx));
 }
 
+widgetCanvasResize = function(w, h) {
+	size(w, h);
+	draw();
+}
+
 //
 // declarations
 //
@@ -283,8 +306,7 @@ int textHeight(String s) {
 }
 
 void setup() {
-	size(800,600);
-	frameRate(2);
+	frameRate(5);
 	noStroke();
 	textFont(fontA, fontsize);
 	widgets = new ArrayList();
@@ -485,7 +507,19 @@ void mouseDragged() {
 	frameCount += 1;
 }
 
-</script><canvas id="movidcanvas" width="800" height="600">You need HTML5 canvas support.</canvas>
+</script><canvas id="movidcanvas" width="100" height="100">You need HTML5 canvas support.</canvas>
+</div>
+</div>
+
+<div id="rightcolumn">
+	<div class="ui-widget ui-widget-sidebar" id="container-properties">
+		<div class="ui-widget-header ui-state-default ui-corner-top"><a onclick="$('#properties').slideToggle('fast')">Properties</a></div>
+		<div id="properties" class="ui-widget-content ui-corner-bottom">
+		</div>
+	</div>
+</div>
+
+</div>
 <div id="footer">
 	framecount:<span id="framecount">0</span>
 </div>
