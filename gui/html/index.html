@@ -21,18 +21,18 @@
 <body>
 
 <div class="fg-toolbar ui-widget-header ui-corner-bottom ui-helper-clearfix">
-	<div class="fg-buttonset ui-helper-clearfix">
+	<div class="fg-buttonset">
 		<div class="fg-button ui-fake">Movid <span id="version">??</span></div>
 	</div>
-	<div class="fg-buttonset ui-helper-clearfix">
+	<div class="fg-buttonset">
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-start">Start</a>
 	</div>
-	<div class="fg-buttonset ui-helper-clearfix">
+	<div class="fg-buttonset">
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-preview">Preview</a>
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-create">Create</a>
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-properties">Properties</a>
 	</div>
-	<div class="fg-buttonset ui-helper-clearfix">
+	<div class="fg-buttonset">
 		<div class="fg-button ui-fake" id="resumereport"></div>
 	</div>
 </div>
@@ -40,13 +40,6 @@
 <div id="wrapper">
 
 <div id="leftcolumn">
-	<div class="ui-widget ui-widget-sidebar" id="container-preview">
-		<div class="ui-widget-header ui-state-default ui-corner-top"><a href="#" onclick="$('#video').slideToggle('fast')">Preview</a></div>
-		<div id="video" class="ui-widget-content ui-corner-bottom">
-			<p id="streamid">No video</p>
-			<img src="/gui/nostream.png" id="streamimg"/>
-		</div>
-	</div>
 	<div class="ui-widget ui-widget-sidebar" id="container-create">
 		<div class="ui-widget-header ui-state-default ui-corner-top"><a href="#" onclick="$('#modules').slideToggle('fast')">Create</a></div>
 		<div id="modules" class="ui-widget-content ui-corner-bottom">
@@ -271,8 +264,9 @@ widgetConnect = function(_out, _outidx, _in, _inidx) {
 }
 
 widgetCanvasResize = function(w, h) {
-	size(w, h);
-	draw();
+	try {
+		size(w, h);
+	} catch (e) { }
 }
 
 //
@@ -512,6 +506,13 @@ void mouseDragged() {
 </div>
 
 <div id="rightcolumn">
+	<div class="ui-widget ui-widget-sidebar" id="container-preview">
+		<div class="ui-widget-header ui-state-default ui-corner-top"><a href="#" onclick="$('#video').slideToggle('fast')">Preview</a></div>
+		<div id="video" class="ui-widget-content ui-corner-bottom">
+			<p id="streamid">No video</p>
+			<img src="/gui/nostream.png" id="streamimg"/>
+		</div>
+	</div>
 	<div class="ui-widget ui-widget-sidebar" id="container-properties">
 		<div class="ui-widget-header ui-state-default ui-corner-top"><a onclick="$('#properties').slideToggle('fast')">Properties</a></div>
 		<div id="properties" class="ui-widget-content ui-corner-bottom">

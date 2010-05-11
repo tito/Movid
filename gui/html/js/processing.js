@@ -7045,7 +7045,7 @@
 
         // Dropping support for IE clientX and clientY, switching to pageX and pageY so we don't have to calculate scroll offset.
         // Removed in ticket #184. See rev: 2f106d1c7017fed92d045ba918db47d28e5c16f4
-        p.mouseX = e.pageX - offsetX;
+        p.mouseX = e.pageX - offsetX - 10;
         p.mouseY = e.pageY - offsetY;
 
         p.cursor(curCursor);

@@ -77,8 +77,8 @@ button.fg-button {
 
 /* left and right column layout
  */
- #leftcolumn .ui-widget,
- #rightcolumn .ui-widget {
+#leftcolumn .ui-widget,
+#rightcolumn .ui-widget {
 	 margin-bottom: 10px !important;
 }
 
@@ -192,4 +192,10 @@ button.fg-button {
 .ui-slider-handle,
 .ui-button {
 	font-weight: normal;
+}
+
+/* preview
+ */
+#video img {
+	width: 100%;
 }

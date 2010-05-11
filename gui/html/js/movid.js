@@ -38,11 +38,11 @@ function mo_bootstrap() {
 		//all hover and click logic for buttons
 		$('.fg-button:not(.ui-state-disabled,.ui-fake)')
 		.hover(
-			function(){ 
-				$(this).addClass('ui-state-hover'); 
+			function(){
+				$(this).addClass('ui-state-hover');
 			},
-			function(){ 
-				$(this).removeClass('ui-state-hover'); 
+			function(){
+				$(this).removeClass('ui-state-hover');
 			}
 		)
 		.mousedown(function(){
@@ -76,7 +76,7 @@ function mo_bootstrap() {
 
 	Processing($('#movidcanvas')[0], $('#movidpjs')[0].text);
 
-	mo_resize();
+	setTimeout(mo_resize, 50);
 	mo_modules();
 	mo_status();
 	mo_stats();
@@ -346,6 +346,5 @@ function mo_stats() {
 		setTimeout(mo_stats, 2000);
 	});
 }
-
 
 $(document).ready(function() { mo_bootstrap(); });
