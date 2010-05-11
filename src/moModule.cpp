@@ -87,7 +87,7 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->thread_trigger = NULL;
 	this->mtx			= new pt::mutex();
 
-	bzero(&this->stats, sizeof(mo_module_stats_t));
+	memset(&this->stats,0,sizeof(mo_module_stats_t));
 
 	this->properties["use_thread"] = new moProperty(false);
 }

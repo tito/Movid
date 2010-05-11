@@ -18,9 +18,11 @@
 #include <stdio.h>
 
 #ifdef WIN32
+#include <winsock2.h>
 #include <windows.h>
 #include <Xgetopt.h>
 #endif
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -964,7 +966,14 @@ int main(int argc, char **argv) {
 			if ( ret == -1 ) {
 				perror("HTTP server");
 				LOG(MO_ERROR, "unable to open socket for 127.0.0.1:7500... retry in 3s");
+
+				#ifdef WIN32
+				Sleep(3);
+				#endif
+				#ifndef WIN32
 				sleep(3);
+				#endif
+				
 			}
 		} while ( ret == -1 );
 
