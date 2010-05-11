@@ -27,10 +27,10 @@ public:
 	virtual ~moThresholdModule();
 	
 protected:
-	void applyFilter();
+	void applyFilter(IplImage *);
+	void stop();
 	int getCvType(const std::string &filter);
 	int getCvMode(const std::string &filter);
-	double threshold;
 	
 	MODULE_INTERNALS();
 };

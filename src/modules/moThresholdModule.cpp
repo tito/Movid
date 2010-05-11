@@ -42,8 +42,20 @@ moThresholdModule::moThresholdModule() : moImageFilterModule(){
 
 }
 
-moThresholdModule::~moThresholdModule() {
+moThresholdModule::~moThresholdModule() 
+{
 }
+
+void moThresholdModule::stop() {
+	moImageFilterModule::stop();
+
+	if ( this->output_buffer != NULL ) {
+		cvReleaseImage(&this->output_buffer);
+		this->output_buffer = NULL;
+	}
+}
+
+
 
 int moThresholdModule::getCvType(const std::string &filter) 
 {
@@ -58,7 +70,7 @@ int moThresholdModule::getCvType(const std::string &filter)
 	if ( filter == "tozero_inv" )
 		return CV_THRESH_TOZERO_INV;
 
-	LOGM(MO_ERROR) << "Unsupported filter type: " << filter;
+	LOGM(MO_ERROR,"Unsupported filter type: ");
 	this->setError("Unsupported filter type");
 	return 0;
 }
@@ -70,12 +82,13 @@ int moThresholdModule::getCvMode(const std::string &filter)
 	if ( filter == "gaussian" )
 		return CV_ADAPTIVE_THRESH_GAUSSIAN_C;
 
-	LOGM(MO_ERROR) << "Unsupported filter type: " << filter;
+	LOGM(MO_ERROR,"Unsupported filter type: ");
 	this->setError("Unsupported filter type");
 	return 0;
 }
 
-void moThresholdModule::applyFilter(){
+void moThresholdModule::applyFilter(IplImage *)
+{
 	IplImage* src = static_cast<IplImage*>(this->input->getData());
 
 	if ( src->nChannels != 1 ) {
