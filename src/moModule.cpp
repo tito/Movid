@@ -20,7 +20,7 @@
 #include <sstream>
 #include <iostream>
 #include <errno.h>
-#include <strings.h>
+#include <string.h>
 
 #include "pasync.h"
 
