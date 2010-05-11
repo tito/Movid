@@ -30,6 +30,7 @@ protected:
 	void applyFilter(IplImage *);
 	void stop();
 	int getCvType(const std::string &filter);
+	int getCvAdaptativeType(const std::string &filter);
 	int getCvMode(const std::string &filter);
 	
 	MODULE_INTERNALS();

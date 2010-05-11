@@ -75,6 +75,18 @@ int moThresholdModule::getCvType(const std::string &filter)
 	return 0;
 }
 
+int moThresholdModule::getCvAdaptativeType(const std::string &filter) 
+{
+	if ( filter == "binary" )
+		return CV_THRESH_BINARY;
+	if ( filter == "binary_inv" )
+		return CV_THRESH_BINARY_INV;
+
+	LOGM(MO_ERROR,"Unsupported filter type: ");
+	this->setError("Unsupported filter type");
+	return 0;
+}
+
 int moThresholdModule::getCvMode(const std::string &filter) 
 {
 	if ( filter == "mean" )
@@ -112,7 +124,7 @@ void moThresholdModule::applyFilter(IplImage *)
 			this->output_buffer,
 			255.0, //max value is output of where threshold was passed
 			this->getCvMode(this->property("mode").asString()),
-			this->getCvType(this->property("type").asString()),
+			this->getCvAdaptativeType(this->property("type").asString()),
 			block_size,
 			this->property("threshold").asDouble()*-1 //other way around on adpative, pass if src > (AVRG(block) - this arg)...so pixel pass if brighter than average neighboorhood + thresh (-1* -thresh)
 		);
