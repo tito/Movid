@@ -30,10 +30,10 @@ moHsvModule::moHsvModule() : moImageFilterModule(){
 	// declare properties her, e.g:
 	this->properties["hmin"] = new moProperty(0);
 	this->properties["hmin"]->setMin(0);
-	this->properties["hmin"]->setMax(255);
+	this->properties["hmin"]->setMax(180);
 	this->properties["hmax"] = new moProperty(20);
 	this->properties["hmax"]->setMin(0);
-	this->properties["hmax"]->setMax(255);
+	this->properties["hmax"]->setMax(180);
 	this->properties["smin"] = new moProperty(0);
 	this->properties["smin"]->setMin(0);
 	this->properties["smin"]->setMax(255);
