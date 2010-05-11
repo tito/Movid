@@ -33,6 +33,7 @@ moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule()
 	// declare properties
 	this->properties["recapture"] = new moProperty(true);
 	this->properties["toggle"] = new moProperty(false);
+	this->properties["absolute"] = new moProperty(false);
 }
 
 moBackgroundSubtractModule::~moBackgroundSubtractModule() {
@@ -71,8 +72,16 @@ void moBackgroundSubtractModule::applyFilter(IplImage *src) {
 		this->property("recapture").set(false);
 		LOGM(MO_TRACE, "recaptured background");
 	} else {
-		// do subtraction
-		cvAbsDiff(src, this->bg_buffer, this->output_buffer);
+		if (this->property("absolute").asBool())
+		{
+			// do absolute difference
+			cvAbsDiff(src, this->bg_buffer, this->output_buffer);
+		}
+		else
+		{
+			// do subtraction
+			cvSub(src, this->bg_buffer, this->output_buffer);
+		}
 		// check for next frame to recapture
 		this->property("recapture").set(this->property("toggle").asBool());
 	}
