@@ -58,8 +58,9 @@
 #include "event.h"
 #include "evhttp.h"
 
-#define MO_DAEMON "movid"
-#define MO_GUIDIR "gui/html"
+#define MO_DAEMON	"movid"
+#define MO_GUIDIR	"gui/html"
+#define MO_VERSION	"0.2"
 
 LOG_DECLARE("App");
 
@@ -410,6 +411,7 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	cJSON_AddNumberToObject(root, "success", 1);
 	cJSON_AddStringToObject(root, "message", "ok");
 	cJSON_AddItemToObject(root, "status", data=cJSON_CreateObject());
+	cJSON_AddStringToObject(data, "version", MO_VERSION);
 	cJSON_AddNumberToObject(data, "size", pipeline->size());
 	cJSON_AddNumberToObject(data, "running", pipeline->isStarted() ? 1 : 0);
 	cJSON_AddItemToObject(data, "modules", modules=cJSON_CreateObject());
@@ -453,9 +455,9 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 			for ( k = 0; k < module->getInputCount(); k++ ) {
 				ds = module->getInput(k);
 				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
-				cJSON_AddNumberToObject(io, "index", i);
-				cJSON_AddStringToObject(io, "name", module->getInputInfos(i)->getName().c_str());
-				cJSON_AddStringToObject(io, "type", module->getInputInfos(i)->getType().c_str());
+				cJSON_AddNumberToObject(io, "index", k);
+				cJSON_AddStringToObject(io, "name", module->getInputInfos(k)->getName().c_str());
+				cJSON_AddStringToObject(io, "type", module->getInputInfos(k)->getType().c_str());
 				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
 			}
 		}
@@ -465,9 +467,9 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 			for ( k = 0; k < module->getOutputCount(); k++ ) {
 				ds = module->getOutput(k);
 				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
-				cJSON_AddNumberToObject(io, "index", i);
-				cJSON_AddStringToObject(io, "name", module->getOutputInfos(i)->getName().c_str());
-				cJSON_AddStringToObject(io, "type", module->getOutputInfos(i)->getType().c_str());
+				cJSON_AddNumberToObject(io, "index", k);
+				cJSON_AddStringToObject(io, "name", module->getOutputInfos(k)->getName().c_str());
+				cJSON_AddStringToObject(io, "type", module->getOutputInfos(k)->getType().c_str());
 				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
 				cJSON_AddItemToObject(io, "observers", observers=cJSON_CreateObject());
 				if ( ds != NULL ) {
