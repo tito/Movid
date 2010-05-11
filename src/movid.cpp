@@ -17,7 +17,6 @@
 
 
 #ifdef WIN32
-#include <winsock2.h>
 #include <windows.h>
 #include <Xgetopt.h>
 #endif
@@ -34,10 +33,7 @@
 #endif
 
 #include <iostream>
-#include <fstream>
 #include <sstream>
-#include <algorithm>
-#include <iterator>
 #include <string>
 #include <map>
 
@@ -73,7 +69,7 @@ static bool config_httpserver = true;
 static bool test_mode = false;
 static std::string config_pipelinefn = "";
 static struct evhttp *server = NULL;
-static int config_delay = 5;
+int g_config_delay = 5;
 
 class otStreamModule : public moModule {
 public:
@@ -183,17 +179,6 @@ void web_status(struct evhttp_request *req, void *arg) {
 	web_message(req, "ok");
 }
 
-moModule *module_search(const std::string &id, moPipeline *pipeline) {
-	moModule *module;
-	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
-		module = pipeline->getModule(i);
-		if ( module->property("id").asString() == id )
-			return module;
-	}
-	return NULL;
-}
-
-
 struct chunk_req_state {
 	struct evhttp_request *req;
 	otStreamModule *stream;
@@ -289,7 +274,7 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -571,8 +556,8 @@ void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 	if ( evhttp_find_header(&headers, "inidx") != NULL )
 		inidx = atoi(evhttp_find_header(&headers, "inidx"));
 
-	in = module_search(evhttp_find_header(&headers, "in"), pipeline);
-	out = module_search(evhttp_find_header(&headers, "out"), pipeline);
+	in = pipeline->getModuleById(evhttp_find_header(&headers, "in"));
+	out = pipeline->getModuleById(evhttp_find_header(&headers, "out"));
 
 	if ( in == NULL ) {
 		evhttp_clear_headers(&headers);
@@ -611,7 +596,7 @@ void web_pipeline_get(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing name");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -644,7 +629,7 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing value");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -671,7 +656,7 @@ void web_pipeline_remove(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -808,162 +793,6 @@ void web_file(struct evhttp_request *req, void *arg) {
 	free(buf);
 }
 
-// pipeline create objectname id
-// pipeline set id key value
-// pipeline connect out_id out_idx in_id in_idx
-#define WRITE_ERROR(x) LOG(MO_ERROR, __LINE__ << "] Error at line " << ln << ": " << x)
-moPipeline *pipeline_parse_file(const std::string &filename) {
-	moPipeline *pipeline = NULL;
-	moModule *module1, *module2;
-	std::string line;
-	int ln = 0;
-	int inidx, outidx;
-	std::ifstream f(filename.c_str());
-
-	if ( !f.is_open() )
-		return NULL;
-
-	pipeline = new moPipeline();
-
-	while ( !f.eof() )
-	{
-		ln ++;
-		getline(f, line);
-		if ( line == "" )
-			continue;
-		if ( line[0] == '#' )
-			continue;
-
-		std::istringstream iss(line);
-		std::vector<std::string> tokens;
-
-		std::copy(std::istream_iterator<std::string>(iss),
-				std::istream_iterator<std::string>(),
-				std::back_inserter<std::vector<std::string> >(tokens));
-
-		if ( tokens.size() <= 1 ) {
-			WRITE_ERROR("invalid line command");
-			goto parse_error;
-		}
-
-		if ( tokens[0] == "config" ) {
-			if ( tokens.size() < 3 ) {
-				WRITE_ERROR("not enough parameters");
-				goto parse_error;
-			}
-			if ( tokens[1] == "delay" ) {
-				config_delay = atoi(tokens[2].c_str());
-			}
-		} else if ( tokens[0] == "pipeline" ) {
-			if ( tokens.size() < 2 ) {
-				WRITE_ERROR("not enough parameters");
-				goto parse_error;
-			}
-
-			if ( tokens[1] == "create" ) {
-				if ( tokens.size() != 4 ) {
-					WRITE_ERROR("not enough parameters");
-					goto parse_error;
-				}
-
-				module1 = module_search(tokens[3], pipeline);
-				if ( module1 != NULL ) {
-					WRITE_ERROR("id already used");
-					goto parse_error;
-				}
-
-				module1 = moFactory::getInstance()->create(tokens[2]);
-				if ( module1 == NULL ) {
-					WRITE_ERROR("unknown module " << tokens[2]);
-					goto parse_error;
-				}
-
-				if ( module1->haveError() ) {
-					WRITE_ERROR("module error:" << module1->getLastError());
-					goto parse_error;
-				}
-
-				module1->property("id").set(tokens[3]);
-				module1->property("id").setReadOnly(true);
-
-				if ( module1->haveError() ) {
-					WRITE_ERROR("module error:" << module1->getLastError());
-					goto parse_error;
-				}
-
-				pipeline->addElement(module1);
-
-			} else if ( tokens[1] == "set" ) {
-				if ( tokens.size() != 5 ) {
-					WRITE_ERROR("not enough parameters");
-					goto parse_error;
-				}
-
-				module1 = module_search(tokens[2], pipeline);
-				if ( module1 == NULL ) {
-					WRITE_ERROR("unable to find module with id " << tokens[2]);
-					goto parse_error;
-				}
-
-				module1->property(tokens[3]).set(tokens[4]);
-
-				if ( module1->haveError() ) {
-					WRITE_ERROR("module error:" << module1->getLastError());
-					goto parse_error;
-				}
-
-
-			} else if ( tokens[1] == "connect" ) {
-				if ( tokens.size() != 6 ) {
-					WRITE_ERROR("not enough parameters");
-					goto parse_error;
-				}
-
-				module1 = module_search(tokens[2], pipeline);
-				if ( module1 == NULL ) {
-					WRITE_ERROR("unable to find module with id " << tokens[2]);
-					goto parse_error;
-				}
-
-				module2 = module_search(tokens[4], pipeline);
-				if ( module2 == NULL ) {
-					WRITE_ERROR("unable to find module with id " << tokens[4]);
-					goto parse_error;
-				}
-
-				outidx = atoi(tokens[3].c_str());
-				inidx = atoi(tokens[5].c_str());
-
-				module2->setInput(module1->getOutput(outidx), inidx);
-
-				if ( module1->haveError() ) {
-					WRITE_ERROR("module error:" << module1->getLastError());
-					goto parse_error;
-				}
-
-				if ( module2->haveError() ) {
-					WRITE_ERROR("module error:" << module2->getLastError());
-					goto parse_error;
-				}
-
-			} else {
-				WRITE_ERROR("unknown pipeline subcommand: " << tokens[1]);
-				goto parse_error;
-			}
-		} else {
-			WRITE_ERROR("unknown command: " << tokens[0]);
-			goto parse_error;
-		}
-	}
-
-	pipeline->start();
-	return pipeline;
-
-parse_error:;
-	delete pipeline;
-	return NULL;
-}
-
 void usage(void) {
 	printf("Usage: %s [options...]                                \n" \
 		   "                                                      \n" \
@@ -997,9 +826,7 @@ int parse_options(int *argc, char ***argv) {
 				config_pipelinefn = std::string(optarg);
 				break;
 			case 'i':
-				moFactory::init();
 				describe(optarg);
-				moFactory::cleanup();
 				return 0; /* leave properly */
 			case 't':
 				test_mode = true;
@@ -1019,57 +846,66 @@ int parse_options(int *argc, char ***argv) {
 }
 
 int main(int argc, char **argv) {
-	int ret;
+	int ret, exit_ret = 0;
 
-	ret = parse_options(&argc, &argv);
-	if ( ret >= 0 )
-		return ret;
-
-	moDaemon::init();
-
-#ifdef WIN32
-	{
-		WSADATA wsaData;
-		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 ) {
-			LOG(MO_CRITICAL, "unable to initialize WinSock (v2.2)");
-			return -1;
-		}
-	}
-#else
+	// initialize all signals
+#ifndef _WIN32
 	signal(SIGPIPE, SIG_IGN);
 #endif
-
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
 
+	// initialize daemon (log, factory, network...)
+	moDaemon::init();
+
+	// parse options
+	ret = parse_options(&argc, &argv);
+	if ( ret >= 0 ) {
+		moDaemon::cleanup();
+		return ret;
+	}
+
+	// parse pipeline passed in parameters
 	if ( config_pipelinefn != "" ) {
-		pipeline = pipeline_parse_file(config_pipelinefn);
-		if ( pipeline == NULL ) {
-			return 2;
-		}
+		pipeline = new moPipeline();
+		if ( pipeline == NULL )
+			goto exit_critical;
+		if ( pipeline->parse(config_pipelinefn) == false )
+			goto exit_critical;
+		pipeline->start();
 	} else if ( config_httpserver == false ) {
 		LOG(MO_CRITICAL, "no pipeline or webserver to start !");
-		return 3;
+		goto exit_critical;
 	}
 
 	// no default pipeline ? create one !
 	if ( pipeline == NULL )
 		pipeline = new moPipeline();
+	if ( pipeline == NULL ) {
+		LOG(MO_CRITICAL, "unable to create default pipeline");
+		goto exit_critical;
+	}
 
+	// if an http server is asked, start it !
 	if ( config_httpserver ) {
 
 		base = event_init();
 		server = evhttp_new(NULL);
 
-		int ret = -1;
-		while ( ret == -1 ) {
+		if ( server == NULL ) {
+			LOG(MO_CRITICAL, "unable to create http server");
+			goto exit_critical;
+		}
+
+		do {
 			ret = evhttp_bind_socket(server, "127.0.0.1", 7500);
 			if ( ret == -1 ) {
 				perror("HTTP server");
 				LOG(MO_ERROR, "unable to open socket for 127.0.0.1:7500... retry in 3s");
 				sleep(3);
 			}
-		}
+		} while ( ret == -1 );
+
 		LOG(MO_INFO, "Http server running at http://127.0.0.1:7500/");
 
 		evhttp_set_cb(server, "/", web_index, NULL);
@@ -1091,9 +927,10 @@ int main(int argc, char **argv) {
 		evhttp_set_gencb(server, web_file, NULL);
 	}
 
+	// main loop
 	while ( want_quit == false ) {
 		// FIXME remove this hack !!!
-		cvWaitKey(config_delay);
+		cvWaitKey(g_config_delay);
 
 		// update pipeline
 		if ( pipeline->isStarted() ) {
@@ -1112,16 +949,19 @@ int main(int argc, char **argv) {
 			event_base_loop(base, EVLOOP_ONCE|EVLOOP_NONBLOCK);
 	}
 
+exit_standard:
 	if ( server != NULL )
 		evhttp_free(server);
 	if ( base != NULL )
 		event_base_free(base);
 
-	delete pipeline;
-
+	if ( pipeline != NULL )
+		delete pipeline;
 	moDaemon::cleanup();
 
-#ifdef _WIN32
-	WSACleanup();
-#endif
+	return 0;
+
+exit_critical:
+	exit_ret = 1;
+	goto exit_standard;
 }

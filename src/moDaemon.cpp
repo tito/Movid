@@ -22,12 +22,32 @@
 #include "moLog.h"
 #include "moFactory.h"
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
 void moDaemon::init() {
 	moLog::init();
 	moFactory::init();
+
+#ifdef WIN32
+	// initialize network for Win32 platform
+	{
+		WSADATA wsaData;
+		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 ) {
+			LOG(MO_CRITICAL, "unable to initialize WinSock (v2.2)");
+			return -1;
+		}
+	}
+#endif
 }
 
 void moDaemon::cleanup() {
+#ifdef _WIN32
+	WSACleanup();
+#endif
+
 	moFactory::cleanup();
 	moLog::cleanup();
 }

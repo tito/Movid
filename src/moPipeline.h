@@ -20,6 +20,7 @@
 #define MO_PIPELINE_H
 
 #include <vector>
+#include <string>
 #include "moModule.h"
 
 class moPipeline : public moModule {
@@ -48,6 +49,7 @@ public:
 	moModule *firstModule();
 	moModule *lastModule();
 	moModule *getModule(unsigned int index);
+	moModule *getModuleById(const std::string &id);
 	unsigned int size();
 
 	virtual void setGroup(bool group=true);
@@ -66,9 +68,14 @@ public:
 	 */
 	virtual std::string serializeCreation();
 
+	/*! \brief Parse a file, and inject to the current pipeline
+	 */
+	bool parse(const std::string& filename);
+
 private:
 	std::vector<moModule *> modules;
 	bool is_group;
+	std::string last_internal_error;
 
 	MODULE_INTERNALS();
 };
