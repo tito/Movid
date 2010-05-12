@@ -74,6 +74,7 @@ SOURCES = \
 	src/modules/moThresholdModule.cpp \
 	src/modules/moTuioModule.cpp \
 	src/modules/moVideoModule.cpp \
+	src/modules/moYCrCbThresholdModule.cpp \
 	#AUTOMODULE_DoNotRemoveThisComment
 
 
