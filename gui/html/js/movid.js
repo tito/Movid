@@ -5,6 +5,7 @@ var mo_streamscale = 2;
 var mo_widget_selected = null;
 var mo_status_text = 'stopped';
 var mo_uniqidx = 0;
+var mo_data = null;
 
 function mo_uniq() {
 	mo_uniqidx += 1;
@@ -342,7 +343,21 @@ function mo_select(elem) {
 
 function mo_stats() {
 	$.get(mo_baseurl + '/pipeline/stats', function(data) {
-		$('resumereport').html(data);
+		var report = 'FPS: -';
+		var count = 0,
+			average_fps = 0,
+			average_process_time = 0,
+			average_wait_time = 0;
+		for ( key in data.stats ) {
+			count++;
+			average_fps += parseFloat(data['stats'][key]['average_fps']);
+			average_process_time += parseFloat(data['stats'][key]['average_process_time']);
+			average_wait_time += parseFloat(data['stats'][key]['average_wait_time']);
+		}
+		// TODO, show process/wait time
+		if ( mo_status_text == 'running' && count > 0 )
+			report = 'FPS: ' + (average_fps / count).toFixed(2);
+		$('#toolbareport').html(report);
 		setTimeout(mo_stats, 2000);
 	});
 }
