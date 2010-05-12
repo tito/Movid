@@ -22,6 +22,7 @@
 class moDaemon {
 public:
 	static void init();
+	static bool detach(bool);
 	static void cleanup();
 };
 

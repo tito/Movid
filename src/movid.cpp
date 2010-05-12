@@ -69,6 +69,7 @@ LOG_DECLARE("App");
 static moPipeline *pipeline = NULL;
 static bool want_quit = false;
 static struct event_base *base = NULL;
+static bool config_detach = true;
 static bool config_httpserver = true;
 static bool test_mode = false;
 static std::string config_pipelinefn = "";
@@ -881,8 +882,11 @@ void describe(const char *name) {
 
 int parse_options(int *argc, char ***argv) {
 	int ch;
-	while ( (ch = getopt(*argc, *argv, "hl:ni:t")) != -1 ) {
+	while ( (ch = getopt(*argc, *argv, "hl:dni:t")) != -1 ) {
 		switch ( ch ) {
+			case 'd':
+				config_detach = false;
+				break;
 			case 'n':
 				config_httpserver = false;
 				break;
@@ -911,6 +915,7 @@ int parse_options(int *argc, char ***argv) {
 
 int main(int argc, char **argv) {
 	int ret, exit_ret = 0;
+	bool child;
 
 	// initialize all signals
 #ifndef _WIN32
@@ -927,6 +932,12 @@ int main(int argc, char **argv) {
 	if ( ret >= 0 ) {
 		moDaemon::cleanup();
 		return ret;
+	}
+	
+	// detach from console
+	child = moDaemon::detach(config_detach);
+	if (! child) {
+		return exit_ret;
 	}
 
 	// parse pipeline passed in parameters

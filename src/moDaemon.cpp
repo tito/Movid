@@ -27,9 +27,9 @@
 #include <windows.h>
 #endif
 
-#ifdef WIN32
+//#ifdef WIN32
 LOG_DECLARE("Daemon");
-#endif
+//#endif
 
 void moDaemon::init() {
 	moLog::init();
@@ -41,6 +41,16 @@ void moDaemon::init() {
 		WSADATA wsaData;
 		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 )
 			LOG(MO_CRITICAL, "unable to initialize WinSock (v2.2)");
+	}
+#endif
+}
+
+bool moDaemon::detach(bool doit) {
+#ifndef WIN32
+	if (doit) {
+		pid_t pid = fork();
+		LOG(MO_INFO, "child process created with pid=" << pid);
+		return(pid == 0);
 	}
 #endif
 }
