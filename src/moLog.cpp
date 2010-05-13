@@ -67,7 +67,9 @@ moLogMessage::~moLogMessage() {
 
 
 void moLog::init(bool use_syslog) {
+#ifndef WIN32
 	g_use_syslog = use_syslog;
+#endif
 	g_loglevel = MO_INFO;
 	if (getenv("MO_DEBUG"))
 		g_loglevel = MO_DEBUG;
