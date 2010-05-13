@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 #include <sys/queue.h>
 #include <signal.h>
+#include <getopt.h>
 
 #ifndef WIN32
 #include <sys/socket.h>
@@ -69,7 +70,8 @@ LOG_DECLARE("App");
 static moPipeline *pipeline = NULL;
 static bool want_quit = false;
 static struct event_base *base = NULL;
-static bool config_detach = true;
+static bool config_detach = false;
+static bool config_syslog = false;
 static bool config_httpserver = true;
 static bool test_mode = false;
 static std::string config_pipelinefn = "";
@@ -859,12 +861,14 @@ void web_file(struct evhttp_request *req, void *arg) {
 }
 
 void usage(void) {
-	printf("Usage: %s [options...]                                \n" \
-		   "                                                      \n" \
-		   "  -t                     Test mode, stop on the first error\n" \
-		   "  -i <modulename>        Show infos on a module       \n" \
-		   "  -n                     No webserver                 \n" \
-		   "  -l <filename>          Read a pipeline from filename\n",
+	printf("Usage: %s [options...]                                              \n" \
+		   "                                                                \n" \
+		   "  -t  --test                  Test mode, stop on the first error\n" \
+		   "  -i  --info <modulename>     Show infos on a module            \n" \
+		   "  -s  --syslog                Send loggings to syslog           \n" \
+		   "  -d  --detach                Detach from console               \n" \
+		   "  -n  --no_http               No webserver                      \n" \
+		   "  -l  --pipeline <filename>   Read a pipeline from filename     \n",
 		   MO_DAEMON
 	);
 }
@@ -882,10 +886,28 @@ void describe(const char *name) {
 
 int parse_options(int *argc, char ***argv) {
 	int ch;
-	while ( (ch = getopt(*argc, *argv, "hl:dni:t")) != -1 ) {
+	static struct option options[] = {
+		{"info", 1, 0, 'i'},
+		{"pipeline", 1, 0, 'l'},
+		{"syslog", 0, 0, 's'},
+		{"detach", 0, 0, 'd'},
+		{"no_http", 0, 0, 'n'},
+		{"test", 0, 0, 't'},
+		{"help", 0, 0, 'h'},
+		{0, 0, 0, 0}
+	};
+	while (1) {
+		int option_index = 0;
+		ch = getopt_long(*argc, *argv, "hl:sdni:t", options, &option_index);
+		if (ch == -1)
+			break;
 		switch ( ch ) {
+			case 's':
+				config_syslog = true;
+				moLog::init(config_syslog);
+				break;
 			case 'd':
-				config_detach = false;
+				config_detach = true;
 				break;
 			case 'n':
 				config_httpserver = false;
@@ -924,8 +946,8 @@ int main(int argc, char **argv) {
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
 
-	// initialize daemon (log, factory, network...)
-	moDaemon::init();
+	// initialize log
+	moLog::init(config_syslog);
 
 	// parse options
 	ret = parse_options(&argc, &argv);
@@ -933,6 +955,9 @@ int main(int argc, char **argv) {
 		moDaemon::cleanup();
 		return ret;
 	}
+
+	// initialize daemon (factory, network...)
+	moDaemon::init();
 	
 	// detach from console
 	child = moDaemon::detach(config_detach);

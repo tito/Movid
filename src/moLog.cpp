@@ -22,9 +22,14 @@
 #include "moLog.h"
 #include "pasync.h"
 
+#ifndef WIN32
+#include <syslog.h>
+#endif
+
 static pt::mutex(logmtx);
 
 int g_loglevel = MO_INFO;
+bool g_use_syslog = false;
 
 moLogMessage::moLogMessage(std::string name, std::string filename,
 						   int line, int level) {
@@ -32,30 +37,41 @@ moLogMessage::moLogMessage(std::string name, std::string filename,
 	time_t t;
 	struct tm *tmp;
 
-	t = time(NULL);
-	tmp = localtime(&t);
-	strftime(buffer, sizeof(buffer), "%H:%M:%S", tmp);
+	if (! g_use_syslog) {
+		t = time(NULL);
+		tmp = localtime(&t);
+		strftime(buffer, sizeof(buffer), "%H:%M:%S", tmp);
 
-	this->os << buffer << " | ";
+		this->os << buffer << " | ";
+	}
 	this->os << moLog::getLogLevelName(level) << " | ";
 	this->os << (const char *)name.c_str() << " | ";
 	this->level = level;
 }
 
 moLogMessage::~moLogMessage() {
-	if ( this->level <= g_loglevel ) {
+	if (this->level <= g_loglevel) {
 		logmtx.lock();
+#ifndef WIN32
+		if (g_use_syslog) {
+			syslog(LOG_USER | moLog::getSysLogLevel(this->level), "%s", this->os.str().c_str());
+		} else {
+			std::cout << this->os.str() << std::endl;
+		}
+#else
 		std::cout << this->os.str() << std::endl;
+#endif
 		logmtx.unlock();
 	}
 }
 
 
-void moLog::init() {
+void moLog::init(bool use_syslog) {
+	g_use_syslog = use_syslog;
 	g_loglevel = MO_INFO;
-	if ( getenv("MO_DEBUG") )
+	if (getenv("MO_DEBUG"))
 		g_loglevel = MO_DEBUG;
-	if ( getenv("MO_TRACE") )
+	if (getenv("MO_TRACE"))
 		g_loglevel = MO_TRACE;
 }
 
@@ -70,8 +86,19 @@ void moLog::setLogLevel(int n) {
 	g_loglevel = n;
 }
 
+int moLog::getSysLogLevel(int n) {
+	switch (n) {
+		case MO_CRITICAL:	return LOG_CRIT;
+		case MO_ERROR:		return LOG_ERR;
+		case MO_WARNING:	return LOG_WARNING;
+		case MO_INFO:		return LOG_INFO;
+		case MO_DEBUG:		return LOG_DEBUG;
+		default:		return 0;
+	}
+}
+
 std::string moLog::getLogLevelName(int n) {
-	switch ( n ) {
+	switch (n) {
 		case MO_CRITICAL:	return "Critical";
 		case MO_ERROR:		return "Error";
 		case MO_WARNING:	return "Warning";

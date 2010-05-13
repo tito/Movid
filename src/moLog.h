@@ -72,10 +72,11 @@ enum {
 
 class moLog {
 public:
-	static void init();
+	static void init(bool use_syslog);
 	static void cleanup();
 	static void setLogLevel(int n);
 	static int getLogLevel();
+	static int getSysLogLevel(int n);
 	static std::string getLogLevelName(int n);
 };
 
