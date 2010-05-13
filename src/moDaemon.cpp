@@ -27,9 +27,7 @@
 #include <windows.h>
 #endif
 
-//#ifdef WIN32
 LOG_DECLARE("Daemon");
-//#endif
 
 void moDaemon::init() {
 	moFactory::init();
