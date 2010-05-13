@@ -44,15 +44,14 @@ void moDaemon::init() {
 #endif
 }
 
-bool moDaemon::detach(bool doit) {
+bool moDaemon::detach() {
 #ifndef WIN32
-	if (doit) {
-		pid_t pid = fork();
-		if (pid > 0)
-			LOG(MO_INFO, "child process created with pid=" << pid);
-		return(pid == 0);
-	} else
-		return true;
+	pid_t pid = fork();
+	if (pid > 0)
+		LOG(MO_INFO, "child process created with pid=" << pid);
+	if (pid < 0)
+		LOG(MO_ERROR, "no child process could be created, but this process is still living");
+	return(pid <= 0);
 #endif
 }
 

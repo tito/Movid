@@ -937,7 +937,6 @@ int parse_options(int *argc, char ***argv) {
 
 int main(int argc, char **argv) {
 	int ret, exit_ret = 0;
-	bool child;
 
 	// initialize all signals
 #ifndef _WIN32
@@ -960,10 +959,9 @@ int main(int argc, char **argv) {
 	moDaemon::init();
 	
 	// detach from console
-	child = moDaemon::detach(config_detach);
-	if (! child) {
-		return exit_ret;
-	}
+	if (config_detach)
+		if (! moDaemon::detach())
+			return exit_ret;
 
 	// parse pipeline passed in parameters
 	if ( config_pipelinefn != "" ) {
