@@ -76,6 +76,7 @@ static bool config_httpserver = true;
 static bool test_mode = false;
 static std::string config_pipelinefn = "";
 static std::string config_guidir = MO_GUIDIR;
+static std::string config_pidfile = "/var/run/movid.pid";
 static struct evhttp *server = NULL;
 int g_config_delay = 5;
 
@@ -868,6 +869,7 @@ void usage(void) {
 		   "  -i  --info <modulename>     Show infos on a module            \n" \
 		   "  -s  --syslog                Send loggings to syslog           \n" \
 		   "  -d  --detach                Detach from console               \n" \
+		   "  -p  --pidfile <filename>    Write PID into this file          \n" \
 		   "  -n  --no_http               No webserver                      \n" \
 		   "  -g  --guidir <filename>     Directory for GUI                 \n" \
 		   "  -l  --pipeline <filename>   Read a pipeline from filename     \n",
@@ -893,7 +895,8 @@ int parse_options(int *argc, char ***argv) {
 		{"pipeline", 1, 0, 'l'},
 		{"syslog", 0, 0, 's'},
 		{"detach", 0, 0, 'd'},
-		{"guidir", 0, 0, 'g'},
+		{"pidfile", 1, 0, 'p'},
+		{"guidir", 1, 0, 'g'},
 		{"no_http", 0, 0, 'n'},
 		{"test", 0, 0, 't'},
 		{"help", 0, 0, 'h'},
@@ -901,7 +904,7 @@ int parse_options(int *argc, char ***argv) {
 	};
 	while (1) {
 		int option_index = 0;
-		ch = getopt_long(*argc, *argv, "hg:l:sdni:t", options, &option_index);
+		ch = getopt_long(*argc, *argv, "hp:g:l:sdni:t", options, &option_index);
 		if (ch == -1)
 			break;
 		switch ( ch ) {
@@ -911,6 +914,9 @@ int parse_options(int *argc, char ***argv) {
 				break;
 			case 'd':
 				config_detach = true;
+				break;
+			case 'p':
+				config_pidfile = std::string(optarg);
 				break;
 			case 'g':
 				config_guidir = std::string(optarg);
@@ -966,7 +972,7 @@ int main(int argc, char **argv) {
 	
 	// detach from console
 	if (config_detach)
-		if (! moDaemon::detach())
+		if (! moDaemon::detach(config_pidfile))
 			return exit_ret;
 
 	// parse pipeline passed in parameters

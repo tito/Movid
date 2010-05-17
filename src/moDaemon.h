@@ -22,7 +22,7 @@
 class moDaemon {
 public:
 	static void init();
-	static bool detach();
+	static bool detach(std::string pidfilename);
 	static void cleanup();
 };
 

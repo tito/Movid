@@ -43,22 +43,22 @@ void moDaemon::init() {
 #endif
 }
 
-bool moDaemon::detach() {
+bool moDaemon::detach(std::string pidfilename) {
 #ifndef WIN32
 	pid_t pid = fork();
 	if (pid > 0) {
 		LOG(MO_INFO, "child process created with pid " << pid);
 		try {
-			std::ofstream pidfile("/var/run/movid.pid", std::ios::out|std::ios::trunc);
+			std::ofstream pidfile(pidfilename.c_str(), std::ios::out|std::ios::trunc);
 			if (pidfile) {
 				pidfile << pid << std::endl;
 				pidfile.close();
 			} else {
-				LOG(MO_ERROR, "Cannot write pidfile /var/run/movid.pid");
+				LOG(MO_ERROR, "Cannot write pidfile " << pidfilename);
 			}
 		} 
 		catch(std::exception x) {
-			LOG(MO_ERROR, "Cannot write pidfile /var/run/movid.pid: " << x.what());
+			LOG(MO_ERROR, "Cannot write pidfile " << pidfilename << ": " << x.what());
 		}
 	}
 	if (pid < 0)
