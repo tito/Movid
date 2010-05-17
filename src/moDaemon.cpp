@@ -17,6 +17,7 @@
 
 
 #include <iostream>
+#include <fstream>
 
 #include "moDaemon.h"
 #include "moLog.h"
@@ -45,8 +46,21 @@ void moDaemon::init() {
 bool moDaemon::detach() {
 #ifndef WIN32
 	pid_t pid = fork();
-	if (pid > 0)
-		LOG(MO_INFO, "child process created with pid=" << pid);
+	if (pid > 0) {
+		LOG(MO_INFO, "child process created with pid " << pid);
+		try {
+			std::ofstream pidfile("/var/run/movid.pid", std::ios::out|std::ios::trunc);
+			if (pidfile) {
+				pidfile << pid << std::endl;
+				pidfile.close();
+			} else {
+				LOG(MO_ERROR, "Cannot write pidfile /var/run/movid.pid");
+			}
+		} 
+		catch(std::exception x) {
+			LOG(MO_ERROR, "Cannot write pidfile /var/run/movid.pid: " << x.what());
+		}
+	}
 	if (pid < 0)
 		LOG(MO_ERROR, "no child process could be created, but this process is still living");
 	return(pid <= 0);
