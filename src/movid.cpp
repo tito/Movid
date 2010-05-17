@@ -75,6 +75,7 @@ static bool config_syslog = false;
 static bool config_httpserver = true;
 static bool test_mode = false;
 static std::string config_pipelinefn = "";
+static std::string config_guidir = MO_GUIDIR;
 static struct evhttp *server = NULL;
 int g_config_delay = 5;
 
@@ -813,7 +814,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 	}
 
 	snprintf(filename, sizeof(filename), "%s/%s",
-		MO_GUIDIR, req->uri + sizeof("/gui/") - 1);
+		config_guidir.c_str(), req->uri + sizeof("/gui/") - 1);
 
 	LOG(MO_INFO, "web: GET " << filename);
 	fd = fopen(filename, "rb");
@@ -868,6 +869,7 @@ void usage(void) {
 		   "  -s  --syslog                Send loggings to syslog           \n" \
 		   "  -d  --detach                Detach from console               \n" \
 		   "  -n  --no_http               No webserver                      \n" \
+		   "  -g  --guidir <filename>     Directory for GUI                 \n" \
 		   "  -l  --pipeline <filename>   Read a pipeline from filename     \n",
 		   MO_DAEMON
 	);
@@ -891,6 +893,7 @@ int parse_options(int *argc, char ***argv) {
 		{"pipeline", 1, 0, 'l'},
 		{"syslog", 0, 0, 's'},
 		{"detach", 0, 0, 'd'},
+		{"guidir", 0, 0, 'g'},
 		{"no_http", 0, 0, 'n'},
 		{"test", 0, 0, 't'},
 		{"help", 0, 0, 'h'},
@@ -898,7 +901,7 @@ int parse_options(int *argc, char ***argv) {
 	};
 	while (1) {
 		int option_index = 0;
-		ch = getopt_long(*argc, *argv, "hl:sdni:t", options, &option_index);
+		ch = getopt_long(*argc, *argv, "hg:l:sdni:t", options, &option_index);
 		if (ch == -1)
 			break;
 		switch ( ch ) {
@@ -908,6 +911,9 @@ int parse_options(int *argc, char ***argv) {
 				break;
 			case 'd':
 				config_detach = true;
+				break;
+			case 'g':
+				config_guidir = std::string(optarg);
 				break;
 			case 'n':
 				config_httpserver = false;
