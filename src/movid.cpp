@@ -21,6 +21,8 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <Xgetopt.h>
+#else
+#include <getopt.h>
 #endif
 
 
@@ -28,7 +30,6 @@
 #include <sys/stat.h>
 #include <sys/queue.h>
 #include <signal.h>
-#include <getopt.h>
 
 #ifndef WIN32
 #include <sys/socket.h>
