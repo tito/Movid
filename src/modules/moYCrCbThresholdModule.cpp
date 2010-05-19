@@ -31,19 +31,19 @@ moYCrCbThresholdModule::moYCrCbThresholdModule() : moImageFilterModule(){
 	this->properties["Y_min"] = new moProperty(0);
 	this->properties["Y_min"]->setMin(0);
 	this->properties["Y_min"]->setMax(255);
-	this->properties["Y_max"] = new moProperty(20);
+	this->properties["Y_max"] = new moProperty(255);
 	this->properties["Y_max"]->setMin(0);
 	this->properties["Y_max"]->setMax(255);
-	this->properties["Cr_min"] = new moProperty(0);
+	this->properties["Cr_min"] = new moProperty(145);
 	this->properties["Cr_min"]->setMin(0);
 	this->properties["Cr_min"]->setMax(255);
-	this->properties["Cr_max"] = new moProperty(20);
+	this->properties["Cr_max"] = new moProperty(175);
 	this->properties["Cr_max"]->setMin(0);
 	this->properties["Cr_max"]->setMax(255);
-	this->properties["Cb_min"] = new moProperty(0);
+	this->properties["Cb_min"] = new moProperty(100);
 	this->properties["Cb_min"]->setMin(0);
 	this->properties["Cb_min"]->setMax(255);
-	this->properties["Cb_max"] = new moProperty(255);
+	this->properties["Cb_max"] = new moProperty(130);
 	this->properties["Cb_max"]->setMin(0);
 	this->properties["Cb_max"]->setMax(255);
 }
