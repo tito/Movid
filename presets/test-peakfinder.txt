@@ -1,0 +1,23 @@
+pipeline create Video video
+pipeline create GrayScale gray
+pipeline create Threshold thresh
+pipeline create Dilate dilate
+pipeline create DistanceTransform dist
+pipeline create PeakFinder peaks
+pipeline create ImageDisplay win
+pipeline create ImageDisplay win2
+
+pipeline set video filename media/blob.avi
+pipeline set thresh threshold 70
+pipeline set dilate iterations 1
+pipeline set dist scale 3
+pipeline set peaks min_radius 4
+pipeline set peaks max_radius 20
+
+pipeline connect video 0 gray 0
+pipeline connect gray 0 thresh 0
+pipeline connect thresh 0 dilate 0
+pipeline connect dilate 0 dist 0
+pipeline connect dilate 0 win 0
+pipeline connect dist 0 peaks 0
+pipeline connect peaks 0 win2 0

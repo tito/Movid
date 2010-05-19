@@ -54,6 +54,10 @@ void moFactory::init() {
 	REGISTER_MODULE(Dilate);
 	REGISTER_MODULE(Canny);
 	REGISTER_MODULE(Hsv);
+	REGISTER_MODULE(DistanceTransform);
+	REGISTER_MODULE(PeakFinder);
+	REGISTER_MODULE(FingerTipFinder);
+	REGISTER_MODULE(YCrCbThreshold);
 	//DoNotRemoveThisComment
 	LOG(MO_INFO, "register " << moFactory::getInstance()->list().size() << " modules");
 }

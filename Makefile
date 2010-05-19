@@ -53,7 +53,9 @@ SOURCES = \
 	src/modules/moCameraModule.cpp \
 	src/modules/moCannyModule.cpp \
 	src/modules/moCombineModule.cpp \
+	src/modules/moFingerTipFinderModule.cpp \
 	src/modules/moDilateModule.cpp \
+	src/modules/moDistanceTransformModule.cpp \
 	src/modules/moDumpModule.cpp \
 	src/modules/moErodeModule.cpp \
 	src/modules/moFiducialTrackerModule.cpp \
@@ -66,11 +68,13 @@ SOURCES = \
 	src/modules/moInvertModule.cpp \
 	src/modules/moMaskModule.cpp \
 	src/modules/moMirrorImageModule.cpp \
+	src/modules/moPeakFinderModule.cpp \
 	src/modules/moRoiModule.cpp \
 	src/modules/moSmoothModule.cpp \
 	src/modules/moThresholdModule.cpp \
 	src/modules/moTuioModule.cpp \
 	src/modules/moVideoModule.cpp \
+	src/modules/moYCrCbThresholdModule.cpp \
 	#AUTOMODULE_DoNotRemoveThisComment
 
 
