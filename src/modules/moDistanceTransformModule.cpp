@@ -53,7 +53,7 @@ void moDistanceTransformModule::allocateBuffers() {
 	// The img that will contain the actual distances
 	this->dist = cvCreateImage(cvGetSize(src), IPL_DEPTH_32F, 1);
 	this->output_buffer = cvCreateImage(cvGetSize(src), IPL_DEPTH_8U, 1);
-	LOG(MO_DEBUG) << "allocated output buffer for DistanceTransform module.";
+	LOG(MO_DEBUG, "allocated output buffer for DistanceTransform module.");
 }
 
 int moDistanceTransformModule::toCvType(const std::string &metric) {
@@ -68,7 +68,6 @@ int moDistanceTransformModule::toCvType(const std::string &metric) {
 	if ( metric == "Welsch" )
 		return CV_DIST_WELSCH;
 
-	LOGM(MO_ERROR) << "Unsupported distance metric: " << metric;
 	this->setError("Unsupported distance metric");
 	return 0;
 }
@@ -81,7 +80,6 @@ int moDistanceTransformModule::toCvMaskSize(const std::string &mask_size) {
 	if ( mask_size == "Precise" )
 		return CV_DIST_MASK_PRECISE;
 
-	LOGM(MO_ERROR) << "Unsupported mask size for distance transform: " << mask_size;
 	this->setError("Unsupported mask size for distance transform");
 	return 0;
 }
