@@ -78,33 +78,6 @@ void moPeakFinderModule::findRange(IplImage *src) {
 	}
 }
 
-void moPeakFinderModule::removeDuplicates() {
-	// Remove duplicate peaks.
-	double distance;
-	double merge_distance = this->property("merge_distance").asDouble();
-	doubleToPoint p1, p2;
-	std::vector<int> suppressed;
-	for (unsigned int i = 0; i < this->peaks.size(); i++) {
-		p1 = this->peaks[i];
-		for (unsigned int j = i+1; j < this->peaks.size(); j++) {
-			if (i == j) continue;
-			if (_in(suppressed, j)) continue;
-			p2 = this->peaks[j];
-			distance = sqrt(pow(p1.second.x - p2.second.x, 2) + pow(p1.second.y - p2.second.y, 2));
-			if (distance <= merge_distance) {
-				suppressed.push_back(j);
-			}
-		}
-	}
-	if (suppressed.size() > 0) {
-		std::vector<doubleToPoint> good_peaks;
-		for (unsigned int i = 0; i < this->peaks.size(); i++) {
-			if (!_in(suppressed, i)) good_peaks.push_back(this->peaks[i]);
-		}
-		this->peaks = good_peaks;
-	}
-}
-
 void moPeakFinderModule::findMaxima() {
 	// If the max_peaks option was set, we only give back the $max_peaks strongest peaks.
 	unsigned int max_peaks = this->property("max_peaks").asInteger();
@@ -133,7 +106,6 @@ void moPeakFinderModule::applyFilter(IplImage *src) {
 	this->peaks.clear();
 
 	this->findRange(src);
-	//this->removeDuplicates();
 	this->findMaxima();
 	this->drawPeaks();
 

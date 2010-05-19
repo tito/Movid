@@ -1,11 +1,17 @@
 pipeline create Camera cam
+pipeline create GrayScale gray
 pipeline create YCrCbThreshold thresh
 pipeline create Smooth smooth
 pipeline create FingerTipFinder fingertips
+pipeline create DistanceTransform dist
+pipeline create PeakFinder peaks
+pipeline create Combine comb
+pipeline create Combine comb2
 
 pipeline set cam index 2
 pipeline set smooth filter median
 pipeline set smooth size 5
+pipeline set dist scale 1
 
 pipeline set cam use_thread 1
 pipeline set thresh use_thread 1
@@ -13,5 +19,12 @@ pipeline set smooth use_thread 1
 pipeline set fingertips use_thread 1
 
 pipeline connect cam 0 thresh 0
+pipeline connect cam 0 gray 0
 pipeline connect thresh 0 smooth 0
 pipeline connect smooth 0 fingertips 0
+pipeline connect smooth 0 dist 0
+pipeline connect dist 0 peaks 0
+pipeline connect fingertips 0 comb 0
+pipeline connect peaks 0 comb 1
+pipeline connect comb 0 comb2 1
+pipeline connect gray 0 comb2 0
