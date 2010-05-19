@@ -50,6 +50,7 @@ SOURCES = \
 	src/modules/moAmplifyModule.cpp \
 	src/modules/moBackgroundSubtractModule.cpp \
 	src/modules/moBlobTrackerModule.cpp \
+	src/modules/moBlobTrackerKNNModule.cpp \
 	src/modules/moCameraModule.cpp \
 	src/modules/moCannyModule.cpp \
 	src/modules/moCombineModule.cpp \
