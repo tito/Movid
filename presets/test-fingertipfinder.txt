@@ -1,0 +1,17 @@
+pipeline create Camera cam
+pipeline create YCrCbThreshold thresh
+pipeline create Smooth smooth
+pipeline create FingerTipFinder fingertips
+
+pipeline set cam index 2
+pipeline set smooth filter median
+pipeline set smooth size 5
+
+pipeline set cam use_thread 1
+pipeline set thresh use_thread 1
+pipeline set smooth use_thread 1
+pipeline set fingertips use_thread 1
+
+pipeline connect cam 0 thresh 0
+pipeline connect thresh 0 smooth 0
+pipeline connect smooth 0 fingertips 0
