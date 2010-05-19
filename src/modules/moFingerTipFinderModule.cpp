@@ -15,18 +15,37 @@
  **
  **********************************************************************/
 
+/*
+ * This module can be used to detect a hand in an image.
+ * The output is binary image showing the hand's outline, the fingertips (as
+ * white circles) and the center of the hand (white rectangle).
+ * The following steps are performed:
+ *		1. The contours of the segmented hand are found.
+ *		   If the area of the contour is not above a certain threshold, the
+ *		   contour can be discarded.
+ *		2. The convex hull of the contour is determined and convexity defects
+ *		   calculated. The defects that are more than a given threshold
+ *		   away from the convex hull are considered. Their start and endpoint
+ *		   is interpreted as fingertips.
+ *		   Since there are 5 fingers visible at max, we consider only the
+ *		   strongest defects, of which we only take 5 at a max. (1 def = 2 points)
+ *		3. Since there could (should) be double-detections of the index, middle
+ *		   and ring finger, we merge fingertips that are in very close proximity
+ *		   of each other.
+ */
+
 
 #include <assert.h>
-#include "moContourFinderModule.h"
+#include "moFingerTipFinderModule.h"
 #include "../moLog.h"
 #include "cv.h"
 
 // XXX This is currently rather the scratchspace for a fingertip finder...
-MODULE_DECLARE(ContourFinder, "native", "ContourFinder finds contours in an image");
+MODULE_DECLARE(FingerTipFinder, "native", "Module capable of detecting hands in an image. Detection is based on color-segmentation, contour-shape and distance transform. Finds fingertips & centerpoint of the palm.");
 
 typedef std::pair<float, CvConvexityDefect*> depthToDefect;
 
-moContourFinderModule::moContourFinderModule() : moImageFilterModule(){
+moFingerTipFinderModule::moFingerTipFinderModule() : moImageFilterModule(){
 
 	MODULE_INIT();
 
@@ -36,7 +55,7 @@ moContourFinderModule::moContourFinderModule() : moImageFilterModule(){
 	this->properties["merge_distance"] = new moProperty(10.);
 }
 
-moContourFinderModule::~moContourFinderModule() {
+moFingerTipFinderModule::~moFingerTipFinderModule() {
 	cvReleaseMemStorage(&this->storage);
 }
 
@@ -51,7 +70,7 @@ bool _in2(std::vector<int> &vec, int e) {
 	return false;
 }
 
-void moContourFinderModule::applyFilter(IplImage *src) {
+void moFingerTipFinderModule::applyFilter(IplImage *src) {
 	// Create a copy since cvFindContours will manipulate its input
 	cvCopy(src, this->output_buffer);
 	CvSeq *contours = 0;

@@ -53,7 +53,7 @@ SOURCES = \
 	src/modules/moCameraModule.cpp \
 	src/modules/moCannyModule.cpp \
 	src/modules/moCombineModule.cpp \
-	src/modules/moContourFinderModule.cpp \
+	src/modules/moFingerTipFinderModule.cpp \
 	src/modules/moDilateModule.cpp \
 	src/modules/moDistanceTransformModule.cpp \
 	src/modules/moDumpModule.cpp \

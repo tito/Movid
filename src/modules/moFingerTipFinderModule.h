@@ -16,15 +16,15 @@
  **********************************************************************/
 
 
-#ifndef UMO_ContourFinder_MODULE_H
-#define UMO_ContourFinder_MODULE_H
+#ifndef UMO_FINGERTIPFINDER_MODULE_H
+#define UMO_FINGERTIPFINDER_MODULE_H
 
 #include "moImageFilterModule.h"
 
-class moContourFinderModule : public moImageFilterModule{
+class moFingerTipFinderModule : public moImageFilterModule{
 public:
-	moContourFinderModule();
-	virtual ~moContourFinderModule();
+	moFingerTipFinderModule();
+	virtual ~moFingerTipFinderModule();
 
 protected:
 	CvMemStorage *storage;
