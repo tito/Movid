@@ -929,6 +929,7 @@ int parse_options(int *argc, char ***argv) {
 				config_pipelinefn = std::string(optarg);
 				break;
 			case 'i':
+				moDaemon::init();
 				describe(optarg);
 				return 0; /* leave properly */
 			case 't':

@@ -66,6 +66,7 @@ SOURCES = \
 	src/modules/moImageFilterModule.cpp \
 	src/modules/moImageModule.cpp \
 	src/modules/moInvertModule.cpp \
+	src/modules/moJustifyModule.cpp \
 	src/modules/moMaskModule.cpp \
 	src/modules/moMirrorImageModule.cpp \
 	src/modules/moPeakFinderModule.cpp \
