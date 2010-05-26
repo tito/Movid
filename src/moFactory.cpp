@@ -59,6 +59,7 @@ void moFactory::init() {
 	REGISTER_MODULE(PeakFinder);
 	REGISTER_MODULE(FingerTipFinder);
 	REGISTER_MODULE(YCrCbThreshold);
+	REGISTER_MODULE(ContourBlobs);
 	//DoNotRemoveThisComment
 	LOG(MO_INFO, "register " << moFactory::getInstance()->list().size() << " modules");
 }
