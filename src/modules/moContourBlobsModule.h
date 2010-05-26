@@ -28,8 +28,10 @@ public:
 	virtual ~moContourBlobsModule();
 	
 protected:
+	void clearBlobs();
 	void applyFilter(IplImage*);
 	CvMemStorage *storage;
+	moDataGenericList *blobs;
 	moDataStream *output_data;
 	moDataStream* getOutput(int);
 

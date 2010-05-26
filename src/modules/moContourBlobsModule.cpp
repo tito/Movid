@@ -32,15 +32,25 @@ moContourBlobsModule::moContourBlobsModule() : moImageFilterModule(){
 	this->output_data = new moDataStream("GenericBlob");
 	this->output_count = 2;
 	this->output_infos[1] = new moDataStreamInfo("data", "GenericBlob", "Data stream with Blob info");
+	this->blobs = new moDataGenericList();
 }
 
 moContourBlobsModule::~moContourBlobsModule() {
 	cvReleaseMemStorage(&this->storage);
+	delete this->blobs;
+}
+
+void moContourBlobsModule::clearBlobs() {
+	moDataGenericList::iterator it;
+	for ( it = this->blobs->begin(); it != this->blobs->end(); it++ )
+		delete (*it);
+	this->blobs->clear();
 }
 
 void moContourBlobsModule::applyFilter(IplImage *src) {
 	//this->input->lock();
 
+	this->clearBlobs();
 	cvCopy(src, this->output_buffer);
 	CvSeq *contours = 0;
 	cvFindContours(this->output_buffer, this->storage, &contours, sizeof(CvContour), CV_RETR_CCOMP);
@@ -50,7 +60,7 @@ void moContourBlobsModule::applyFilter(IplImage *src) {
 
 	// Consider each contour a blob and extract the blob infos from it.
 	// TODO Add more infos later
-	moDataGenericList *blobs = new moDataGenericList();
+
 	CvSeq *cur_cont = contours;
 	while (cur_cont != 0) {
 		CvRect rect	= cvBoundingRect(cur_cont, 0);
