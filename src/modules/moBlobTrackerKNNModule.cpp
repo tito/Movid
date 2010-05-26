@@ -103,24 +103,27 @@ void moBlobTrackerKNNModule::track(moDataGenericList *new_blobs) {
 void moBlobTrackerKNNModule::update() {
 	// XXX does input locking still apply?
 	assert(this->input != NULL);
-	this->input->lock();
 
-	this->pruneBlobs();
-	moDataGenericList *new_blobs = static_cast<moDataGenericList*>(this->input->getData());
-	this->track(new_blobs);
-	this->output->push(new_blobs);
+	moDataGenericList *blobs = (moDataGenericList*) this->input->getData();
 
-
-
-
-	moDataGenericList::iterator it;
-	for (it=new_blobs->begin(); it != new_blobs->end(); it++) {
-		std::cout << (*it)->properties["id"]->asInteger() << std::endl;
-	}
-
-
-
-	this->input->unlock();	
+//	this->input->lock();
+//
+//	this->pruneBlobs();
+//	moDataGenericList *new_blobs = static_cast<moDataGenericList*>(this->input->getData());
+//	this->track(new_blobs);
+//	this->output->push(new_blobs);
+//
+//
+//
+//
+//	moDataGenericList::iterator it;
+//	for (it=new_blobs->begin(); it != new_blobs->end(); it++) {
+//		std::cout << (*it)->properties["id"]->asInteger() << std::endl;
+//	}
+//
+//
+//
+//	this->input->unlock();	
 }
 
 void moBlobTrackerKNNModule::notifyData(moDataStream *input) {
