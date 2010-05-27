@@ -336,11 +336,15 @@ void moCalibrationModule::transformPoints() {
 		CvSubdiv2DPoint* p = NULL;
 		double touch_x = (*it)->properties["x"]->asDouble();
 		double touch_y = (*it)->properties["y"]->asDouble();
+		LOG(MO_DEBUG) << std::endl << "Incoming touch is at " << touch_x << ", " << touch_y;
 		CvPoint2D32f fp = cvPoint2D32f(touch_x, touch_y);
 		cvSubdiv2DLocate(this->subdiv, fp, &e0, &p);
 		CvSubdiv2DPoint* enclosingPoints[3];
 		
-		if (!e0) return; // XXX why is this necessary?
+		if (!e0) {
+			assert(0);
+			return; // XXX why is this necessary?
+		}
 		
 		//edges[0] = e0;
 		// Collect the vertices of the triangle enclosing the given surfacePoint
@@ -356,33 +360,49 @@ void moCalibrationModule::transformPoints() {
 		}
 		while (e != e0);
 		for (i = 0; i < 3; i++) {
-			LOG(MO_TRACE) << "Found point " << i << " for touch " << 
+			LOG(MO_DEBUG) << "Found point " << i << " for touch " << 
 			(*it)->properties["id"]->asInteger() << ": " << (*enclosingPoints[i]).pt.x << "/" << (*enclosingPoints[i]).pt.y;
 		}
 		// Now that we found the three surfacePoints of the triangle enclosing the given point,
 		// we can do the barycentric conversion.
-		CvPoint2D32f surf_a, surf_b, surf_c;
+		CvPoint2D32f surf_a, surf_b, surf_c, p1, p2;
 		moPoint screen_a, screen_b, screen_c;
 		double alpha, beta, gamma;
 		surf_a = enclosingPoints[0]->pt;
-		surf_b = enclosingPoints[1]->pt;
-		surf_c = enclosingPoints[2]->pt;
 		screen_a = this->delaunayToScreen[enclosingPoints[0]];
-		screen_b = this->delaunayToScreen[enclosingPoints[1]];
-		screen_c = this->delaunayToScreen[enclosingPoints[2]];
+		// We want to use the point with the smallest y-difference as point b
+		p1 = enclosingPoints[1]->pt;
+		p2 = enclosingPoints[2]->pt;
+		// XXX > ????
+		if (abs(p1.y - surf_a.y) > abs(p2.y - surf_a.y)) {
+			surf_b = p1;
+			screen_b = this->delaunayToScreen[enclosingPoints[1]];
+			surf_c = p2;
+			screen_c = this->delaunayToScreen[enclosingPoints[2]];
+		}
+		else {
+			surf_b = p2;
+			screen_b = this->delaunayToScreen[enclosingPoints[2]];
+			surf_c = p1;
+			screen_c = this->delaunayToScreen[enclosingPoints[1]];
+		}
+		LOG(MO_DEBUG) << "[Surf_A: " << surf_a.x << " / " << surf_a.y << "] [Surf_B: " << surf_b.x << " / " << surf_b.y << "] [Surf_C: " << surf_c.x << " / " << surf_c.y << "]";
 		// TODO Should be vectors...
 		moPoint ab = {surf_b.x - surf_a.x, surf_b.y - surf_a.y};
 		moPoint ac = {surf_c.x - surf_a.x, surf_c.y - surf_a.y};
+		LOG(MO_DEBUG) << "[Vector ab: " << ab.x << " / " << ab.y << "] [Vector ac " << ac.x << " / " << ac.y << "]";
 		beta = (touch_x - surf_a.x) / ab.x;
+		LOG(MO_DEBUG) << "Beta = |" << touch_x << " - " << surf_a.x << "| / " << ab.x << " = " << beta;
 		gamma = (touch_y - surf_a.y) / ac.y;
+		LOG(MO_DEBUG) << "Gamma = |" << touch_y << " - " << surf_a.y << "| / " << ac.y << " = " << gamma;
 		alpha = (1.0 - beta - gamma);
+
 		double final_x = screen_a.x * alpha + screen_b.x * beta + screen_c.x * gamma;
 		double final_y = screen_a.y * alpha + screen_b.y * beta + screen_c.y * gamma;
 
-		LOG(MO_TRACE) << "Barycentric params for touch " << (*it)->properties["id"]->asInteger()
+		LOG(MO_DEBUG) << "Barycentric params for touch " << (*it)->properties["id"]->asInteger()
 					  << ": " << alpha << "/" << beta << "/" << gamma << " += " << alpha+beta+gamma;
-		LOG(MO_TRACE) << "Touch is at: " << screen_a.x << " " << screen_b.x << " " << screen_c.x << " "
-						 << final_x << "/" << final_y;
+		LOG(MO_DEBUG) << "Final Touch is at: " << final_x << "/" << final_y;
 		
 		// add the blob in data
 		moDataGenericContainer *touch = new moDataGenericContainer();
