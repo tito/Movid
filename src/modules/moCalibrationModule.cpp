@@ -83,7 +83,7 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->rect = cvRect(0, 0, 5000, 5000);
 	this->storage = cvCreateMemStorage(0);
 	this->active_point = 0;
-	this->last_id = 0;
+	this->last_id = -1;
 	this->input = NULL;
 	this->output = NULL;
 	this->subdiv = NULL;
@@ -92,7 +92,7 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 }
 
 void moCalibrationModule::resetCalibration() {
-	this->last_id = 0;
+	this->last_id = -1;
 	this->active_point = 0;
 }
 
@@ -243,8 +243,10 @@ void moCalibrationModule::triangulate() {
 	// We then use these to compute the on screen coordinate of the touch.
 	moPointList screenPoints = this->property("screenPoints").asPointList(),
 				surfacePoints = this->property("surfacePoints").asPointList();
-	moPointList::iterator its;
-	std::vector<moPoint>::iterator it;
+	assert(screenPoints.size() == surfacePoints.size());
+
+	moPointList::iterator it, its;
+	//std::vector<moPoint>::iterator it;
 	this->delaunayToScreen.clear();
 	this->subdiv = init_delaunay(this->storage, this->rect);
 	for(it = surfacePoints.begin(),
@@ -289,6 +291,8 @@ void moCalibrationModule::calibrate() {
 		LOG(MO_DEBUG) << "Calibration complete!";
 		this->active_point = 0;
 		this->property("calibrate").set(false);
+		if (this->retriangulate)
+			this->triangulate();
 		return;
 	}
 
@@ -413,9 +417,9 @@ void moCalibrationModule::update() {
 	
 	if ( calibrate ) {
 		this->calibrate();
-	} else {
 		// Perhaps points were added, moved or deleted. If this is the case
 		// we have to triangulate again. 
+	} else {
 		if (this->retriangulate)
 			this->triangulate();
 		this->transformPoints();
