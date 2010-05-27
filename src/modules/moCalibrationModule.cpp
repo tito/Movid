@@ -172,22 +172,23 @@ void moCalibrationModule::guiBuild(void) {
 
 			org_pt = cvSubdiv2DEdgeOrg((CvSubdiv2DEdge)edge);
 			dst_pt = cvSubdiv2DEdgeDst((CvSubdiv2DEdge)edge);
+           
+           if(  org_pt && dst_pt &&
+                 this->delaunayToScreen.find(org_pt) != this->delaunayToScreen.end() &&
+                 this->delaunayToScreen.find(dst_pt) != this->delaunayToScreen.end() )
 
-			if( org_pt && dst_pt )
 			{
 				org = this->delaunayToScreen[org_pt];
 				dst = this->delaunayToScreen[dst_pt];
 
-				//if ( abs(org.x) != 15000 && abs(org.y) != 15000 &&
-				//	 abs(dst.x) != 15000 && abs(dst.y) != 15000)
-				{
-					oss.str("");
-					oss << "line " << int(org.x * 1000.);
-					oss << " " << int(org.y * 1000.);
-					oss << " " << int(dst.x * 1000.);
-					oss << " " << int(dst.y * 1000.);
-					this->gui.push_back(oss.str());
-				}
+				oss.str("");
+				oss << "line " << int(org.x * 1000.);
+				oss << " " << int(org.y * 1000.);
+				oss << " " << int(dst.x * 1000.);
+				oss << " " << int(dst.y * 1000.);
+				this->gui.push_back(oss.str());
+				//LOG(MO_TRACE) << "drawing line: " << i << "   surface pos:" << org_pt->pt.x << ","<< org_pt->pt.y<<"|"<<dst_pt->pt.x << ","<< dst_pt->pt.y;
+				//LOG(MO_TRACE) << "    creen points: " << oss.str();
 			}
         }
         
@@ -224,42 +225,28 @@ void moCalibrationModule::guiBuild(void) {
 	}
 }
 
-CvSubdiv2D* init_delaunay(CvMemStorage* storage, CvRect rect) {
-    CvSubdiv2D* subdiv;
-    subdiv = cvCreateSubdiv2D(CV_SEQ_KIND_SUBDIV2D,
-							  sizeof(*subdiv),
-							  sizeof(CvSubdiv2DPoint),
-							  sizeof(CvQuadEdge2D),
-							  storage);
-    cvInitSubdivDelaunay2D(subdiv, rect);
-    return subdiv;
-}
-
 void moCalibrationModule::triangulate() {
 	// We first triangulate all the surfacePoints.
 	// Afterwards, in transform mode when a new touch occurrs, we can
 	// simply look up the triangle in which the touch was performed
 	// and get the barycentric parameters of the touch in that triangle.
 	// We then use these to compute the on screen coordinate of the touch.
-	moPointList screenPoints = this->property("screenPoints").asPointList(),
-				surfacePoints = this->property("surfacePoints").asPointList();
+	moPointList screenPoints  = this->property("screenPoints").asPointList();
+	moPointList surfacePoints = this->property("surfacePoints").asPointList();
 	assert(screenPoints.size() == surfacePoints.size());
 
-	moPointList::iterator it, its;
-	//std::vector<moPoint>::iterator it;
 	this->delaunayToScreen.clear();
-	this->subdiv = init_delaunay(this->storage, this->rect);
-	for(it = surfacePoints.begin(),
-		its = screenPoints.begin();
-		it != surfacePoints.end();
-		it++, its++) {
+    this->subdiv = cvCreateSubdivDelaunay2D(this->rect, this->storage);
+	
+	//add all the  surfacepoints we collected to the subdivision 
+	//use the delaunayToScreen map to associate them with corrosponding screen point
+	moPointList::iterator it, its;
+	for(it = surfacePoints.begin(), its = screenPoints.begin(); it != surfacePoints.end();  it++, its++) {
 		CvPoint2D32f fp = cvPoint2D32f(it->x, it->y);
 		CvSubdiv2DPoint *delaunayPoint = cvSubdivDelaunay2DInsert(subdiv, fp);
-		std::cout << delaunayPoint << ":" << delaunayPoint->pt.x << "," << delaunayPoint->pt.y << std::endl;
-		std::cout << "+> " << its->x << "," << its->y << std::endl;
 		this->delaunayToScreen[delaunayPoint] = (*its);
 	}
-	//cvCalcSubdivVoronoi2D(this->subdiv);
+
 	this->retriangulate = false;
 	this->notifyGui();
 }
@@ -325,6 +312,9 @@ void moCalibrationModule::transformPoints() {
 	// Calibration & triangulation is done. Just convert the point coordinates.
 	moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
 	moDataGenericList::iterator it;
+	
+	//TODO: disabled for now, crashes otherwise
+	return;
 	
 	this->blobs.clear();
 	for (it = blobs->begin(); it != blobs->end(); it++) {

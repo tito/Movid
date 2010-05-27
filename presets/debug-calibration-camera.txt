@@ -9,8 +9,9 @@ pipeline create GrayScale gray
 #pipeline create Invert invert
 pipeline create BackgroundSubtract subtract
 pipeline create Threshold threshold
-pipeline set threshold threshold 75
+pipeline set threshold threshold 72
 pipeline create Smooth smooth
+pipeline set smooth size 5
 pipeline create BlobTracker tracker
 pipeline create ImageDisplay win
 pipeline create ImageDisplay win2
@@ -31,6 +32,6 @@ pipeline connect tracker 1 calib 0
 #pipeline set video use_thread 1
 #pipeline set tracker use_thread 1
 #pipeline set calib screenPoints 1.09,2.09;2.09,3.09;4.09,5.09;5.09,6.09
-pipeline set smooth filter median
+pipeline set smooth filter blur
 pipeline set calib cols 3
 pipeline set calib rows 3
