@@ -6,6 +6,8 @@
 pipeline create Camera cam
 pipeline set cam index 0
 pipeline create GrayScale gray
+#pipeline create Invert invert
+pipeline create BackgroundSubtract subtract
 pipeline create Threshold threshold
 pipeline set threshold threshold 75
 pipeline create Smooth smooth
@@ -17,7 +19,9 @@ pipeline create Calibration calib
 # do connections
 pipeline connect cam 0 gray 0
 pipeline connect gray 0 smooth 0
-pipeline connect smooth 0 threshold 0
+pipeline connect smooth 0 subtract 0
+pipeline connect subtract 0 threshold 0
+#pipeline connect smooth 0 threshold 0
 pipeline connect threshold 0 tracker 0
 pipeline connect threshold 0 win2 0
 pipeline connect tracker 0 win 0
