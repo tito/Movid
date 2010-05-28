@@ -274,9 +274,24 @@ void moCalibrationModule::calibrate() {
 	// We now want to assign each point its coordinates on the touch surface
 	touch = (*blobs)[0];
 
-	// Don't reuse the same touch id as before
-	if ( touch->properties["id"]->asInteger() == (int)this->last_id )
+	// screenPoints and corresponding surfacePoint have the same index in their respective vector
+	moPointList surfacePoints = this->property("surfacePoints").asPointList();
+	surfacePoint.x = touch->properties["x"]->asDouble();
+	surfacePoint.y = touch->properties["y"]->asDouble();
+
+	if (touch->properties["id"]->asInteger() == (int)this->last_id) {
+		// This means we have seen this touch before in the previous frame.
+		// Don't reuse it to calibrate the next point, but refine the surfacePoints
+		// position by taking the mean. Useful for e.g. laser tracking where you don't
+		// hit the calibration point right immediately.
+		unsigned int last_index = surfacePoints.size()-1;
+		moPoint old_touch = surfacePoints[last_index];
+		surfacePoint.x = (old_touch.x + surfacePoint.x) / 2.;
+		surfacePoint.y = (old_touch.y + surfacePoint.y) / 2.;
+		surfacePoints[last_index] = surfacePoint;
+		this->property("surfacePoints").set(surfacePoints);
 		return;
+	}
 	this->last_id = touch->properties["id"]->asInteger();
 
 	LOG(MO_DEBUG) << "calibrarting   # of screenPoints: " << screenPoints.size() << "# of surfacePoints: " << surfacePoints.size() ;
@@ -302,10 +317,6 @@ void moCalibrationModule::calibrate() {
 	if ( this->active_point == 0 )
 		this->property("surfacePoints").set("");
 
-	// screenPoints and corresponding surfacePoint have the same index in their respective vector
-	moPointList surfacePoints = this->property("surfacePoints").asPointList();
-	surfacePoint.x = touch->properties["x"]->asDouble();
-	surfacePoint.y = touch->properties["y"]->asDouble();
 	surfacePoints.push_back(surfacePoint);
 	this->property("surfacePoints").set(surfacePoints);
 	
