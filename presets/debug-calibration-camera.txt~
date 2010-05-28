@@ -4,7 +4,7 @@
 
 # create defaults objects
 pipeline create Video cam
-#pipeline set cam filename calib-test.avi
+pipeline set Video filename calib-test.avi
 
 pipeline create GrayScale gray
 #pipeline create Invert invert

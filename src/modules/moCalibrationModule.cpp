@@ -356,11 +356,8 @@ void moCalibrationModule::transformPoints() {
 			//P coincides directly with a vertex from the delaunay subdivision, so the value is ready to go
 			P_transformed = this->delaunayToScreen[vertex]; 
 		}	
-		else{
-		    P_transformed = this->delaunayToScreen[cvSubdiv2DEdgeOrg(edge)]; 
-		}
+
 		
-		/*
 		if (location == CV_PTLOC_ON_EDGE){
 			//the point falls directly onto an edge, so all we have to do is a linear interpolation
 		    CvSubdiv2DPoint* A_surf = cvSubdiv2DEdgeOrg(edge);
@@ -406,7 +403,7 @@ void moCalibrationModule::transformPoints() {
 		    P_transformed.x = a*A_screen.x + b*B_screen.x + c*C_screen.x;
 		    P_transformed.y = a*A_screen.y + b*B_screen.y + c*C_screen.y;
 		}
-		*/
+
 		
 		//all done P_transformed shuld be calculated correctly now
 		touch->properties["x"] = new moProperty(P_transformed.x);
