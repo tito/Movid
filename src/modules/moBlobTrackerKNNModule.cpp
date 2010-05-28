@@ -25,6 +25,10 @@ moBlobTrackerKNNModule::moBlobTrackerKNNModule() : moModule(MO_MODULE_INPUT | MO
 
 	MODULE_INIT();
 
+	// initialize input/output
+	this->input = NULL;
+	this->output = NULL;
+
 	// declare input/output
 	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream of type 'blob'");
 	this->output_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream of type 'blob'");

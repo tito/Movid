@@ -4,7 +4,7 @@ pipeline create Threshold thresh
 pipeline create ContourBlobs cont
 pipeline create ImageDisplay contwin
 
-pipeline set cam use_thread 1
+pipeline set cam use_thread 0
 pipeline set cam index 0
 pipeline set thresh threshold 75
 
