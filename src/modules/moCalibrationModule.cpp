@@ -22,8 +22,11 @@
 //		 * Tests & Fixes
 //		 * properly delete/release all objects in the destructor
 //		 * move variable declarations to the beginning of each function
+//
+//	Tito:
 //		 * Add support for moving/adding/deleting points
-//		 * Add support for drawing transformed touches in the calibration grid
+//		 * Add SDL (e.g.) fullscreen window. Calib in browser sucks
+//		 * Make screenPoints list immutable while calibrating
 
 
 #include <assert.h>
@@ -322,115 +325,79 @@ void moCalibrationModule::transformPoints() {
 	moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
 	moDataGenericList::iterator it;
 	
-	bool pushed = false;
 	this->blobs.clear();
 	for (it = blobs->begin(); it != blobs->end(); it++) {
-		
-		//create a new data container copying blob properties, 
-		//well set x, and y at the end when weve calculated them
-		moDataGenericContainer *touch = new moDataGenericContainer();
-		touch->properties["type"] = new moProperty("touch");
-		touch->properties["id"] = new moProperty((*it)->properties["id"]->asInteger());
-		touch->properties["w"] = new moProperty((*it)->properties["w"]->asDouble());
-		touch->properties["h"] = new moProperty((*it)->properties["h"]->asDouble());
-		
-				
-		//P is the surafce coordinates of the blob were trying to transform to screen coordinates
+		// Get the camera/surface coordinates of the blob
 		double blob_x = (*it)->properties["x"]->asDouble();
 		double blob_y = (*it)->properties["y"]->asDouble();
-		CvPoint2D32f P = cvPoint2D32f(blob_x, blob_y);
 
-		//the transformed point P in screen space, this is what we are going to calculate
-		moPoint P_transformed; 
-
-
-		//find the edge closest to the point given using cvSubdiv2DLocate
-		//see http://opencv.willowgarage.com/documentation/planar_subdivisions.html#subdiv2dlocate
-		//   the CvSubdiv2DPointLocation return value determines what type of location was found
-		//   if P falls on an edge or inside a triangle/facade of teh subdivsion:
-		//      edge will be the output edge the point falls onto or right to
-		//   if P falls directly onto a vertex of teh subdivision:
-		//      vertex will be the vertex of the subdivision with which P coincides directly
+		// Find the closest edge the point falls onto or right to
 		CvSubdiv2DEdge edge;
 		CvSubdiv2DPoint* vertex;
-		CvSubdiv2DPointLocation location = cvSubdiv2DLocate(this->subdiv, P, &edge, &vertex);
+		CvPoint2D32f P = cvPoint2D32f(blob_x, blob_y);
+		cvSubdiv2DLocate(this->subdiv, P, &edge, &vertex);
 		
-//		if (location == CV_PTLOC_VERTEX){
-//			//P coincides directly with a vertex from the delaunay subdivision, so the value is ready to go
-//			P_transformed = this->delaunayToScreen[vertex]; 
-//		}	
-//		else{
-//		    P_transformed = this->delaunayToScreen[cvSubdiv2DEdgeOrg(edge)]; 
-//		}
-//		
-//		
-//		if (location == CV_PTLOC_ON_EDGE){
-//			//the point falls directly onto an edge, so all we have to do is a linear interpolation
-//		    CvSubdiv2DPoint* A_surf = cvSubdiv2DEdgeOrg(edge);
-//		    CvSubdiv2DPoint* B_surf = cvSubdiv2DEdgeDst(edge);
-//		    
-//		    //compute ratio of distances between AB and AP to see where on the line teh vertex lies
-//			CvPoint2D32f A = A_surf->pt;
-//		    CvPoint2D32f B = B_surf->pt;
-//		    double distAB = (B.x-A.x)*(B.x-A.x) + (B.y-A.y)*(B.y-A.y);
-//		    double distAP = (P.x-A.x)*(P.x-A.x) + (P.y-A.y)*(P.y-A.y);
-//		    double ratio = distAP/distAB;
-//		    
-//			moPoint A_screen = this->delaunayToScreen[A_surf];
-//		    moPoint B_screen = this->delaunayToScreen[B_surf];
-//		    
-//		    P_transformed.x =  ratio*(B_screen.x-A_screen.x) + A_screen.x;
-//		    P_transformed.y =  ratio*(B_screen.y-A_screen.y) + A_screen.y;
-//		}
-		if (location == CV_PTLOC_INSIDE){
-			//P is inside the trinagle, so we must compute baycentric coordinates
-			//we traverse the edges around the right facet, to get the vertices 
-		    //that make up the triangle that contains P
-			//
-			// A, B, C are given in surface coordinates!
-		    CvSubdiv2DPoint* A = cvSubdiv2DEdgeOrg(edge);
-		    edge = cvSubdiv2DGetEdge( edge, CV_NEXT_AROUND_RIGHT );
-		    CvSubdiv2DPoint* B = cvSubdiv2DEdgeOrg(edge);
-		    edge = cvSubdiv2DGetEdge( edge, CV_NEXT_AROUND_RIGHT );
-		    CvSubdiv2DPoint* C = cvSubdiv2DEdgeOrg(edge);
-			CvPoint2D32f asurf = A->pt,
-						 bsurf = B->pt,
-						 csurf = C->pt;
+		// P is inside the triangle, so we must compute barycentric coords for P with
+		// respect to the triangle. To find the triangle, we traverse the edges
+		// around the right facet, to get the vertices that make up the triangle containing P.
+		//
+		// A, B, C are given in surface coordinates!
+		CvSubdiv2DPoint* A = cvSubdiv2DEdgeOrg(edge);
+		edge = cvSubdiv2DGetEdge( edge, CV_NEXT_AROUND_RIGHT );
+		CvSubdiv2DPoint* B = cvSubdiv2DEdgeOrg(edge);
+		edge = cvSubdiv2DGetEdge( edge, CV_NEXT_AROUND_RIGHT );
+		CvSubdiv2DPoint* C = cvSubdiv2DEdgeOrg(edge);
+		CvPoint2D32f a = A->pt,
+					 b = B->pt,
+					 c = C->pt;
 
-			float entire_area = (asurf.x - bsurf.x) * (asurf.y - csurf.y) - (asurf.y - bsurf.y) * (asurf.x - csurf.x);
-			float area_A = (blob_x - bsurf.x) * (blob_y - csurf.y) - (blob_y - bsurf.y) * (blob_x - csurf.x);
-			float area_B = (asurf.x - blob_x) * (asurf.y - csurf.y) - (asurf.y - blob_y) * (asurf.x - csurf.x);
+		// XXX Should this computation turn out to be too costly for each blob in each frame,
+		//	   it can be speeded up by computing a map of surface2screen points for each pixel
+		//	   of the camera image and then just looking the appropriate coordinates up from the map!
+		//
+		// This is one way to compute the barycentric coordinates. Other attempts use
+		// matrices and determinants or stuff like that. This approach suffices here.
+		float entire_area = (a.x - b.x) * (a.y - c.y) - (a.y - b.y) * (a.x - c.x);
+		float area_a = (blob_x - b.x) * (blob_y - c.y) - (blob_y - b.y) * (blob_x - c.x);
+		float area_b = (a.x - blob_x) * (a.y - c.y) - (a.y - blob_y) * (a.x - c.x);
 
-			float alpha = area_A / entire_area;
-			float beta = area_B / entire_area;
-			float gamma = 1.0f - alpha - beta;
-		    
-	    
-		    moPoint A_screen = this->delaunayToScreen[A];
-		    moPoint B_screen = this->delaunayToScreen[B];
-		    moPoint C_screen = this->delaunayToScreen[C];
-		    
-		    P_transformed.x = alpha*A_screen.x + beta*B_screen.x + gamma*C_screen.x;
-		    P_transformed.y = alpha*A_screen.y + beta*B_screen.y + gamma*C_screen.y;
-		}
+		// Compute the barycentric coords alpha, beta, gamma based on the area.
+		float alpha = area_a / entire_area;
+		float beta = area_b / entire_area;
+		// Set alpha + beta + gamma == 1 (True if point inside triangle,
+		// with alpha, beta and gamma each between 0 and 1)
+		float gamma = 1.0f - alpha - beta;
+
+		moPoint A_screen = this->delaunayToScreen[A];
+		moPoint B_screen = this->delaunayToScreen[B];
+		moPoint C_screen = this->delaunayToScreen[C];
 		
+		// Transform the point into screen space by interpolating the three vertices
+		// of the enclosing triangle in screen space with the barycentric coordinates.
+		moPoint P_transformed;
+		P_transformed.x = alpha*A_screen.x + beta*B_screen.x + gamma*C_screen.x;
+		P_transformed.y = alpha*A_screen.y + beta*B_screen.y + gamma*C_screen.y;
 		
-		//all done P_transformed shuld be calculated correctly now
-		touch->properties["x"] = new moProperty(P_transformed.x);
-		touch->properties["y"] = new moProperty(P_transformed.y);
-		this->blobs.push_back(touch);
-		pushed = true;
+		// TODO This should copy ALL blob attributes, even unknown ones (from different detectors)
+		// Copy the blob, but adjust x/y
+		// XXX Do we need to adjust w/h too?
+		moDataGenericContainer *blob = new moDataGenericContainer();
+		blob->properties["type"] = new moProperty("blob");
+		blob->properties["id"] = new moProperty((*it)->properties["id"]->asInteger());
+		blob->properties["w"] = new moProperty((*it)->properties["w"]->asDouble());
+		blob->properties["h"] = new moProperty((*it)->properties["h"]->asDouble());
+		blob->properties["x"] = new moProperty(P_transformed.x);
+		blob->properties["y"] = new moProperty(P_transformed.y);
+		this->blobs.push_back(blob);
 		
 		LOG(MO_DEBUG) << "transformed Point |" << " in: " << P.x << "," << P.y 
 					  << " out: " << P_transformed.x << "," << P_transformed.y;
 	}
 
-	if (pushed) {
-		if (this->output != NULL) delete this->output;
-		this->output = new moDataStream("GenericTouch");
-		this->output->push(&this->blobs);
-		this->notifyGui();
-	}
+	if (this->output != NULL) delete this->output;
+	this->output = new moDataStream("GenericTouch");
+	this->output->push(&this->blobs);
+	this->notifyGui();
 }
 
 void moCalibrationModule::notifyTriangulate() {
@@ -446,11 +413,7 @@ void moCalibrationModule::update() {
 	
 	if ( calibrate ) {
 		this->calibrate();
-		// Perhaps points were added, moved or deleted. If this is the case
-		// we have to triangulate again. 
 	} else {
-		//if (this->retriangulate)
-		//	this->triangulate();
 		if (this->calibrated)
 			this->transformPoints();
 	}
