@@ -97,6 +97,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 	assert( input == this->input );
 
 	// out input have been updated !
+	LOGM(MO_DEBUG) << "updating Tuio stream";
 	this->input->lock();
 
 	if ( input->getFormat() == "GenericFiducial" ) {
@@ -182,11 +183,14 @@ void moTuioModule::notifyData(moDataStream *input) {
 		this->setError("Unsupported input type");
 	}
 
+
+    LOGM(MO_DEBUG) << "sending OSC bundle";
 	this->osc->send(bundle);
 
 	delete bundle;
 
 	this->input->unlock();
+	LOGM(MO_DEBUG) << "TUIO done";
 }
 
 void moTuioModule::setInput(moDataStream *stream, int n) {

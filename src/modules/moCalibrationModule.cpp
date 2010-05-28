@@ -48,6 +48,7 @@ void mocalibrationmodule_activate_calibration(moProperty *property, void *userda
 {
 	moCalibrationModule *module = static_cast<moCalibrationModule *>(userdata);
 	assert(userdata != NULL);
+	LOG(MO_DEBUG) << "Setting calibration prperty" << property->asBool() << "was: " << module->property("calibrate").asBool() ;
 	if ( property->asBool() )
 		module->resetCalibration();
 }
@@ -56,6 +57,7 @@ void mocalibrationmodule_triangulate(moProperty *property, void *userdata)
 {
 	moCalibrationModule *module = static_cast<moCalibrationModule *>(userdata);
 	assert(userdata != NULL);
+	LOG(MO_DEBUG) << "Setting triagulate prperty" << property->asBool() << "was: " << module->property("retriangulate").asBool() ;
 	module->notifyTriangulate();
 }
 
@@ -64,8 +66,10 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	MODULE_INIT();
 
 	// declare input/output
+	
+	this->output = new moDataStream("GenericTouch");
 	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
-	this->output_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
+	this->output_infos[0] = new moDataStreamInfo("data", "GenericTouch", "Data stream with type of 'touch' or 'fiducial'");
 
 	this->properties["rows"] = new moProperty(3);
 	this->properties["rows"]->setMin(2);
@@ -85,7 +89,7 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->active_point = 0;
 	this->last_id = -1;
 	this->input = NULL;
-	this->output = NULL;
+	
 	this->subdiv = NULL;
 
 	this->buildScreenPoints();
@@ -187,8 +191,8 @@ void moCalibrationModule::guiBuild(void) {
 				oss << " " << int(dst.x * 1000.);
 				oss << " " << int(dst.y * 1000.);
 				this->gui.push_back(oss.str());
-				//LOG(MO_TRACE) << "drawing line: " << i << "   surface pos:" << org_pt->pt.x << ","<< org_pt->pt.y<<"|"<<dst_pt->pt.x << ","<< dst_pt->pt.y;
-				//LOG(MO_TRACE) << "    creen points: " << oss.str();
+				LOG(MO_DEBUG) << "drawing line: " << i << "   surface pos:" << org_pt->pt.x << ","<< org_pt->pt.y<<"|"<<dst_pt->pt.x << ","<< dst_pt->pt.y;
+				LOG(MO_DEBUG) << "    creen points: " << oss.str();
 			}
         }
         
@@ -201,7 +205,7 @@ void moCalibrationModule::guiBuild(void) {
 		moDataGenericList::iterator it;
 		int x, y;
 		this->input->lock();
-		for ( it = blobs.begin(); it != this->blobs.end(); it++ ) {
+		for ( it = this->blobs.begin(); it != this->blobs.end(); it++ ) {
 			x = (int)((*it)->properties["x"]->asDouble() * 1000.);
 			y = (int)((*it)->properties["y"]->asDouble() * 1000.);
 
@@ -257,7 +261,7 @@ void moCalibrationModule::calibrate() {
 	moPointList screenPoints;
 	moPoint surfacePoint, p;
 
-	LOG(MO_DEBUG) << "#Blobs in frame: " << blobs->size();
+	//LOG(MO_DEBUG) << "#Blobs in frame: " << blobs->size();
 
 	// We only calibrate the current point if there is an unambiguous amount of touches
 	if (blobs->size() != 1)
@@ -271,6 +275,9 @@ void moCalibrationModule::calibrate() {
 		return;
 	this->last_id = touch->properties["id"]->asInteger();
 
+	LOG(MO_DEBUG) << "calibrarting   # of screenPoints: " << screenPoints.size() << "# of surfacePoints: " << surfacePoints.size() ;
+	LOG(MO_DEBUG) << "Processing point #" << this->active_point;
+
 	// TODO While calibrating, this list MUST NOT change!
 	screenPoints = this->property("screenPoints").asPointList();
 	if (this->active_point == screenPoints.size()) {
@@ -278,7 +285,7 @@ void moCalibrationModule::calibrate() {
 		LOG(MO_DEBUG) << "Calibration complete!";
 		this->active_point = 0;
 		this->property("calibrate").set(false);
-		if (this->retriangulate)
+		//if (this->retriangulate)
 			this->triangulate();
 		return;
 	}
@@ -313,105 +320,105 @@ void moCalibrationModule::transformPoints() {
 	moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
 	moDataGenericList::iterator it;
 	
-	//TODO: disabled for now, crashes otherwise
-	return;
-	
 	this->blobs.clear();
 	for (it = blobs->begin(); it != blobs->end(); it++) {
-		CvSubdiv2DEdge e;
-		CvSubdiv2DEdge e0 = NULL;
-		//CvSubdiv2DEdge edges[3];
-		//CvSubdiv2DPoint* vertices[3];
-		CvSubdiv2DPoint* v;
-		CvSubdiv2DPoint* p = NULL;
-		double touch_x = (*it)->properties["x"]->asDouble();
-		double touch_y = (*it)->properties["y"]->asDouble();
-		LOG(MO_DEBUG) << std::endl << "Incoming touch is at " << touch_x << ", " << touch_y;
-		CvPoint2D32f fp = cvPoint2D32f(touch_x, touch_y);
-		cvSubdiv2DLocate(this->subdiv, fp, &e0, &p);
-		CvSubdiv2DPoint* enclosingPoints[3];
 		
-		if (!e0) {
-			assert(0);
-			return; // XXX why is this necessary?
-		}
-		
-		//edges[0] = e0;
-		// Collect the vertices of the triangle enclosing the given surfacePoint
-		e = e0;
-		int i = 0;
-		v = cvSubdiv2DEdgeOrg(e0);
-		do {
-			e = cvSubdiv2DGetEdge(e, CV_NEXT_AROUND_LEFT);
-			//edges[i++] = e;
-			//vertices[i++] = cvSubdiv2DEdgeOrg(e);
-			enclosingPoints[i++] = v;
-			v = cvSubdiv2DEdgeOrg(e);			
-		}
-		while (e != e0);
-		for (i = 0; i < 3; i++) {
-			LOG(MO_DEBUG) << "Found point " << i << " for touch " << 
-			(*it)->properties["id"]->asInteger() << ": " << (*enclosingPoints[i]).pt.x << "/" << (*enclosingPoints[i]).pt.y;
-		}
-		// Now that we found the three surfacePoints of the triangle enclosing the given point,
-		// we can do the barycentric conversion.
-		CvPoint2D32f surf_a, surf_b, surf_c, p1, p2;
-		moPoint screen_a, screen_b, screen_c;
-		double alpha, beta, gamma;
-		surf_a = enclosingPoints[0]->pt;
-		screen_a = this->delaunayToScreen[enclosingPoints[0]];
-		// We want to use the point with the smallest y-difference as point b
-		p1 = enclosingPoints[1]->pt;
-		p2 = enclosingPoints[2]->pt;
-		// XXX > ????
-		if (abs(p1.y - surf_a.y) > abs(p2.y - surf_a.y)) {
-			surf_b = p1;
-			screen_b = this->delaunayToScreen[enclosingPoints[1]];
-			surf_c = p2;
-			screen_c = this->delaunayToScreen[enclosingPoints[2]];
-		}
-		else {
-			surf_b = p2;
-			screen_b = this->delaunayToScreen[enclosingPoints[2]];
-			surf_c = p1;
-			screen_c = this->delaunayToScreen[enclosingPoints[1]];
-		}
-		LOG(MO_DEBUG) << "[Surf_A: " << surf_a.x << " / " << surf_a.y << "] [Surf_B: " << surf_b.x << " / " << surf_b.y << "] [Surf_C: " << surf_c.x << " / " << surf_c.y << "]";
-		// TODO Should be vectors...
-		moPoint ab = {surf_b.x - surf_a.x, surf_b.y - surf_a.y};
-		moPoint ac = {surf_c.x - surf_a.x, surf_c.y - surf_a.y};
-		LOG(MO_DEBUG) << "[Vector ab: " << ab.x << " / " << ab.y << "] [Vector ac " << ac.x << " / " << ac.y << "]";
-		beta = (touch_x - surf_a.x) / ab.x;
-		LOG(MO_DEBUG) << "Beta = |" << touch_x << " - " << surf_a.x << "| / " << ab.x << " = " << beta;
-		gamma = (touch_y - surf_a.y) / ac.y;
-		LOG(MO_DEBUG) << "Gamma = |" << touch_y << " - " << surf_a.y << "| / " << ac.y << " = " << gamma;
-		alpha = (1.0 - beta - gamma);
-
-		double final_x = screen_a.x * alpha + screen_b.x * beta + screen_c.x * gamma;
-		double final_y = screen_a.y * alpha + screen_b.y * beta + screen_c.y * gamma;
-
-		LOG(MO_DEBUG) << "Barycentric params for touch " << (*it)->properties["id"]->asInteger()
-					  << ": " << alpha << "/" << beta << "/" << gamma << " += " << alpha+beta+gamma;
-		LOG(MO_DEBUG) << "Final Touch is at: " << final_x << "/" << final_y;
-		
-		// add the blob in data
+		//create a new data container copying blob properties, 
+		//well set x, and y at the end when weve calculated them
 		moDataGenericContainer *touch = new moDataGenericContainer();
 		touch->properties["type"] = new moProperty("touch");
 		touch->properties["id"] = new moProperty((*it)->properties["id"]->asInteger());
-		touch->properties["x"] = new moProperty(final_x);
-		touch->properties["y"] = new moProperty(final_y);
-		// double correct?
 		touch->properties["w"] = new moProperty((*it)->properties["w"]->asDouble());
 		touch->properties["h"] = new moProperty((*it)->properties["h"]->asDouble());
+		
+				
+		//P is the surafce coordinates of the blob were trying to transform to screen coordinates
+		double blob_x = (*it)->properties["x"]->asDouble();
+		double blob_y = (*it)->properties["y"]->asDouble();
+		CvPoint2D32f P = cvPoint2D32f(blob_x, blob_y);
+
+		//the transformed point P in screen space, this is what we are going to calculate
+		moPoint P_transformed; 
+
+
+		//find the edge closest to the point given using cvSubdiv2DLocate
+		//see http://opencv.willowgarage.com/documentation/planar_subdivisions.html#subdiv2dlocate
+		//   the CvSubdiv2DPointLocation return value determines what type of location was found
+		//   if P falls on an edge or inside a triangle/facade of teh subdivsion:
+		//      edge will be the output edge the point falls onto or right to
+		//   if P falls directly onto a vertex of teh subdivision:
+		//      vertex will be the vertex of the subdivision with which P coincides directly
+		CvSubdiv2DEdge edge;
+		CvSubdiv2DPoint* vertex;
+		CvSubdiv2DPointLocation location = cvSubdiv2DLocate(this->subdiv, P, &edge, &vertex);
+		
+		if (location == CV_PTLOC_VERTEX){
+			//P coincides directly with a vertex from the delaunay subdivision, so the value is ready to go
+			P_transformed = this->delaunayToScreen[vertex]; 
+		}	
+		else{
+		    P_transformed = this->delaunayToScreen[cvSubdiv2DEdgeOrg(edge)]; 
+		}
+		
+		/*
+		if (location == CV_PTLOC_ON_EDGE){
+			//the point falls directly onto an edge, so all we have to do is a linear interpolation
+		    CvSubdiv2DPoint* A_surf = cvSubdiv2DEdgeOrg(edge);
+		    CvSubdiv2DPoint* B_surf = cvSubdiv2DEdgeDst(edge);
+		    
+		    //compute ratio of distances between AB and AP to see where on the line teh vertex lies
+			CvPoint2D32f A = A_surf->pt;
+		    CvPoint2D32f B = B_surf->pt;
+		    double distAB = (B.x-A.x)*(B.x-A.x) + (B.y-A.y)*(B.y-A.y);
+		    double distAP = (P.x-A.x)*(P.x-A.x) + (P.y-A.y)*(P.y-A.y);
+		    double ratio = distAP/distAB;
+		    
+			moPoint A_screen = this->delaunayToScreen[A_surf];
+		    moPoint B_screen = this->delaunayToScreen[B_surf];
+		    
+		    P_transformed.x =  ratio*(B_screen.x-A_screen.x) + A_screen.x;
+		    P_transformed.y =  ratio*(B_screen.y-A_screen.y) + A_screen.y;
+		}
+		if (location == CV_PTLOC_INSIDE){
+			//P is inside the trinagle, so we must compute baycentric coordinates
+			//we traverse the edges around the right facet, to get the vertices 
+		    //that make up the triangle that contains P
+		    CvSubdiv2DPoint* A_surf = cvSubdiv2DEdgeOrg(edge);
+		    edge = cvSubdiv2DGetEdge( edge, CV_NEXT_AROUND_RIGHT );
+		    CvSubdiv2DPoint* B_surf = cvSubdiv2DEdgeOrg(edge);
+		    edge = cvSubdiv2DGetEdge( edge, CV_NEXT_AROUND_RIGHT );
+		    CvSubdiv2DPoint* C_surf = cvSubdiv2DEdgeOrg(edge);
+		    
+		    //compute the determinat and barycentric coordinates
+		    //see (http://en.wikipedia.org/wiki/Barycentric_coordinates_%28mathematics%29)
+		    CvPoint2D32f A = A_surf->pt;
+		    CvPoint2D32f B = B_surf->pt;
+		    CvPoint2D32f C = C_surf->pt;
+		    double det = ( (A.x-C.x)*(B.y-C.y) - (B.x-C.x)*(A.y-C.y) );
+		    double a = ( (C.y-A.y)*(P.x-C.x) + (A.x-C.x)*(P.y-C.y) )  / det;
+		    double b = ( (B.y-C.y)*(P.x-C.x) + (C.x-B.x)*(P.y-C.y) )  / det;
+		    double c = 1.0 - a - b;
+		    
+		    moPoint A_screen = this->delaunayToScreen[A_surf];
+		    moPoint B_screen = this->delaunayToScreen[B_surf];
+		    moPoint C_screen = this->delaunayToScreen[C_surf];
+		    
+		    P_transformed.x = a*A_screen.x + b*B_screen.x + c*C_screen.x;
+		    P_transformed.y = a*A_screen.y + b*B_screen.y + c*C_screen.y;
+		}
+		*/
+		
+		//all done P_transformed shuld be calculated correctly now
+		touch->properties["x"] = new moProperty(P_transformed.x);
+		touch->properties["y"] = new moProperty(P_transformed.y);
 		this->blobs.push_back(touch);
+		
+		LOG(MO_DEBUG) << "transformed Point |" << " in: " << P.x << "," << P.y 
+					  << " out: " << P_transformed.x << "," << P_transformed.y;
 	}
 
-	if (this->output != NULL) delete this->output;
-	this->output = new moDataStream("GenericTouch");
 	this->output->push(&this->blobs);
-
-	// new blobs... gui must be updated
-	this->notifyGui();
+    this->notifyGui();
 }
 
 void moCalibrationModule::notifyTriangulate() {
@@ -430,8 +437,8 @@ void moCalibrationModule::update() {
 		// Perhaps points were added, moved or deleted. If this is the case
 		// we have to triangulate again. 
 	} else {
-		if (this->retriangulate)
-			this->triangulate();
+		//if (this->retriangulate)
+		//	this->triangulate();
 		this->transformPoints();
 	}
 	this->input->unlock();	
