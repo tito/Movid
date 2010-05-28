@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="movid"
 	ProjectGUID="{9E6DC113-54E2-4DF4-899F-ADC959123912}"
 	RootNamespace="Movid"
@@ -227,11 +227,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moCannyModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moCombineModule.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moDilateModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moDistanceTransformModule.h"
 					>
 				</File>
 				<File
@@ -244,6 +252,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moFiducialTrackerModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moFingerTipFinderModule.h"
 					>
 				</File>
 				<File
@@ -275,11 +287,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moJustifyModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moMaskModule.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moMirrorImageModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moPeakFinderModule.h"
 					>
 				</File>
 				<File
@@ -300,6 +320,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moVideoModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moYCrCbThresholdModule.h"
 					>
 				</File>
 			</Filter>
@@ -379,15 +403,15 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\modules\moCannyModule.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\modules\moCombineModule.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moDilateModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moDistanceTransformModule.cpp"
 					>
 				</File>
 				<File
@@ -400,6 +424,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moFiducialTrackerModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moFingerTipFinderModule.cpp"
 					>
 				</File>
 				<File
@@ -431,11 +459,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moJustifyModule.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moMaskModule.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moMirrorImageModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moPeakFinderModule.cpp"
 					>
 				</File>
 				<File
@@ -456,6 +492,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moVideoModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moYCrCbThresholdModule.cpp"
 					>
 				</File>
 			</Filter>

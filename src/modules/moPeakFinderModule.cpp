@@ -72,7 +72,11 @@ void moPeakFinderModule::findRange(IplImage *src) {
 		for (int j = 0; j < height; j++) {
 			cur_val = ((int) data[j * step + i]);
 			if ((min < cur_val) && (cur_val < max)) {
-				this->peaks.push_back(doubleToPoint(cur_val, (moPoint) {i, j}));
+				doubleToPoint p;
+				p.first = cur_val;
+				p.second.x = i;
+				p.second.y = j;
+				this->peaks.push_back(p);
 			}
 		}
 	}

@@ -891,6 +891,7 @@ void describe(const char *name) {
 
 int parse_options(int *argc, char ***argv) {
 	int ch;
+#ifndef WIN32
 	static struct option options[] = {
 		{"info", 1, 0, 'i'},
 		{"pipeline", 1, 0, 'l'},
@@ -903,9 +904,14 @@ int parse_options(int *argc, char ***argv) {
 		{"help", 0, 0, 'h'},
 		{0, 0, 0, 0}
 	};
+#endif
 	while (1) {
 		int option_index = 0;
+#ifndef WIN32
 		ch = getopt_long(*argc, *argv, "hp:g:l:sdni:t", options, &option_index);
+#else
+		ch = getopt(*argc, *argv, "hp:g:l:sdni:t");
+#endif
 		if (ch == -1)
 			break;
 		switch ( ch ) {

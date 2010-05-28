@@ -89,6 +89,7 @@ void moLog::setLogLevel(int n) {
 }
 
 int moLog::getSysLogLevel(int n) {
+#ifndef WIN32
 	switch (n) {
 		case MO_CRITICAL:	return LOG_CRIT;
 		case MO_ERROR:		return LOG_ERR;
@@ -97,6 +98,9 @@ int moLog::getSysLogLevel(int n) {
 		case MO_DEBUG:		return LOG_DEBUG;
 		default:		return 0;
 	}
+#endif
+	// TODO implement for other platform
+	return 0;
 }
 
 std::string moLog::getLogLevelName(int n) {

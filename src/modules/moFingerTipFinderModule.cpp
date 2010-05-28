@@ -139,7 +139,7 @@ void moFingerTipFinderModule::applyFilter(IplImage *src) {
 				if (i == j) continue;
 				if (_in2(suppressed, j)) continue;
 				p2 = points[j];
-				distance = sqrt(pow(p1->x - p2->x, 2) + pow(p1->y - p2->y, 2));
+				distance = sqrt(pow(p1->x - p2->x, 2.0) + pow(p1->y - p2->y, 2.0));
 				if (distance <= merge_distance) {
 					suppressed.push_back(j);
 				}

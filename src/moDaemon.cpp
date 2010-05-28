@@ -65,6 +65,9 @@ bool moDaemon::detach(std::string pidfilename) {
 		LOG(MO_ERROR, "no child process could be created, but this process is still living");
 	return(pid <= 0);
 #endif
+	// TODO implement other platform
+	LOG(MO_INFO, "This platform don't support detach yet.");
+	return true;
 }
 
 void moDaemon::cleanup() {
