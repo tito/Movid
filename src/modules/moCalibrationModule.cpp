@@ -89,6 +89,7 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->active_point = 0;
 	this->last_id = -1;
 	this->input = NULL;
+	this->calibrated = false;
 	
 	this->subdiv = NULL;
 
@@ -285,6 +286,7 @@ void moCalibrationModule::calibrate() {
 		LOG(MO_DEBUG) << "Calibration complete!";
 		this->active_point = 0;
 		this->property("calibrate").set(false);
+		this->calibrated = true;
 		//if (this->retriangulate)
 			this->triangulate();
 		return;
@@ -320,6 +322,7 @@ void moCalibrationModule::transformPoints() {
 	moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
 	moDataGenericList::iterator it;
 	
+	bool pushed = false;
 	this->blobs.clear();
 	for (it = blobs->begin(); it != blobs->end(); it++) {
 		
@@ -352,70 +355,82 @@ void moCalibrationModule::transformPoints() {
 		CvSubdiv2DPoint* vertex;
 		CvSubdiv2DPointLocation location = cvSubdiv2DLocate(this->subdiv, P, &edge, &vertex);
 		
-		if (location == CV_PTLOC_VERTEX){
-			//P coincides directly with a vertex from the delaunay subdivision, so the value is ready to go
-			P_transformed = this->delaunayToScreen[vertex]; 
-		}	
-
-		
-		if (location == CV_PTLOC_ON_EDGE){
-			//the point falls directly onto an edge, so all we have to do is a linear interpolation
-		    CvSubdiv2DPoint* A_surf = cvSubdiv2DEdgeOrg(edge);
-		    CvSubdiv2DPoint* B_surf = cvSubdiv2DEdgeDst(edge);
-		    
-		    //compute ratio of distances between AB and AP to see where on the line teh vertex lies
-			CvPoint2D32f A = A_surf->pt;
-		    CvPoint2D32f B = B_surf->pt;
-		    double distAB = (B.x-A.x)*(B.x-A.x) + (B.y-A.y)*(B.y-A.y);
-		    double distAP = (P.x-A.x)*(P.x-A.x) + (P.y-A.y)*(P.y-A.y);
-		    double ratio = distAP/distAB;
-		    
-			moPoint A_screen = this->delaunayToScreen[A_surf];
-		    moPoint B_screen = this->delaunayToScreen[B_surf];
-		    
-		    P_transformed.x =  ratio*(B_screen.x-A_screen.x) + A_screen.x;
-		    P_transformed.y =  ratio*(B_screen.y-A_screen.y) + A_screen.y;
-		}
+//		if (location == CV_PTLOC_VERTEX){
+//			//P coincides directly with a vertex from the delaunay subdivision, so the value is ready to go
+//			P_transformed = this->delaunayToScreen[vertex]; 
+//		}	
+//		else{
+//		    P_transformed = this->delaunayToScreen[cvSubdiv2DEdgeOrg(edge)]; 
+//		}
+//		
+//		
+//		if (location == CV_PTLOC_ON_EDGE){
+//			//the point falls directly onto an edge, so all we have to do is a linear interpolation
+//		    CvSubdiv2DPoint* A_surf = cvSubdiv2DEdgeOrg(edge);
+//		    CvSubdiv2DPoint* B_surf = cvSubdiv2DEdgeDst(edge);
+//		    
+//		    //compute ratio of distances between AB and AP to see where on the line teh vertex lies
+//			CvPoint2D32f A = A_surf->pt;
+//		    CvPoint2D32f B = B_surf->pt;
+//		    double distAB = (B.x-A.x)*(B.x-A.x) + (B.y-A.y)*(B.y-A.y);
+//		    double distAP = (P.x-A.x)*(P.x-A.x) + (P.y-A.y)*(P.y-A.y);
+//		    double ratio = distAP/distAB;
+//		    
+//			moPoint A_screen = this->delaunayToScreen[A_surf];
+//		    moPoint B_screen = this->delaunayToScreen[B_surf];
+//		    
+//		    P_transformed.x =  ratio*(B_screen.x-A_screen.x) + A_screen.x;
+//		    P_transformed.y =  ratio*(B_screen.y-A_screen.y) + A_screen.y;
+//		}
 		if (location == CV_PTLOC_INSIDE){
 			//P is inside the trinagle, so we must compute baycentric coordinates
 			//we traverse the edges around the right facet, to get the vertices 
 		    //that make up the triangle that contains P
-		    CvSubdiv2DPoint* A_surf = cvSubdiv2DEdgeOrg(edge);
+			//
+			// A, B, C are given in surface coordinates!
+		    CvSubdiv2DPoint* A = cvSubdiv2DEdgeOrg(edge);
 		    edge = cvSubdiv2DGetEdge( edge, CV_NEXT_AROUND_RIGHT );
-		    CvSubdiv2DPoint* B_surf = cvSubdiv2DEdgeOrg(edge);
+		    CvSubdiv2DPoint* B = cvSubdiv2DEdgeOrg(edge);
 		    edge = cvSubdiv2DGetEdge( edge, CV_NEXT_AROUND_RIGHT );
-		    CvSubdiv2DPoint* C_surf = cvSubdiv2DEdgeOrg(edge);
-		    
-		    //compute the determinat and barycentric coordinates
-		    //see (http://en.wikipedia.org/wiki/Barycentric_coordinates_%28mathematics%29)
-		    CvPoint2D32f A = A_surf->pt;
-		    CvPoint2D32f B = B_surf->pt;
-		    CvPoint2D32f C = C_surf->pt;
-		    double det = ( (A.x-C.x)*(B.y-C.y) - (B.x-C.x)*(A.y-C.y) );
-		    double a = ( (C.y-A.y)*(P.x-C.x) + (A.x-C.x)*(P.y-C.y) )  / det;
-		    double b = ( (B.y-C.y)*(P.x-C.x) + (C.x-B.x)*(P.y-C.y) )  / det;
-		    double c = 1.0 - a - b;
-		    
-		    moPoint A_screen = this->delaunayToScreen[A_surf];
-		    moPoint B_screen = this->delaunayToScreen[B_surf];
-		    moPoint C_screen = this->delaunayToScreen[C_surf];
-		    
-		    P_transformed.x = a*A_screen.x + b*B_screen.x + c*C_screen.x;
-		    P_transformed.y = a*A_screen.y + b*B_screen.y + c*C_screen.y;
-		}
+		    CvSubdiv2DPoint* C = cvSubdiv2DEdgeOrg(edge);
+			CvPoint2D32f asurf = A->pt,
+						 bsurf = B->pt,
+						 csurf = C->pt;
 
+			float entire_area = (asurf.x - bsurf.x) * (asurf.y - csurf.y) - (asurf.y - bsurf.y) * (asurf.x - csurf.x);
+			float area_A = (blob_x - bsurf.x) * (blob_y - csurf.y) - (blob_y - bsurf.y) * (blob_x - csurf.x);
+			float area_B = (asurf.x - blob_x) * (asurf.y - csurf.y) - (asurf.y - blob_y) * (asurf.x - csurf.x);
+
+			float alpha = area_A / entire_area;
+			float beta = area_B / entire_area;
+			float gamma = 1.0f - alpha - beta;
+		    
+	    
+		    moPoint A_screen = this->delaunayToScreen[A];
+		    moPoint B_screen = this->delaunayToScreen[B];
+		    moPoint C_screen = this->delaunayToScreen[C];
+		    
+		    P_transformed.x = alpha*A_screen.x + beta*B_screen.x + gamma*C_screen.x;
+		    P_transformed.y = alpha*A_screen.y + beta*B_screen.y + gamma*C_screen.y;
+		}
+		
 		
 		//all done P_transformed shuld be calculated correctly now
 		touch->properties["x"] = new moProperty(P_transformed.x);
 		touch->properties["y"] = new moProperty(P_transformed.y);
 		this->blobs.push_back(touch);
+		pushed = true;
 		
 		LOG(MO_DEBUG) << "transformed Point |" << " in: " << P.x << "," << P.y 
 					  << " out: " << P_transformed.x << "," << P_transformed.y;
 	}
 
-	this->output->push(&this->blobs);
-    this->notifyGui();
+	if (pushed) {
+		if (this->output != NULL) delete this->output;
+		this->output = new moDataStream("GenericTouch");
+		this->output->push(&this->blobs);
+		this->notifyGui();
+	}
 }
 
 void moCalibrationModule::notifyTriangulate() {
@@ -436,7 +451,8 @@ void moCalibrationModule::update() {
 	} else {
 		//if (this->retriangulate)
 		//	this->triangulate();
-		this->transformPoints();
+		if (this->calibrated)
+			this->transformPoints();
 	}
 	this->input->unlock();	
 }

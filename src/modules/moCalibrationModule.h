@@ -57,6 +57,7 @@ private:
 	std::vector<moPoint> surfacePoints;
 //	std::map<CvSubdiv2DPoint*, moPoint> delaunayToSurface;
 	std::map<CvSubdiv2DPoint*, moPoint> delaunayToScreen;
+	bool calibrated;
 	CvRect rect;
 	CvMemStorage* storage;
 	CvSubdiv2D* subdiv;
