@@ -23,7 +23,7 @@
 #include "cvaux.h"
 
 
-//pass through f detection
+//pass through foreground detection
 class moFGDetector : public CvFGDetector{
 private:
 	IplImage* blob_image;
@@ -81,6 +81,9 @@ moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	this->properties["min_size"] = new moProperty(2.0);
 	this->properties["max_size"] = new moProperty(25.0);
 
+    
+
+
 	this->output_data	= new moDataStream("GenericTouch");
 	this->output_count	= 2;
 	this->output_infos[1] = new moDataStreamInfo("data", "GenericTouch", "Data stream with touch info");
@@ -92,8 +95,8 @@ moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	memset(&this->param, 0, sizeof(CvBlobTrackerAutoParam1));
 	this->param.FGTrainFrames = 0;
 	this->param.pFG		= new moFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new moFGDetector();
-	this->param.pBT		= cvCreateBlobTrackerCCMSPF();
-	this->param.pBTPP	= cvCreateModuleBlobTrackPostProcKalman();
+	this->param.pBT		= cvCreateBlobTrackerCC(); //vCreateBlobTrackerCCMSPF();
+	//this->param.pBTPP	= cvCreateModuleBlobTrackPostProcKalman();
 	this->tracker		= cvCreateBlobTrackerAuto1(&this->param);
 }
 
@@ -105,7 +108,7 @@ moBlobTrackerModule::~moBlobTrackerModule() {
 
 	// blob track release ?
 	delete this->param.pFG;
-	cvReleaseBlobTrackPostProc(&this->param.pBTPP);
+	//cvReleaseBlobTrackPostProc(&this->param.pBTPP);
 	cvReleaseBlobTracker(&this->param.pBT);
 	cvReleaseBlobTrackerAuto(&this->tracker);
 	delete this->tracker;
@@ -147,8 +150,8 @@ void moBlobTrackerModule::applyFilter(IplImage *src) {
 	for ( int i = this->tracker->GetBlobNum(); i > 0; i-- ) {
 		CvBlob* pB = this->tracker->GetBlob(i-1);
 
-		int minsize = this->property("min_size").asDouble();
-		int maxsize = this->property("max_size").asDouble();
+		int minsize = this->property("min_size").asInteger();
+		int maxsize = this->property("max_size").asInteger();
 		// Assume circular blobs
 		if (pB->w < minsize || maxsize < pB->w || pB->h < minsize || maxsize < pB->h)
 			continue;
