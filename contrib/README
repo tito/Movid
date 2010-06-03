@@ -7,3 +7,7 @@ SDL:
 * remove docs directory
 * remove symbian.zip
 * remove test
+
+SDL_gfx:
+* remove Tests
+* remove docs
