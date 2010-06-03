@@ -316,6 +316,10 @@ color cko = color(200, 50, 50);
 color cwait = color(200, 200, 50);
 
 widgetConfigure = function(guicommand, is_update) {
+	if ( guicommand == null ) {
+		config_show = 0;
+		return;
+	}
 	if ( is_update == 0 && config_show == 1 ) {
 		config_show = 0;
 		return;

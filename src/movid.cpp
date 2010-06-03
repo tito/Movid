@@ -774,6 +774,13 @@ void web_pipeline_gui(struct evhttp_request *req, void *arg) {
 	uri = evhttp_request_uri(req);
 	evhttp_parse_query(uri, &headers);
 
+	if ( evhttp_find_header(&headers, "hide") ) {
+		moDaemon::hideGui();
+		evhttp_clear_headers(&headers);
+		web_message(req, "ok");
+		return;
+	}
+
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "missing objectname");
@@ -783,6 +790,13 @@ void web_pipeline_gui(struct evhttp_request *req, void *arg) {
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
+	}
+
+	if ( evhttp_find_header(&headers, "show") ) {
+		moDaemon::showGui(evhttp_find_header(&headers, "objectname"));
+		evhttp_clear_headers(&headers);
+		web_message(req, "ok");
+		return;
 	}
 
 	evhttp_clear_headers(&headers);
@@ -1090,6 +1104,9 @@ int main(int argc, char **argv) {
 	while ( want_quit == false ) {
 		// FIXME remove this hack !!!
 		cvWaitKey(g_config_delay);
+
+		// update daemon
+		moDaemon::poll(pipeline);
 
 		// update pipeline
 		if ( pipeline->isStarted() ) {
