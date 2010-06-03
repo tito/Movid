@@ -16,23 +16,22 @@
  **********************************************************************/
 
 
-#include "moDilateModule.h"
-#include "../moLog.h"
-#include "cv.h"
+#ifndef UMO_FINGERTIPFINDER_MODULE_H
+#define UMO_FINGERTIPFINDER_MODULE_H
 
-MODULE_DECLARE(Dilate, "native", "Dilates the image (make bright regions bigger)");
+#include "moImageFilterModule.h"
 
-moDilateModule::moDilateModule() {
-	MODULE_INIT();
-	this->properties["iterations"] = new moProperty(1);
-}
+class moFingerTipFinderModule : public moImageFilterModule{
+public:
+	moFingerTipFinderModule();
+	virtual ~moFingerTipFinderModule();
 
-moDilateModule::~moDilateModule() {
-}
+protected:
+	CvMemStorage *storage;
+	void applyFilter(IplImage*);
 
-void moDilateModule::applyFilter(IplImage *src) {
-	int iter = this->property("iterations").asInteger();
-	cvDilate(src, this->output_buffer, NULL, iter);
-}
+	MODULE_INTERNALS();
+};
 
+#endif
 

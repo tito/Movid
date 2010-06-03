@@ -16,23 +16,27 @@
  **********************************************************************/
 
 
-#include "moDilateModule.h"
-#include "../moLog.h"
-#include "cv.h"
+#ifndef MO_DISTANCETRANSFORM_MODULE_H
+#define MO_DISTANCETRANSFORM_MODULE_H
 
-MODULE_DECLARE(Dilate, "native", "Dilates the image (make bright regions bigger)");
+#include "moImageFilterModule.h"
 
-moDilateModule::moDilateModule() {
-	MODULE_INIT();
-	this->properties["iterations"] = new moProperty(1);
-}
+class moDistanceTransformModule : public moImageFilterModule{
+public:
+	moDistanceTransformModule();
+	virtual ~moDistanceTransformModule();
 
-moDilateModule::~moDilateModule() {
-}
+protected:
+	void applyFilter(IplImage*);
+	void allocateBuffers();
+	int toCvType(const std::string&);
+	int toCvMaskSize(const std::string&);
+	int width, height;
+	IplImage* converted;
+	IplImage* dist;
 
-void moDilateModule::applyFilter(IplImage *src) {
-	int iter = this->property("iterations").asInteger();
-	cvDilate(src, this->output_buffer, NULL, iter);
-}
+	MODULE_INTERNALS();
+};
 
+#endif
 

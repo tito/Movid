@@ -27,7 +27,7 @@ public:
 	virtual ~moGrayScaleModule();
 	
 protected:
-	void applyFilter();
+	void applyFilter(IplImage *);
 	void allocateBuffers();
 	MODULE_INTERNALS();
 };

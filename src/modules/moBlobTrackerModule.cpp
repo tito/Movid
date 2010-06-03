@@ -23,7 +23,7 @@
 #include "cvaux.h"
 
 
-//pass through f detection
+//pass through foreground detection
 class moFGDetector : public CvFGDetector{
 private:
 	IplImage* blob_image;
@@ -81,6 +81,9 @@ moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	this->properties["min_size"] = new moProperty(2.0);
 	this->properties["max_size"] = new moProperty(25.0);
 
+    
+
+
 	this->output_data	= new moDataStream("GenericTouch");
 	this->output_count	= 2;
 	this->output_infos[1] = new moDataStreamInfo("data", "GenericTouch", "Data stream with touch info");
@@ -92,8 +95,8 @@ moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
 	memset(&this->param, 0, sizeof(CvBlobTrackerAutoParam1));
 	this->param.FGTrainFrames = 0;
 	this->param.pFG		= new moFGDetector();//cvCreateFGDetectorBase(CV_BG_MODEL_FGD, NULL); //new moFGDetector();
-	this->param.pBT		= cvCreateBlobTrackerCCMSPF();
-	this->param.pBTPP	= cvCreateModuleBlobTrackPostProcKalman();
+	this->param.pBT		= cvCreateBlobTrackerCC(); //vCreateBlobTrackerCCMSPF();
+	//this->param.pBTPP	= cvCreateModuleBlobTrackPostProcKalman();
 	this->tracker		= cvCreateBlobTrackerAuto1(&this->param);
 }
 
@@ -105,7 +108,7 @@ moBlobTrackerModule::~moBlobTrackerModule() {
 
 	// blob track release ?
 	delete this->param.pFG;
-	cvReleaseBlobTrackPostProc(&this->param.pBTPP);
+	//cvReleaseBlobTrackPostProc(&this->param.pBTPP);
 	cvReleaseBlobTracker(&this->param.pBT);
 	cvReleaseBlobTrackerAuto(&this->tracker);
 	delete this->tracker;
@@ -124,12 +127,12 @@ void moBlobTrackerModule::allocateBuffers() {
 	if ( src == NULL )
 		return;
 	this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, 3);
-	LOGM(MO_TRACE) << "allocated output buffer for BlobTracker module.";
+	LOGM(MO_TRACE, "allocated output buffer for BlobTracker module.");
 }
 
-void moBlobTrackerModule::applyFilter() {
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
+void moBlobTrackerModule::applyFilter(IplImage *src) {
 	IplImage* fg_map = NULL;
+
 	assert( src != NULL );
 	CvSize size = cvGetSize(src);
 
@@ -147,8 +150,8 @@ void moBlobTrackerModule::applyFilter() {
 	for ( int i = this->tracker->GetBlobNum(); i > 0; i-- ) {
 		CvBlob* pB = this->tracker->GetBlob(i-1);
 
-		int minsize = this->property("min_size").asDouble();
-		int maxsize = this->property("max_size").asDouble();
+		int minsize = this->property("min_size").asInteger();
+		int maxsize = this->property("max_size").asInteger();
 		// Assume circular blobs
 		if (pB->w < minsize || maxsize < pB->w || pB->h < minsize || maxsize < pB->h)
 			continue;
@@ -162,8 +165,8 @@ void moBlobTrackerModule::applyFilter() {
 				CV_RGB(c,255-c,0), cvRound(1+(3*0)/255), CV_AA, 8);
 		}
 
-		LOGM(MO_DEBUG) << "Blob: id="<< pB->ID <<" pos=" << pB->x \
-			<< "," << pB->y << "size=" << pB->w << "," << pB->h;
+		LOGM(MO_DEBUG, "Blob: id="<< pB->ID <<" pos=" << pB->x \
+			<< "," << pB->y << "size=" << pB->w << "," << pB->h);
 
 		// add the blob in data
 		moDataGenericContainer *touch = new moDataGenericContainer();

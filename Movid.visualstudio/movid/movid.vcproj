@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="movid"
 	ProjectGUID="{9E6DC113-54E2-4DF4-899F-ADC959123912}"
 	RootNamespace="Movid"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\OpenCV\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
+				AdditionalIncludeDirectories="c:\OpenCV\include\opencv;&quot;$(SolutionDir)\..\contrib\&quot;;&quot;$(SolutionDir)\..\contrib\XgetOpt&quot;;&quot;$(SolutionDir)\..\contrib\cJSON&quot;;&quot;$(SolutionDir)\..\contrib\jpeg-8&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\WIN32-Code&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable\compat&quot;;&quot;$(SolutionDir)\..\contrib\libevent-1.4.13-stable&quot;;&quot;$(SolutionDir)\..\contrib\libfidtrack&quot;;&quot;$(SolutionDir)\..\contrib\ptypes-2.1.1\include&quot;;&quot;$(SolutionDir)\..\contrib\WOscLib-00.09&quot;;$(NOINHERIT)"
 				PreprocessorDefinitions="WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -59,7 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib jpeg.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
+				AdditionalDependencies="WS2_32.lib libjson.lib libevent.lib libfidtrack.lib ptypes.lib WOscLib.lib cv200.lib cvaux200.lib cxcore200.lib cxts200.lib highgui200.lib ml200.lib"
 				AdditionalLibraryDirectories="&quot;$(SolutionDir)$(ConfigurationName)&quot;;&quot;$(TargetDir)&quot;;&quot;$(SolutionDir)..\contrib\ptypes-2.1.1\win32\$(ConfigurationName)&quot;;&quot;$(SolutionDir)..\contrib\libevent-1.4.13-stable\WIN32-Prj\$(ConfigurationName)&quot;;C:\OpenCV\lib"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
@@ -203,6 +203,10 @@
 				RelativePath="..\..\src\moThread.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\moUtils.h"
+				>
+			</File>
 			<Filter
 				Name="modules"
 				>
@@ -223,11 +227,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moCannyModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moCombineModule.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moDilateModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moDistanceTransformModule.h"
 					>
 				</File>
 				<File
@@ -243,11 +255,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moFingerTipFinderModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moGrayScaleModule.h"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moHighpassModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moHsvModule.h"
 					>
 				</File>
 				<File
@@ -267,7 +287,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moJustifyModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moMaskModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moMirrorImageModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moPeakFinderModule.h"
 					>
 				</File>
 				<File
@@ -288,6 +320,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moVideoModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moYCrCbThresholdModule.h"
 					>
 				</File>
 			</Filter>
@@ -336,6 +372,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\moUtils.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\contrib\XgetOpt\XGetopt.cxx"
 				>
 			</File>
@@ -363,15 +403,15 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\modules\moCannyModule.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\modules\moCombineModule.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moDilateModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moDistanceTransformModule.cpp"
 					>
 				</File>
 				<File
@@ -387,11 +427,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moFingerTipFinderModule.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moGrayScaleModule.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moHighpassModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moHsvModule.cpp"
 					>
 				</File>
 				<File
@@ -411,7 +459,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moJustifyModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moMaskModule.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moMirrorImageModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moPeakFinderModule.cpp"
 					>
 				</File>
 				<File
@@ -432,6 +492,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moVideoModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moYCrCbThresholdModule.cpp"
 					>
 				</File>
 			</Filter>

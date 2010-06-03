@@ -23,13 +23,43 @@
 #include <iostream>
 #include <string>
 
+#ifdef NO_LOG
+
+#define LOG_DECLARE(x)
+#define LOG(level, x)
+#define LOGX(level, x)
+#define LOGM(level, x)
+
+#else // NO_LOG
+
 #define LOG_DECLARE(x) \
 	static char log_name[] = x;
 
+#define LOG(level, x) do { \
+	if ( level <= g_loglevel ) \
+		moLogMessage(log_name, __FILE__, __LINE__, level) << x; \
+} while (0);
 
-#define LOG(x) moLogMessage(log_name, __FILE__, __LINE__, x).get()
-#define LOGX(x) moLogMessage(this->getName(), __FILE__, __LINE__, x).get()
-#define LOGM(x) LOG(x) << "<" << this->property("id").asString() << "> "
+#define LOGX(level, x) do { \
+	if ( level <= g_loglevel ) \
+		moLogMessage(this->getName(), __FILE__, __LINE__, level) << x; \
+} while (0);
+
+#define LOGM(level, x) do { \
+	if ( level <= g_loglevel ) \
+		moLogMessage(log_name, __FILE__, __LINE__, level) \
+		<< "<" << this->property("id").asString() << "> " << x; \
+} while(0);
+
+#endif // NO_LOG
+
+#define _LOG_FUNC { \
+	if ( this->level <= g_loglevel ) \
+		this->os << __n; \
+	return *this; \
+}
+
+extern int g_loglevel;
 
 enum {
 	MO_CRITICAL		= 0,
@@ -40,29 +70,38 @@ enum {
 	MO_TRACE		= 5,
 };
 
+class moLog {
+public:
+	static void init(bool use_syslog);
+	static void cleanup();
+	static void setLogLevel(int n);
+	static int getLogLevel();
+	static int getSysLogLevel(int n);
+	static std::string getLogLevelName(int n);
+};
+
 class moLogMessage {
 public:
 	moLogMessage(std::string name, std::string filename, int line, int level);
 	~moLogMessage();
 
-	std::ostringstream &get();
+    moLogMessage &operator<<(bool __n) _LOG_FUNC;
+	moLogMessage &operator<<(char __n) _LOG_FUNC;
+    moLogMessage &operator<<(short __n) _LOG_FUNC;
+    moLogMessage &operator<<(int __n) _LOG_FUNC;
+    moLogMessage &operator<<(long __n) _LOG_FUNC;
+	moLogMessage &operator<<(unsigned char __n) _LOG_FUNC;
+    moLogMessage &operator<<(unsigned short __n) _LOG_FUNC;
+    moLogMessage &operator<<(unsigned int __n) _LOG_FUNC;
+    moLogMessage &operator<<(unsigned long __n) _LOG_FUNC;
+    moLogMessage &operator<<(float __n) _LOG_FUNC;
+    moLogMessage &operator<<(double __n) _LOG_FUNC;
+	moLogMessage &operator<<(std::string __n) _LOG_FUNC;
+	moLogMessage &operator<<(const char *__n) _LOG_FUNC;
 
 private:
 	std::ostringstream os;
 	int level;
-};
-
-class moLog {
-public:
-	static moLog *getInstance();
-	void setLogLevel(int n);
-	int getLogLevel();
-	std::string getLogLevelName(int n);
-
-private:
-	moLog();
-	~moLog();
-	int loglevel;
 };
 
 #endif

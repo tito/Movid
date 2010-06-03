@@ -32,7 +32,7 @@ protected:
 	moDataGenericList fiducials;
 	moDataStream *output_data;
 	
-	void applyFilter();	
+	void applyFilter(IplImage*);
 	void allocateBuffers();
 	void clearFiducials();
 

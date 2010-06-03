@@ -16,78 +16,167 @@
  **********************************************************************/
 
 html, body {
-	background-color: rgb(30, 30, 30);
-	color: rgb(200, 200, 200);
 	font-family: Lucida, sans-serif;
 	font-size: 90%;
-}
-
-a {
-	color: rgb(204, 102, 0);
-	text-decoration: none;
-}
-
-#footer {
-	color: rgb(70, 70, 70);
-}
-
-#sidebar {
-	float: left;
-	width: 270px;
-	background-color: rgb(51, 51, 51);
-}
-
-#sidebar h3 {
-	margin: 2px 0px;
+	margin: 0px 10px;
 	padding: 0px;
-	font-size: 110%;
-	font-weight: normal;
-	background-color: rgb(70, 70, 70);
+	background: #eeeeee;
 }
 
-#sidebar h3 a {
-	color: rgb(220, 220, 220);
-	padding: 2px 5px;
-	display: block;
-	cursor: pointer;
-}
-
-#sidebar h3 a:hover {
-	color: rgb(240, 240, 240);
-	background-color: rgb(90, 90, 90);
-}
-
-#sidebar div a {
-	display: block;
-	padding: 2px 5px;
-}
-
-#sidebar p {
-	padding: 2px 5px;
+/* toolbar top
+ */
+.fg-button {
+	outline: 0;
+	margin:0 4px 0 0;
+	padding: .4em 1em;
+	text-decoration:none !important;
+	cursor:pointer;
+	position: relative;
 	text-align: center;
+	zoom: 1;
 }
 
-#sidebar div p a {
-	display: inline;
-	padding: 0px;
+.fg-button .ui-icon {
+    position: absolute;
+    top: 50%;
+    margin-top: -8px;
+    left: 50%;
+    margin-left: -8px;
 }
 
-#sidebar div a:hover {
-	background-color: rgb(60, 60, 60);
+a.fg-button {
+    float:left;
 }
 
-#pjs {
-	margin-left: 280px;
+/* remove extra button width in IE */
+button.fg-button {
+    width:auto;
+    overflow:visible;
 }
 
-canvas {
-	cursor: pointer;
+.fg-button-icon-solo {
+	display:block;
+    width:8px;
+    text-indent: -9999px;
+}	/* solo icon buttons must have block properties for the text-indent to work */	
+
+.fg-buttonset {
+	float:left;
 }
 
-#streamimg {
+.fg-buttonset .fg-button {
+	float: left;
+}
+
+.fg-buttonset-single .fg-button, 
+.fg-buttonset-multi .fg-button {
+	margin-right: -1px;
+}
+
+.fg-toolbar {
+	padding: .2em;
+	margin: 0 0px;
+}
+
+.fg-toolbar .fg-buttonset {
+	margin-right:1.5em;
+	padding-left: 1px;
+}
+
+.fg-toolbar .fg-button {
+	font-size: 1em;
+}
+
+.fg-button {
+	font-weight: normal;
+}
+
+
+/* left and right column layout
+ */
+#leftcolumn .ui-widget,
+#rightcolumn .ui-widget {
+	 margin-bottom: 10px !important;
+}
+
+#leftcolumn .ui-widget-sidebar {
+	width: 195px;
+}
+
+#rightcolumn .ui-widget-sidebar {
+	width: 270px;
+}
+
+
+/* widget in sidebar
+ */
+.ui-widget-sidebar .ui-widget-header {
+	font-weight: normal;
+	padding: .4em;
+}
+
+.ui-widget-sidebar {
+	font-size: 95%;
+}
+
+#content .ui-widget-content {
+	background-color: rgb(51, 51, 51);
+	background-image: none !important;
+}
+
+
+/* global layout (wraper[left + content + right])
+ */
+#wrapper {
 	width: 100%;
 }
 
+#leftcolumn { 
+	display: inline;
+	color: #333;
+	margin: 10px 0px 10px 0px;
+	padding: 0px;
+	float: left;
+}
+
+#content { 
+	float: left;
+	color: red;
+	margin: 10px 20px;
+	padding: 0px;
+	display: inline;
+	position: relative;
+	overflow: hidden;
+}
+
+#rightcolumn { 
+	display: inline;
+	position: relative;
+	color: #333;
+	margin: 10px 0px 10px 0px;
+	padding: 0px;
+	float: right;
+}
+
+#footer {
+	clear: both;
+	display: none;
+}
+
+/* modules (create screen)
+ */
+#modules a {
+	text-decoration: none;
+	display: block;
+	padding: 2px 0.5em;
+}
+
+#modules a:hover {
+	background-color: rgb(204, 102, 0);
+}
+
+/* properties (properties screen)
+ */
 #properties table {
 	width: 100%;
 	border-collapse: collapse;
@@ -106,6 +195,7 @@ canvas {
 #properties table td.label {
 	text-align: right;
 	width: 50%;
+	color: white;
 }
 
 #properties table td .ui-widget {
@@ -116,15 +206,13 @@ canvas {
 	padding: 2px 4px;
 }
 
-/* customize jquery
- */
 .ui-slider-handle,
 .ui-button {
-	border: none !important;
 	font-weight: normal;
 }
 
-.ui-corner-all {
-	-moz-border-radius: 0;
-	-webkit-border-radius: 0;
+/* preview
+ */
+#video img {
+	width: 100%;
 }

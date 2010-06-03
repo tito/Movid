@@ -33,7 +33,7 @@ public:
 protected:
 	IplImage* mask_buffer;
 
-	void applyFilter();
+	void applyFilter(IplImage *);
 
 	MODULE_INTERNALS();
 };

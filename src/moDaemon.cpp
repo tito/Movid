@@ -17,29 +17,65 @@
 
 
 #include <iostream>
+#include <fstream>
 
 #include "moDaemon.h"
-
+#include "moLog.h"
 #include "moFactory.h"
 
-static moDaemon *instance = NULL;
+#ifdef WIN32
+#include <winsock2.h>
+#include <windows.h>
+#endif
 
-moDaemon::moDaemon() {
-}
-
-moDaemon::~moDaemon() {
-}
-
-moDaemon *moDaemon::getInstance() {
-	if ( instance == NULL )
-		instance = new moDaemon();
-	return instance;
-}
+LOG_DECLARE("Daemon");
 
 void moDaemon::init() {
 	moFactory::init();
+
+#ifdef WIN32
+	// initialize network for Win32 platform
+	{
+		WSADATA wsaData;
+		if ( WSAStartup(MAKEWORD(2, 2), &wsaData) == -1 )
+			LOG(MO_CRITICAL, "unable to initialize WinSock (v2.2)");
+	}
+#endif
+}
+
+bool moDaemon::detach(std::string pidfilename) {
+#ifndef WIN32
+	pid_t pid = fork();
+	if (pid > 0) {
+		LOG(MO_INFO, "child process created with pid " << pid);
+		try {
+			std::ofstream pidfile(pidfilename.c_str(), std::ios::out|std::ios::trunc);
+			if (pidfile) {
+				pidfile << pid << std::endl;
+				pidfile.close();
+			} else {
+				LOG(MO_ERROR, "Cannot write pidfile " << pidfilename);
+			}
+		} 
+		catch(std::exception x) {
+			LOG(MO_ERROR, "Cannot write pidfile " << pidfilename << ": " << x.what());
+		}
+	}
+	if (pid < 0)
+		LOG(MO_ERROR, "no child process could be created, but this process is still living");
+	return(pid <= 0);
+#endif
+	// TODO implement other platform
+	LOG(MO_INFO, "This platform don't support detach yet.");
+	return true;
 }
 
 void moDaemon::cleanup() {
+#ifdef _WIN32
+	WSACleanup();
+#endif
+
+	moFactory::cleanup();
+	moLog::cleanup();
 }
 

@@ -16,23 +16,21 @@
  **********************************************************************/
 
 
-#include "moDilateModule.h"
-#include "../moLog.h"
-#include "cv.h"
+#ifndef MO_YCRCBTHRESHOLD_MODULE_H
+#define MO_YCRCBTHRESHOLD_MODULE_H
 
-MODULE_DECLARE(Dilate, "native", "Dilates the image (make bright regions bigger)");
+#include "moImageFilterModule.h"
 
-moDilateModule::moDilateModule() {
-	MODULE_INIT();
-	this->properties["iterations"] = new moProperty(1);
-}
+class moYCrCbThresholdModule : public moImageFilterModule{
+public:
+	moYCrCbThresholdModule();
+	virtual void allocateBuffers();
+	virtual ~moYCrCbThresholdModule();
 
-moDilateModule::~moDilateModule() {
-}
+protected:
+	void applyFilter(IplImage *);
+	MODULE_INTERNALS();
+};
 
-void moDilateModule::applyFilter(IplImage *src) {
-	int iter = this->property("iterations").asInteger();
-	cvDilate(src, this->output_buffer, NULL, iter);
-}
-
+#endif
 

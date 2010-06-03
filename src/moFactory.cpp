@@ -23,7 +23,7 @@
 
 #define REGISTER_MODULE(name) \
 	extern moModule* factory_create_mo##name(); \
-	LOG(MO_DEBUG) << "register <" #name "> module"; \
+	LOG(MO_DEBUG, "register <" #name "> module"); \
 	moFactory::getInstance()->registerModule(#name, factory_create_mo##name);
 
 LOG_DECLARE("Factory");
@@ -43,6 +43,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Image);
 	REGISTER_MODULE(ImageDisplay);
 	REGISTER_MODULE(Invert);
+	REGISTER_MODULE(Justify);
 	REGISTER_MODULE(Mask);
 	REGISTER_MODULE(MirrorImage);
 	REGISTER_MODULE(Smooth);
@@ -55,8 +56,12 @@ void moFactory::init() {
 	REGISTER_MODULE(Canny);
 	REGISTER_MODULE(Calibration);
 	REGISTER_MODULE(Hsv);
+	REGISTER_MODULE(DistanceTransform);
+	REGISTER_MODULE(PeakFinder);
+	REGISTER_MODULE(FingerTipFinder);
+	REGISTER_MODULE(YCrCbThreshold);
 	//DoNotRemoveThisComment
-	LOG(MO_INFO) << "register " << moFactory::getInstance()->list().size() << " modules";
+	LOG(MO_INFO, "register " << moFactory::getInstance()->list().size() << " modules");
 }
 
 void moFactory::cleanup() {

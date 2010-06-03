@@ -22,8 +22,14 @@
 #include "moLog.h"
 #include "pasync.h"
 
-static moLog* instance = NULL;
+#ifndef WIN32
+#include <syslog.h>
+#endif
+
 static pt::mutex(logmtx);
+
+int g_loglevel = MO_INFO;
+bool g_use_syslog = false;
 
 moLogMessage::moLogMessage(std::string name, std::string filename,
 						   int line, int level) {
@@ -31,56 +37,74 @@ moLogMessage::moLogMessage(std::string name, std::string filename,
 	time_t t;
 	struct tm *tmp;
 
-	t = time(NULL);
-	tmp = localtime(&t);
-	strftime(buffer, sizeof(buffer), "%H:%M:%S", tmp);
+	if (! g_use_syslog) {
+		t = time(NULL);
+		tmp = localtime(&t);
+		strftime(buffer, sizeof(buffer), "%H:%M:%S", tmp);
 
-	this->os << buffer << " | ";
-	this->os << moLog::getInstance()->getLogLevelName(level) << " | ";
+		this->os << buffer << " | ";
+	}
+	this->os << moLog::getLogLevelName(level) << " | ";
 	this->os << (const char *)name.c_str() << " | ";
 	this->level = level;
 }
 
 moLogMessage::~moLogMessage() {
-	if ( this->level <= moLog::getInstance()->getLogLevel() ) {
+	if (this->level <= g_loglevel) {
 		logmtx.lock();
+#ifndef WIN32
+		if (g_use_syslog) {
+			syslog(LOG_USER | moLog::getSysLogLevel(this->level), "%s", this->os.str().c_str());
+		} else {
+			std::cout << this->os.str() << std::endl;
+		}
+#else
 		std::cout << this->os.str() << std::endl;
+#endif
 		logmtx.unlock();
 	}
 }
 
-std::ostringstream &moLogMessage::get() {
-	return this->os;
+
+void moLog::init(bool use_syslog) {
+#ifndef WIN32
+	g_use_syslog = use_syslog;
+#endif
+	g_loglevel = MO_INFO;
+	if (getenv("MO_DEBUG"))
+		g_loglevel = MO_DEBUG;
+	if (getenv("MO_TRACE"))
+		g_loglevel = MO_TRACE;
 }
 
-
-moLog::moLog() {
-	this->loglevel = MO_INFO;
-	if ( getenv("MO_DEBUG") )
-		this->loglevel = MO_DEBUG;
-	if ( getenv("MO_TRACE") )
-		this->loglevel = MO_TRACE;
-}
-
-moLog::~moLog() {
-}
-
-moLog *moLog::getInstance() {
-	if ( instance == NULL )
-		instance = new moLog();
-	return instance;
+void moLog::cleanup() {
 }
 
 int moLog::getLogLevel() {
-	return this->loglevel;
+	return g_loglevel;
 }
 
 void moLog::setLogLevel(int n) {
-	this->loglevel = n;
+	g_loglevel = n;
+}
+
+int moLog::getSysLogLevel(int n) {
+#ifndef WIN32
+	switch (n) {
+		case MO_CRITICAL:	return LOG_CRIT;
+		case MO_ERROR:		return LOG_ERR;
+		case MO_WARNING:	return LOG_WARNING;
+		case MO_INFO:		return LOG_INFO;
+		case MO_DEBUG:		return LOG_DEBUG;
+		default:		return 0;
+	}
+#endif
+	// TODO implement for other platform
+	return 0;
 }
 
 std::string moLog::getLogLevelName(int n) {
-	switch ( n ) {
+	switch (n) {
 		case MO_CRITICAL:	return "Critical";
 		case MO_ERROR:		return "Error";
 		case MO_WARNING:	return "Warning";

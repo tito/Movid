@@ -15,8 +15,13 @@
  **
  **********************************************************************/
 
-
 #include "moUtils.h"
+
+#ifdef _WIN32
+#include <windows.h>
+#else // _WIN32
+#include <sys/time.h>
+#endif // _WIN32
 
 std::vector<std::string> moUtils::tokenize(const std::string& str, const std::string& delimiters)
 {
@@ -47,3 +52,13 @@ std::vector<std::string> moUtils::tokenize(const std::string& str, const std::st
 	return result;
 }
 
+double moUtils::time()
+{
+#ifdef _WIN32
+	return ((double)GetTickCount()) / 1000000.;
+#else // _WIN32
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return ((double)tv.tv_sec) + ((double)tv.tv_usec) / 1000000.;
+#endif // _WIN32
+}

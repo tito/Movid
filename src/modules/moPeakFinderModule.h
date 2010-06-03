@@ -16,23 +16,32 @@
  **********************************************************************/
 
 
-#include "moDilateModule.h"
-#include "../moLog.h"
-#include "cv.h"
+#ifndef MO_PeakFinder_MODULE_H
+#define MO_PeakFinder_MODULE_H
 
-MODULE_DECLARE(Dilate, "native", "Dilates the image (make bright regions bigger)");
+#include "moImageFilterModule.h"
+#include "../moDataGenericContainer.h"
 
-moDilateModule::moDilateModule() {
-	MODULE_INIT();
-	this->properties["iterations"] = new moProperty(1);
-}
+typedef std::pair<double, moPoint> doubleToPoint;
 
-moDilateModule::~moDilateModule() {
-}
+class moPeakFinderModule : public moImageFilterModule{
+public:
+	moPeakFinderModule();
+	virtual ~moPeakFinderModule();
 
-void moDilateModule::applyFilter(IplImage *src) {
-	int iter = this->property("iterations").asInteger();
-	cvDilate(src, this->output_buffer, NULL, iter);
-}
+protected:
+	std::vector<doubleToPoint> peaks;
+	moDataGenericList *blobs;
+	moDataStream *output_data;
+	void findRange(IplImage*);
+	void removeDuplicates();
+	void findMaxima();
+	void drawPeaks();
+	void applyFilter(IplImage*);
+	moDataStream* getOutput(int);
 
+	MODULE_INTERNALS();
+};
+
+#endif
 

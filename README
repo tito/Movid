@@ -51,7 +51,7 @@ They should be easily transferable to other linux distributions.
 Building from source on these distributions is really easy.
 
 First, you have to install the opencv headers, git and the build-tools:
-sudo apt-get install libcv-dev git-core build-essential
+sudo apt-get install libcv-dev libcvaux-dev libhighgui-dev git-core build-essential
 
 Then, you get the current development version of Movid:
 git clone git://github.com/tito/Movid.git

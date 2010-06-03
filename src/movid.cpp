@@ -15,12 +15,16 @@
  **
  **********************************************************************/
 
+#include <stdio.h>
 
 #ifdef WIN32
 #include <winsock2.h>
 #include <windows.h>
 #include <Xgetopt.h>
+#else
+#include <getopt.h>
 #endif
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -34,10 +38,7 @@
 #endif
 
 #include <iostream>
-#include <fstream>
 #include <sstream>
-#include <algorithm>
-#include <iterator>
 #include <string>
 #include <map>
 
@@ -49,6 +50,8 @@
 #include "cJSON.h"
 
 // Movid
+#include "moLog.h"
+#include "moDaemon.h"
 #include "moPipeline.h"
 #include "moModule.h"
 #include "moFactory.h"
@@ -59,17 +62,24 @@
 #include "event.h"
 #include "evhttp.h"
 
-#define MO_DAEMON "movid"
-#define MO_GUIDIR "gui/html"
+#define MO_DAEMON	"movid"
+#define MO_GUIDIR	"gui/html"
+#define MO_VERSION	"0.2"
+
+LOG_DECLARE("App");
 
 static moPipeline *pipeline = NULL;
 static bool want_quit = false;
 static struct event_base *base = NULL;
+static bool config_detach = false;
+static bool config_syslog = false;
 static bool config_httpserver = true;
 static bool test_mode = false;
 static std::string config_pipelinefn = "";
+static std::string config_guidir = MO_GUIDIR;
+static std::string config_pidfile = "/var/run/movid.pid";
 static struct evhttp *server = NULL;
-static int config_delay = 5;
+int g_config_delay = 5;
 
 class otStreamModule : public moModule {
 public:
@@ -118,12 +128,15 @@ public:
 	}
 
 	bool copy() {
+		IplImage *src;
 		if ( this->output_buffer == NULL || this->input == NULL )
 			return false;
 		this->input->lock();
-		IplImage* src = (IplImage*)(this->input->getData());
-		if ( src == NULL || src->imageData == NULL )
+		src = (IplImage*)(this->input->getData());
+		if ( src == NULL || src->imageData == NULL ) {
+			this->input->unlock();
 			return false;
+		}
 		if ( this->property("scale").asInteger() == 1 )
 			cvCopy(src, this->output_buffer);
 		else
@@ -140,6 +153,15 @@ public:
 	moDataStream *input;
 	IplImage* output_buffer;
 };
+
+struct chunk_req_state {
+	struct evhttp_request *req;
+	otStreamModule *stream;
+	int i;
+	bool closed;
+	int delay;
+};
+
 
 static void signal_term(int signal) {
 	want_quit = true;
@@ -179,32 +201,12 @@ void web_status(struct evhttp_request *req, void *arg) {
 	web_message(req, "ok");
 }
 
-moModule *module_search(const std::string &id, moPipeline *pipeline) {
-	moModule *module;
-	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
-		module = pipeline->getModule(i);
-		if ( module->property("id").asString() == id )
-			return module;
-	}
-	return NULL;
-}
-
-
-struct chunk_req_state {
-	struct evhttp_request *req;
-	otStreamModule *stream;
-	int i;
-	bool closed;
-	int delay;
-};
-
 static void web_pipeline_stream_close(struct evhttp_connection *conn, void *arg) {
 	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
 	state->closed = true;
 }
 
-static void web_pipeline_stream_trickle(int fd, short events, void *arg)
-{
+static void web_pipeline_stream_trickle(int fd, short events, void *arg) {
 	struct evbuffer *evb = NULL;
 	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
 	struct timeval when = { 0, 0 };
@@ -216,21 +218,25 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 
 	when.tv_usec = state->delay * 1000;
 
+	// stream is closed, clean the state.
 	if ( state->closed ) {
-		// free !
 		state->stream->setInput(NULL);
 		delete state->stream;
 		free(state);
 		return;
 	}
 
-	if ( !state->stream->copy() ) {
-		event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
-		return;
-	}
+	// nothing to copy, schedule the next event
+	if ( !state->stream->copy() )
+		goto stream_trickle_end;
 
 	// convert the image from BRG to RGB
 	img = state->stream->output_buffer;
+	if ( img == NULL ) {
+		LOG(MO_ERROR, "stream: output_buffer is null !");
+		goto stream_trickle_end;
+	}
+
 	if ( img->nChannels == 3 )
 		cvCvtColor(img, img, CV_BGR2RGB);
 
@@ -238,6 +244,10 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	if ( img->depth != 8 ) {
 		convert = true;
 		img = cvCreateImage(cvSize(img->width, img->height), IPL_DEPTH_8U, img->nChannels);
+		if ( img == NULL ) {
+			LOG(MO_ERROR, "stream: unable to create a new image");
+			goto stream_trickle_end;
+		}
 		cvConvertScale(state->stream->output_buffer, img, 255, 0);
 	}
 
@@ -247,12 +257,16 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	cv::imencode(".jpg", img, outbuf, params);
 	outlen = outbuf.size();
 
-
 	// release temporary image if created
 	if ( convert )
 		cvReleaseImage(&img);
 
+	// create and send the buffer
 	evb = evbuffer_new();
+	if ( evb == NULL ) {
+		LOG(MO_ERROR, "stream: unable to create a libevent buffer");
+		goto stream_trickle_end;
+	}
 	evbuffer_add_printf(evb, "--mjpegstream\r\n");
 	evbuffer_add_printf(evb, "Content-Type: image/jpeg\r\n");
 	evbuffer_add_printf(evb, "Content-Length: %lu\r\n\r\n", outlen);
@@ -263,21 +277,24 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg)
 	outbuf.clear();
 	params.clear();
 
+stream_trickle_end:;
 	event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
-	/**
-		evhttp_send_reply_end(state->req);
-		free(state);
-	**/
 }
 
 void web_pipeline_stream(struct evhttp_request *req, void *arg) {
-	struct timeval when = { 0, 20 };
-	struct evkeyvalq headers;
 	const char *uri;
 	int	idx = 0;
 	moModule *module = NULL;
+	struct chunk_req_state *state = NULL;
+	struct evkeyvalq headers;
+	struct timeval when = { 0, 20 };
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -285,7 +302,7 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -299,13 +316,22 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 		return web_error(req, "invalid index");
 	}
 
-	struct chunk_req_state *state = (struct chunk_req_state*)malloc(sizeof(struct chunk_req_state));
+	state = (struct chunk_req_state*)malloc(sizeof(struct chunk_req_state));
+	if ( state == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to allocate state");
+	}
 
 	memset(state, 0, sizeof(struct chunk_req_state));
-	state->req = req;
-	state->closed = false;
-	state->stream = new otStreamModule();
-	state->delay = 100;
+	state->req		= req;
+	state->closed	= false;
+	state->delay	= 100;
+	state->stream	= new otStreamModule();
+	if ( state->stream == NULL ) {
+		evhttp_clear_headers(&headers);
+		free(state);
+		return web_error(req, "unable to allocate stream module");
+	}
 
 	if ( evhttp_find_header(&headers, "scale") != NULL )
 		state->stream->property("scale").set(evhttp_find_header(&headers, "scale"));
@@ -315,13 +341,13 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 
 	state->stream->setInput(module->getOutput(idx));
 
+	// prepare connection
 	evhttp_add_header(req->output_headers, "Content-Type", "multipart/x-mixed-replace; boundary=mjpegstream");
 	evhttp_send_reply_start(req, HTTP_OK, "Everything is fine");
-
 	evhttp_connection_set_closecb(req->evcon, web_pipeline_stream_close, state);
 
+	// reschedule a future event for next call
 	event_once(-1, EV_TIMEOUT, web_pipeline_stream_trickle, state, &when);
-
 }
 
 void web_pipeline_create(struct evhttp_request *req, void *arg) {
@@ -330,6 +356,11 @@ void web_pipeline_create(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -349,8 +380,37 @@ void web_pipeline_create(struct evhttp_request *req, void *arg) {
 	web_message(req, module->property("id").asString().c_str());
 }
 
+void web_pipeline_stats(struct evhttp_request *req, void *arg) {
+	moModule *module;
+	cJSON *root, *data, *mod;
+
+	root = cJSON_CreateObject();
+	cJSON_AddNumberToObject(root, "success", 1);
+	cJSON_AddStringToObject(root, "message", "ok");
+	cJSON_AddItemToObject(root, "stats", data=cJSON_CreateObject());
+
+	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
+		module = pipeline->getModule(i);
+
+		cJSON_AddItemToObject(data,
+			module->property("id").asString().c_str(),
+			mod=cJSON_CreateObject());
+
+		cJSON_AddNumberToObject(mod, "average_fps", module->stats.average_fps);
+		cJSON_AddNumberToObject(mod, "average_process_time", module->stats.average_process_time);
+		cJSON_AddNumberToObject(mod, "average_wait_time", module->stats.average_wait_time);
+		cJSON_AddNumberToObject(mod, "total_process_frame", module->stats.total_process_frame);
+		cJSON_AddNumberToObject(mod, "total_process_time", module->stats.total_process_time);
+		cJSON_AddNumberToObject(mod, "total_wait_time", module->stats.total_wait_time);
+	}
+
+	web_json(req, root);
+}
+
 void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	std::map<std::string, moProperty*>::iterator it;
+	unsigned int i, j;
+	int k;
 	char buffer[64];
 	cJSON *root, *data, *modules, *mod, *properties, *io, *observers, *array, *property;
 	moDataStream *ds;
@@ -359,11 +419,12 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 	cJSON_AddNumberToObject(root, "success", 1);
 	cJSON_AddStringToObject(root, "message", "ok");
 	cJSON_AddItemToObject(root, "status", data=cJSON_CreateObject());
+	cJSON_AddStringToObject(data, "version", MO_VERSION);
 	cJSON_AddNumberToObject(data, "size", pipeline->size());
 	cJSON_AddNumberToObject(data, "running", pipeline->isStarted() ? 1 : 0);
 	cJSON_AddItemToObject(data, "modules", modules=cJSON_CreateObject());
 
-	for ( unsigned int i = 0; i < pipeline->size(); i++ ) {
+	for ( i = 0; i < pipeline->size(); i++ ) {
 		moModule *module = pipeline->getModule(i);
 		assert( module != NULL );
 
@@ -400,28 +461,28 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 
 		if ( module->getInputCount() ) {
 			cJSON_AddItemToObject(mod, "inputs", array=cJSON_CreateArray());
-			for ( int i = 0; i < module->getInputCount(); i++ ) {
-				ds = module->getInput(i);
+			for ( k = 0; k < module->getInputCount(); k++ ) {
+				ds = module->getInput(k);
 				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
-				cJSON_AddNumberToObject(io, "index", i);
-				cJSON_AddStringToObject(io, "name", module->getInputInfos(i)->getName().c_str());
-				cJSON_AddStringToObject(io, "type", module->getInputInfos(i)->getType().c_str());
+				cJSON_AddNumberToObject(io, "index", k);
+				cJSON_AddStringToObject(io, "name", module->getInputInfos(k)->getName().c_str());
+				cJSON_AddStringToObject(io, "type", module->getInputInfos(k)->getType().c_str());
 				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
 			}
 		}
 
 		if ( module->getOutputCount() ) {
 			cJSON_AddItemToObject(mod, "outputs", array=cJSON_CreateArray());
-			for ( int i = 0; i < module->getOutputCount(); i++ ) {
-				ds = module->getOutput(i);
+			for ( k = 0; k < module->getOutputCount(); k++ ) {
+				ds = module->getOutput(k);
 				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
-				cJSON_AddNumberToObject(io, "index", i);
-				cJSON_AddStringToObject(io, "name", module->getOutputInfos(i)->getName().c_str());
-				cJSON_AddStringToObject(io, "type", module->getOutputInfos(i)->getType().c_str());
+				cJSON_AddNumberToObject(io, "index", k);
+				cJSON_AddStringToObject(io, "name", module->getOutputInfos(k)->getName().c_str());
+				cJSON_AddStringToObject(io, "type", module->getOutputInfos(k)->getType().c_str());
 				cJSON_AddNumberToObject(io, "used", ds == NULL ? 0 : 1);
 				cJSON_AddItemToObject(io, "observers", observers=cJSON_CreateObject());
 				if ( ds != NULL ) {
-					for ( unsigned int j = 0; j < ds->getObserverCount(); j++ ) {
+					for ( j = 0; j < ds->getObserverCount(); j++ ) {
 						snprintf(buffer, sizeof(buffer), "%d", j);
 						cJSON_AddStringToObject(observers, buffer,
 							ds->getObserver(j)->property("id").asString().c_str());
@@ -444,9 +505,8 @@ void web_factory_list(struct evhttp_request *req, void *arg) {
 	cJSON_AddStringToObject(root, "message", "ok");
 	cJSON_AddItemToObject(root, "list", data=cJSON_CreateArray());
 
-	for ( it = list.begin(); it != list.end(); it++ ) {
+	for ( it = list.begin(); it != list.end(); it++ )
 		cJSON_AddItemToArray(data, cJSON_CreateString(it->c_str()));
-	}
 
 	web_json(req, root);
 }
@@ -458,8 +518,14 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 	moModule *module;
 	struct evkeyvalq headers;
 	const char *uri;
+	int i;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "name") == NULL ) {
@@ -492,7 +558,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 
 	if ( module->getInputCount() ) {
 		cJSON_AddItemToObject(mod, "inputs", array=cJSON_CreateArray());
-		for ( int i = 0; i < module->getInputCount(); i++ ) {
+		for ( i = 0; i < module->getInputCount(); i++ ) {
 			ds = module->getInput(i);
 			cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 			cJSON_AddNumberToObject(io, "index", i);
@@ -503,7 +569,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 
 	if ( module->getOutputCount() ) {
 		cJSON_AddItemToObject(mod, "outputs", array=cJSON_CreateArray());
-		for ( int i = 0; i < module->getOutputCount(); i++ ) {
+		for ( i = 0; i < module->getOutputCount(); i++ ) {
 			ds = module->getOutput(i);
 			cJSON_AddItemToArray(array, io=cJSON_CreateObject());
 			cJSON_AddNumberToObject(io, "index", i);
@@ -525,6 +591,11 @@ void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "out") == NULL ) {
@@ -542,8 +613,8 @@ void web_pipeline_connect(struct evhttp_request *req, void *arg) {
 	if ( evhttp_find_header(&headers, "inidx") != NULL )
 		inidx = atoi(evhttp_find_header(&headers, "inidx"));
 
-	in = module_search(evhttp_find_header(&headers, "in"), pipeline);
-	out = module_search(evhttp_find_header(&headers, "out"), pipeline);
+	in = pipeline->getModuleById(evhttp_find_header(&headers, "in"));
+	out = pipeline->getModuleById(evhttp_find_header(&headers, "out"));
 
 	if ( in == NULL ) {
 		evhttp_clear_headers(&headers);
@@ -570,6 +641,11 @@ void web_pipeline_get(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -582,7 +658,7 @@ void web_pipeline_get(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing name");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -598,6 +674,11 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -615,7 +696,7 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing value");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -635,6 +716,11 @@ void web_pipeline_remove(struct evhttp_request *req, void *arg) {
 	const char *uri;
 
 	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
 	evhttp_parse_query(uri, &headers);
 
 	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
@@ -642,7 +728,7 @@ void web_pipeline_remove(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -763,9 +849,9 @@ void web_file(struct evhttp_request *req, void *arg) {
 	}
 
 	snprintf(filename, sizeof(filename), "%s/%s",
-		MO_GUIDIR, req->uri + sizeof("/gui/") - 1);
+		config_guidir.c_str(), req->uri + sizeof("/gui/") - 1);
 
-	printf("GET %s\n", filename);
+	LOG(MO_INFO, "web: GET " << filename);
 	fd = fopen(filename, "rb");
 	if ( fd == NULL ) {
 		evhttp_send_error(req, 404, "Not found");
@@ -810,172 +896,17 @@ void web_file(struct evhttp_request *req, void *arg) {
 	free(buf);
 }
 
-// pipeline create objectname id
-// pipeline set id key value
-// pipeline connect out_id out_idx in_id in_idx
-#define WRITE_ERROR std::cerr << __LINE__ << "] Error at line " << ln << ": "
-#define LN std::endl
-moPipeline *pipeline_parse_file(const std::string &filename) {
-	moPipeline *pipeline = NULL;
-	moModule *module1, *module2;
-	std::string line;
-	int ln = 0;
-	int inidx, outidx;
-	std::ifstream f(filename.c_str());
-
-	if ( !f.is_open() )
-		return NULL;
-
-	pipeline = new moPipeline();
-
-	while ( !f.eof() )
-	{
-		ln ++;
-		getline(f, line);
-		if ( line == "" )
-			continue;
-		if ( line[0] == '#' )
-			continue;
-
-		std::istringstream iss(line);
-		std::vector<std::string> tokens;
-
-		std::copy(std::istream_iterator<std::string>(iss),
-				std::istream_iterator<std::string>(),
-				std::back_inserter<std::vector<std::string> >(tokens));
-
-		//std::cout << "LINE: tokens=" << tokens.size() << ", line=<" << line << ">" << std::endl;
-
-		if ( tokens.size() <= 1 ) {
-			WRITE_ERROR << "invalid line command" << LN;
-			goto parse_error;
-		}
-
-		if ( tokens[0] == "config" ) {
-			if ( tokens.size() < 3 ) {
-				WRITE_ERROR << "not enough parameters" << LN;
-				goto parse_error;
-			}
-			if ( tokens[1] == "delay" ) {
-				config_delay = atoi(tokens[2].c_str());
-			}
-		} else if ( tokens[0] == "pipeline" ) {
-			if ( tokens.size() < 2 ) {
-				WRITE_ERROR << "not enough parameters" << LN;
-				goto parse_error;
-			}
-
-			if ( tokens[1] == "create" ) {
-				if ( tokens.size() != 4 ) {
-					WRITE_ERROR << "not enough parameters" << LN;
-					goto parse_error;
-				}
-
-				module1 = module_search(tokens[3], pipeline);
-				if ( module1 != NULL ) {
-					WRITE_ERROR << "id already used" << LN;
-					goto parse_error;
-				}
-
-				module1 = moFactory::getInstance()->create(tokens[2]);
-				if ( module1 == NULL ) {
-					WRITE_ERROR << "unknown module " << tokens[2] << LN;
-					goto parse_error;
-				}
-
-				if ( module1->haveError() ) {
-					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
-					goto parse_error;
-				}
-
-				module1->property("id").set(tokens[3]);
-				module1->property("id").setReadOnly(true);
-
-				if ( module1->haveError() ) {
-					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
-					goto parse_error;
-				}
-
-				pipeline->addElement(module1);
-
-			} else if ( tokens[1] == "set" ) {
-				if ( tokens.size() != 5 ) {
-					WRITE_ERROR << "not enough parameters" << LN;
-					goto parse_error;
-				}
-
-				module1 = module_search(tokens[2], pipeline);
-				if ( module1 == NULL ) {
-					WRITE_ERROR << "unable to find module with id " << tokens[2] << LN;
-					goto parse_error;
-				}
-
-				module1->property(tokens[3]).set(tokens[4]);
-
-				if ( module1->haveError() ) {
-					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
-					goto parse_error;
-				}
-
-
-			} else if ( tokens[1] == "connect" ) {
-				if ( tokens.size() != 6 ) {
-					WRITE_ERROR << "not enough parameters" << LN;
-					goto parse_error;
-				}
-
-				module1 = module_search(tokens[2], pipeline);
-				if ( module1 == NULL ) {
-					WRITE_ERROR << "unable to find module with id " << tokens[2] << LN;
-					goto parse_error;
-				}
-
-				module2 = module_search(tokens[4], pipeline);
-				if ( module2 == NULL ) {
-					WRITE_ERROR << "unable to find module with id " << tokens[4] << LN;
-					goto parse_error;
-				}
-
-				outidx = atoi(tokens[3].c_str());
-				inidx = atoi(tokens[5].c_str());
-
-				module2->setInput(module1->getOutput(outidx), inidx);
-
-				if ( module1->haveError() ) {
-					WRITE_ERROR << "module error:" << module1->getLastError() << LN;
-					goto parse_error;
-				}
-
-				if ( module2->haveError() ) {
-					WRITE_ERROR << "module error:" << module2->getLastError() << LN;
-					goto parse_error;
-				}
-
-			} else {
-				WRITE_ERROR << "unknown pipeline subcommand: " << tokens[1] << LN;
-				goto parse_error;
-			}
-		} else {
-			WRITE_ERROR << "unknown command: " << tokens[0] << LN;
-			goto parse_error;
-		}
-	}
-
-	pipeline->start();
-	return pipeline;
-
-parse_error:;
-	delete pipeline;
-	return NULL;
-}
-
 void usage(void) {
-	printf("Usage: %s [options...]                                \n" \
-		   "                                                      \n" \
-		   "  -t                     Test mode, stop on the first error\n" \
-		   "  -i <modulename>        Show infos on a module       \n" \
-		   "  -n                     No webserver                 \n" \
-		   "  -l <filename>          Read a pipeline from filename\n",
+	printf("Usage: %s [options...]                                              \n" \
+		   "                                                                \n" \
+		   "  -t  --test                  Test mode, stop on the first error\n" \
+		   "  -i  --info <modulename>     Show infos on a module            \n" \
+		   "  -s  --syslog                Send loggings to syslog           \n" \
+		   "  -d  --detach                Detach from console               \n" \
+		   "  -p  --pidfile <filename>    Write PID into this file          \n" \
+		   "  -n  --no_http               No webserver                      \n" \
+		   "  -g  --guidir <filename>     Directory for GUI                 \n" \
+		   "  -l  --pipeline <filename>   Read a pipeline from filename     \n",
 		   MO_DAEMON
 	);
 }
@@ -984,7 +915,7 @@ void describe(const char *name) {
 	moModule *module;
 	module = moFactory::getInstance()->create(name);
 	if ( module == NULL ) {
-		std::cerr << "Error: unable to found object named <" << name << ">" << std::endl;
+		LOG(MO_ERROR, "error: unable to found object named <" << name << ">");
 		return;
 	}
 	module->describe();
@@ -993,8 +924,43 @@ void describe(const char *name) {
 
 int parse_options(int *argc, char ***argv) {
 	int ch;
-	while ( (ch = getopt(*argc, *argv, "hl:ni:t")) != -1 ) {
+#ifndef WIN32
+	static struct option options[] = {
+		{"info", 1, 0, 'i'},
+		{"pipeline", 1, 0, 'l'},
+		{"syslog", 0, 0, 's'},
+		{"detach", 0, 0, 'd'},
+		{"pidfile", 1, 0, 'p'},
+		{"guidir", 1, 0, 'g'},
+		{"no_http", 0, 0, 'n'},
+		{"test", 0, 0, 't'},
+		{"help", 0, 0, 'h'},
+		{0, 0, 0, 0}
+	};
+#endif
+	while (1) {
+		int option_index = 0;
+#ifndef WIN32
+		ch = getopt_long(*argc, *argv, "hp:g:l:sdni:t", options, &option_index);
+#else
+		ch = getopt(*argc, *argv, "hp:g:l:sdni:t");
+#endif
+		if (ch == -1)
+			break;
 		switch ( ch ) {
+			case 's':
+				config_syslog = true;
+				moLog::init(config_syslog);
+				break;
+			case 'd':
+				config_detach = true;
+				break;
+			case 'p':
+				config_pidfile = std::string(optarg);
+				break;
+			case 'g':
+				config_guidir = std::string(optarg);
+				break;
 			case 'n':
 				config_httpserver = false;
 				break;
@@ -1002,9 +968,8 @@ int parse_options(int *argc, char ***argv) {
 				config_pipelinefn = std::string(optarg);
 				break;
 			case 'i':
-				moFactory::init();
+				moDaemon::init();
 				describe(optarg);
-				moFactory::cleanup();
 				return 0; /* leave properly */
 			case 't':
 				test_mode = true;
@@ -1024,46 +989,82 @@ int parse_options(int *argc, char ***argv) {
 }
 
 int main(int argc, char **argv) {
-	int ret;
+	int ret, exit_ret = 0;
 
-	ret = parse_options(&argc, &argv);
-	if ( ret >= 0 )
-		return ret;
-
-	moFactory::init();
-
+	// initialize all signals
+#ifndef _WIN32
+	signal(SIGPIPE, SIG_IGN);
+#endif
 	signal(SIGTERM, signal_term);
 	signal(SIGINT, signal_term);
 
+	// initialize log
+	moLog::init(config_syslog);
+
+	// parse options
+	ret = parse_options(&argc, &argv);
+	if ( ret >= 0 ) {
+		moDaemon::cleanup();
+		return ret;
+	}
+
+	// initialize daemon (factory, network...)
+	moDaemon::init();
+	
+	// detach from console
+	if (config_detach)
+		if (! moDaemon::detach(config_pidfile))
+			return exit_ret;
+
+	// parse pipeline passed in parameters
 	if ( config_pipelinefn != "" ) {
-		pipeline = pipeline_parse_file(config_pipelinefn);
-		if ( pipeline == NULL ) {
-			return 2;
-		}
+		pipeline = new moPipeline();
+		if ( pipeline == NULL )
+			goto exit_critical;
+		if ( pipeline->parse(config_pipelinefn) == false )
+			goto exit_critical;
+		pipeline->start();
 	} else if ( config_httpserver == false ) {
-		std::cerr << "ERROR : no pipeline or webserver to start!" << std::endl;
-		return 3;
+		LOG(MO_CRITICAL, "no pipeline or webserver to start !");
+		goto exit_critical;
 	}
 
 	// no default pipeline ? create one !
 	if ( pipeline == NULL )
 		pipeline = new moPipeline();
+	if ( pipeline == NULL ) {
+		LOG(MO_CRITICAL, "unable to create default pipeline");
+		goto exit_critical;
+	}
 
+	// if an http server is asked, start it !
 	if ( config_httpserver ) {
-		#ifdef WIN32
-			WORD wVersionRequested;
-			WSADATA wsaData;
-			int	err;
-			wVersionRequested = MAKEWORD( 2, 2 );
-			err = WSAStartup( wVersionRequested, &wsaData );
-		#else
-			signal(SIGPIPE, SIG_IGN);
-		#endif
 
 		base = event_init();
 		server = evhttp_new(NULL);
 
-		evhttp_bind_socket(server, "127.0.0.1", 7500);
+		if ( server == NULL ) {
+			LOG(MO_CRITICAL, "unable to create http server");
+			goto exit_critical;
+		}
+
+		do {
+			ret = evhttp_bind_socket(server, "127.0.0.1", 7500);
+			if ( ret == -1 ) {
+				perror("HTTP server");
+				LOG(MO_ERROR, "unable to open socket for 127.0.0.1:7500... retry in 3s");
+
+				#ifdef WIN32
+				Sleep(3);
+				#endif
+				#ifndef WIN32
+				sleep(3);
+				#endif
+				
+			}
+		} while ( ret == -1 );
+
+		LOG(MO_INFO, "Http server running at http://127.0.0.1:7500/");
 
 		evhttp_set_cb(server, "/", web_index, NULL);
 		evhttp_set_cb(server, "/factory/list", web_factory_list, NULL);
@@ -1080,13 +1081,15 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);
 		evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
 		evhttp_set_cb(server, "/pipeline/dump", web_pipeline_dump, NULL);
+		evhttp_set_cb(server, "/pipeline/stats", web_pipeline_stats, NULL);
 
 		evhttp_set_gencb(server, web_file, NULL);
 	}
 
+	// main loop
 	while ( want_quit == false ) {
 		// FIXME remove this hack !!!
-		cvWaitKey(config_delay);
+		cvWaitKey(g_config_delay);
 
 		// update pipeline
 		if ( pipeline->isStarted() ) {
@@ -1094,7 +1097,7 @@ int main(int argc, char **argv) {
 
 			// check for error in pipeline
 			while ( pipeline->haveError() ) {
-				std::cerr << "Pipeline error: " << pipeline->getLastError() << std::endl;
+				LOG(MO_ERROR, "Pipeline error: " << pipeline->getLastError());
 				if ( test_mode )
 					want_quit = true;
 			}
@@ -1105,12 +1108,19 @@ int main(int argc, char **argv) {
 			event_base_loop(base, EVLOOP_ONCE|EVLOOP_NONBLOCK);
 	}
 
+exit_standard:
 	if ( server != NULL )
 		evhttp_free(server);
 	if ( base != NULL )
 		event_base_free(base);
 
-	delete pipeline;
+	if ( pipeline != NULL )
+		delete pipeline;
+	moDaemon::cleanup();
 
-	moFactory::cleanup();
+	return 0;
+
+exit_critical:
+	exit_ret = 1;
+	goto exit_standard;
 }

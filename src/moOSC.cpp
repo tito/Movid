@@ -25,10 +25,11 @@
 	#define ssize_t SSIZE_T
 	#define close(s) shutdown(s, SD_BOTH)
 #else // OTHERS
-   #include <sys/types.h>
-   #include <sys/socket.h>
-   #include <netinet/in.h>
-   #include <arpa/inet.h>
+	#include <errno.h>
+	#include <sys/types.h>
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <arpa/inet.h>
 #endif // ifdef WIN32
 
 #include "moOSC.h"
@@ -50,7 +51,15 @@ moOSC::~moOSC() {
 }
 
 void moOSC::init() {
-	this->sock = socket(AF_INET, SOCK_DGRAM, 0);
+	this->sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if ( this->sock == -1 ) {
+		LOG(MO_ERROR, "unable to open socket (ret=" << this->sock << ")");
+#ifdef _WIN32
+		LOG(MO_ERROR, "=> WSALastError=" << WSAGetLastError());
+#else
+		LOG(MO_ERROR, "=> errno=" << errno);
+#endif
+	}
 }
 
 void moOSC::send(WOscMessage *msg) {
@@ -75,6 +84,6 @@ void moOSC::send(WOscBundle *msg) {
 	ret = sendto(this->sock, msg->GetBuffer(), msg->GetBufferLen(), 0,
 		 (struct sockaddr *)&servaddr, sizeof(servaddr));
 
-	LOG(MO_TRACE) << "send " << ret << " vs " << msg->GetBufferLen();
+	LOG(MO_TRACE, "send " << ret << " vs " << msg->GetBufferLen());
 }
 

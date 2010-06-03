@@ -54,7 +54,9 @@ SOURCES = \
 	src/modules/moCameraModule.cpp \
 	src/modules/moCannyModule.cpp \
 	src/modules/moCombineModule.cpp \
+	src/modules/moFingerTipFinderModule.cpp \
 	src/modules/moDilateModule.cpp \
+	src/modules/moDistanceTransformModule.cpp \
 	src/modules/moDumpModule.cpp \
 	src/modules/moErodeModule.cpp \
 	src/modules/moFiducialTrackerModule.cpp \
@@ -65,20 +67,33 @@ SOURCES = \
 	src/modules/moImageFilterModule.cpp \
 	src/modules/moImageModule.cpp \
 	src/modules/moInvertModule.cpp \
+	src/modules/moJustifyModule.cpp \
 	src/modules/moMaskModule.cpp \
 	src/modules/moMirrorImageModule.cpp \
+	src/modules/moPeakFinderModule.cpp \
 	src/modules/moRoiModule.cpp \
 	src/modules/moSmoothModule.cpp \
 	src/modules/moThresholdModule.cpp \
 	src/modules/moTuioModule.cpp \
 	src/modules/moVideoModule.cpp \
+	src/modules/moYCrCbThresholdModule.cpp \
 	#AUTOMODULE_DoNotRemoveThisComment
 
 
 #
 # Compiler flags
 #
-CFLAGS 				?= -O0 -g -Wall -I$(CONTRIB_PATH)
+target				?= debug
+ifeq ($(target),release)
+CFLAGS_TARGET		?= -O2 -DNDEBUG -DNO_LOG
+else
+ifeq ($(target),debug-optimized)
+CFLAGS_TARGET 		?= -O2 -ggdb
+else
+CFLAGS_TARGET 		?= -O0 -ggdb
+endif
+endif
+CFLAGS				?= $(CFLAGS_TARGET) -I$(CONTRIB_PATH) -Wall
 LIBS   				?=
 
 
@@ -180,7 +195,7 @@ $(MOVID_LIB): $(OBJECTS)
 #
 
 newmodule:
-	cat src/modules/.dummy.h | sed "s/MO_DUMMY/MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
+	cat src/modules/.dummy.h | sed "s/MO_DUMMY/\U\MO_${NAME}/g" | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.h
 	cat src/modules/.dummy.cpp | sed "s/DUMMY/${NAME}/g" > src/modules/mo${NAME}Module.cpp
 	#cat Makefile | sed "s/#AUTOMODULE_DoNotRemoveThisComment/mo${NAME}Module.o#AUTOMODULE_DoNotRemoveThisComment/" > Makefile.tmp
 	cat src/moFactory.cpp | sed "s/\/\/AUTOMODULE_DoNotRemoveThisComment/REGISTER_MODULE(${NAME});\n\t\/\/AUTOMODULE_DoNotRemoveThisComment/g" > src/moFactory.cpp.tmp

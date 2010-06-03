@@ -33,6 +33,7 @@ moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule()
 	// declare properties
 	this->properties["recapture"] = new moProperty(true);
 	this->properties["toggle"] = new moProperty(false);
+	this->properties["absolute"] = new moProperty(false);
 }
 
 moBackgroundSubtractModule::~moBackgroundSubtractModule() {
@@ -58,25 +59,29 @@ void moBackgroundSubtractModule::allocateBuffers() {
 	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
 	this->bg_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
-	LOGM(MO_TRACE) << "allocated output and background buffers";
+	LOGM(MO_TRACE, "allocated output and background buffers");
 }
 
-void moBackgroundSubtractModule::applyFilter() {
+void moBackgroundSubtractModule::applyFilter(IplImage *src) {
 	assert( this->bg_buffer != NULL );
 	assert( this->output_buffer != NULL );
-
-	IplImage* src = (IplImage*)(this->input->getData());
-	if ( src == NULL )
-		return;
 
 	// check for recapture
 	if (this->property("recapture").asBool()) {
 		cvCopy(src, this->bg_buffer);
 		this->property("recapture").set(false);
-		LOGM(MO_TRACE) << "recaptured background";
+		LOGM(MO_TRACE, "recaptured background");
 	} else {
-		// do subtraction
-		cvAbsDiff(src, this->bg_buffer, this->output_buffer);
+		if (this->property("absolute").asBool())
+		{
+			// do absolute difference
+			cvAbsDiff(src, this->bg_buffer, this->output_buffer);
+		}
+		else
+		{
+			// do subtraction
+			cvSub(src, this->bg_buffer, this->output_buffer);
+		}
 		// check for next frame to recapture
 		this->property("recapture").set(this->property("toggle").asBool());
 	}

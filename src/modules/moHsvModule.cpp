@@ -30,10 +30,10 @@ moHsvModule::moHsvModule() : moImageFilterModule(){
 	// declare properties her, e.g:
 	this->properties["hmin"] = new moProperty(0);
 	this->properties["hmin"]->setMin(0);
-	this->properties["hmin"]->setMax(255);
+	this->properties["hmin"]->setMax(180);
 	this->properties["hmax"] = new moProperty(20);
 	this->properties["hmax"]->setMin(0);
-	this->properties["hmax"]->setMax(255);
+	this->properties["hmax"]->setMax(180);
 	this->properties["smin"] = new moProperty(0);
 	this->properties["smin"]->setMin(0);
 	this->properties["smin"]->setMax(255);
@@ -56,11 +56,10 @@ void moHsvModule::allocateBuffers() {
 	if ( src == NULL )
 		return;
 	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, 1);	//only one channel
-	LOG(MO_DEBUG) << "allocated output buffer for Hsv module.";
+	LOG(MO_DEBUG, "allocated output buffer for Hsv module.");
 }
 
-void moHsvModule::applyFilter() {
-	IplImage *image = static_cast<IplImage*>(this->input->getData());
+void moHsvModule::applyFilter(IplImage *image) {
 	IplImage *mask = this->output_buffer;
 	IplImage* hsv = cvCloneImage(image);
 	int hmin = this->property("hmin").asInteger(),

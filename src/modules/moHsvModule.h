@@ -28,7 +28,7 @@ public:
 	virtual ~moHsvModule();
 	
 protected:
-	void applyFilter();
+	void applyFilter(IplImage *);
 	MODULE_INTERNALS();
 };
 

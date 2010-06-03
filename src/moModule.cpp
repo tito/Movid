@@ -21,6 +21,7 @@
 #include <sstream>
 #include <iostream>
 #include <errno.h>
+#include <string.h>
 
 #include "pasync.h"
 
@@ -56,7 +57,46 @@ static void module_gui_feedback_cb(moProperty *property, void *userdata) {
 		atof(tokens[1].c_str()),
 		atof(tokens[2].c_str())
 	);
-};
+}
+
+static void stats_init(mo_module_stats_t *s) {
+	s->_last_time = moUtils::time();
+}
+
+static void stats_wait(mo_module_stats_t *s) {
+	double curtime = moUtils::time();
+	s->_wait_time += curtime - s->_last_time;
+	s->_last_time = curtime;
+}
+
+static void stats_process(mo_module_stats_t *s) {
+	double curtime = moUtils::time();
+	s->_process_time += curtime - s->_last_time;
+	s->_last_time = curtime;
+	s->_process_frame ++;
+
+	// calculate average fps every 1s
+	if ( (s->_process_time + s->_wait_time) > 1. )
+	{
+		// average is on the last period
+		s->average_process_time	= s->_process_time / (double)s->_process_frame;
+		s->average_wait_time	= s->_wait_time / (double)s->_process_frame;
+
+		// calculate fps
+		s->average_fps			= (double)s->_process_frame / (
+				s->_process_time + s->_wait_time);
+
+		// update totals
+		s->total_wait_time		+= s->_wait_time;
+		s->total_process_time	+= s->_process_time;
+		s->total_process_frame	+= s->_process_frame;
+
+		// reset period
+		s->_process_frame		= 0;
+		s->_process_time		= 0;
+		s->_wait_time			= 0;
+	}
+}
 
 moModule::moModule(unsigned int capabilities, int input_count, int output_count) {
 	this->capabilities	= capabilities;
@@ -72,6 +112,8 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->thread_trigger = NULL;
 	this->need_gui_build = false;
 	this->mtx			= new pt::mutex();
+
+	memset(&this->stats,0,sizeof(mo_module_stats_t));
 
 	this->properties["use_thread"] = new moProperty(false);
 
@@ -148,25 +190,30 @@ void moModule::notifyData(moDataStream *source) {
 
 void _thread_process(moThread *thread) {
 	moModule *module = (moModule *)thread->getUserData();
+	stats_init(&module->stats);
 	while ( !thread->wantQuit() ) {
 		if ( !module->needUpdate(true) )
 			continue;
+
+		stats_wait(&module->stats);
 		module->update();
+		stats_process(&module->stats);
 	}
 }
 
 void moModule::start() {
 	this->use_thread = this->property("use_thread").asBool();
+	stats_init(&this->stats);
 	if ( this->use_thread ) {
 		if ( this->thread_trigger == NULL ) {
-			LOGM(MO_TRACE) << "create trigger";
+			LOGM(MO_TRACE, "create trigger");
 			this->thread_trigger = new pt::trigger(true, false);
 		}
 
-		LOGM(MO_TRACE) << "start thread";
+		LOGM(MO_TRACE, "start thread");
 		this->thread = new moThread(_thread_process, this);
 		if ( this->thread == NULL ) {
-			LOGM(MO_ERROR) << "unable to create thread";
+			LOGM(MO_ERROR, "unable to create thread");
 			this->setError("Error while creating thread");
 			this->use_thread = false;
 		} else {
@@ -175,7 +222,7 @@ void moModule::start() {
 	}
 
 	this->is_started = true;
-	LOGM(MO_DEBUG) << "start";
+	LOGM(MO_DEBUG, "start");
 }
 
 void moModule::stop() {
@@ -190,7 +237,7 @@ void moModule::stop() {
 
 	this->need_update = false;
 	this->is_started = false;
-	LOG(MO_DEBUG) << "stop <" << this->property("id").asString() << ">";
+	LOG(MO_DEBUG, "stop <" << this->property("id").asString() << ">");
 }
 
 void moModule::lock() {
@@ -310,8 +357,11 @@ std::string moModule::getLastError() {
 void moModule::poll() {
 	if ( this->use_thread )
 		return;
-	if ( this->needUpdate() )
+	if ( this->needUpdate() ) {
+		stats_wait(&this->stats);
 		this->update();
+		stats_process(&this->stats);
+	}
 }
 
 void moModule::notifyUpdate() {
