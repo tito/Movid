@@ -3,3 +3,7 @@ Movid's make file will automatically build the dependencies in this directory.  
 changes to prevent warning:
 cJSON/cJSON.c:330 : add (char*) cast
 
+SDL:
+* remove docs directory
+* remove symbian.zip
+* remove test
