@@ -779,7 +779,7 @@ void web_pipeline_gui(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	module = module_search(evhttp_find_header(&headers, "objectname"), pipeline);
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
@@ -1010,7 +1010,7 @@ int main(int argc, char **argv) {
 
 	// initialize daemon (factory, network...)
 	moDaemon::init();
-	
+
 	// detach from console
 	if (config_detach)
 		if (! moDaemon::detach(config_pidfile))
@@ -1060,7 +1060,7 @@ int main(int argc, char **argv) {
 				#ifndef WIN32
 				sleep(3);
 				#endif
-				
+
 			}
 		} while ( ret == -1 );
 

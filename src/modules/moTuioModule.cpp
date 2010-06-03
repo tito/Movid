@@ -97,7 +97,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 	assert( input == this->input );
 
 	// out input have been updated !
-	LOGM(MO_DEBUG) << "updating Tuio stream";
+	LOGM(MO_TRACE, "Updating Tuio stream");
 	this->input->lock();
 
 	if ( input->getFormat() == "GenericFiducial" ) {
@@ -184,13 +184,13 @@ void moTuioModule::notifyData(moDataStream *input) {
 	}
 
 
-    LOGM(MO_DEBUG) << "sending OSC bundle";
+    LOGM(MO_TRACE, "Sending OSC bundle");
 	this->osc->send(bundle);
 
 	delete bundle;
 
 	this->input->unlock();
-	LOGM(MO_DEBUG) << "TUIO done";
+	LOGM(MO_TRACE, "TUIO done");
 }
 
 void moTuioModule::setInput(moDataStream *stream, int n) {

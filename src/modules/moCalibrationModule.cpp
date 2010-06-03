@@ -51,7 +51,7 @@ void mocalibrationmodule_activate_calibration(moProperty *property, void *userda
 {
 	moCalibrationModule *module = static_cast<moCalibrationModule *>(userdata);
 	assert(userdata != NULL);
-	LOG(MO_DEBUG) << "Setting calibration prperty" << property->asBool() << "was: " << module->property("calibrate").asBool() ;
+	LOG(MO_DEBUG, "Setting calibration prperty" << property->asBool() << "was: " << module->property("calibrate").asBool());
 	if ( property->asBool() )
 		module->resetCalibration();
 }
@@ -60,7 +60,7 @@ void mocalibrationmodule_triangulate(moProperty *property, void *userdata)
 {
 	moCalibrationModule *module = static_cast<moCalibrationModule *>(userdata);
 	assert(userdata != NULL);
-	LOG(MO_DEBUG) << "Setting triagulate prperty" << property->asBool() << "was: " << module->property("retriangulate").asBool() ;
+	LOG(MO_DEBUG, "Setting triagulate prperty" << property->asBool() << "was: " << module->property("retriangulate").asBool());
 	module->notifyTriangulate();
 }
 
@@ -69,7 +69,7 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	MODULE_INIT();
 
 	// declare input/output
-	
+
 	this->output = new moDataStream("GenericTouch");
 	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
 	this->output_infos[0] = new moDataStreamInfo("data", "GenericTouch", "Data stream with type of 'touch' or 'fiducial'");
@@ -93,7 +93,7 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->last_id = -1;
 	this->input = NULL;
 	this->calibrated = false;
-	
+
 	this->subdiv = NULL;
 
 	this->buildScreenPoints();
@@ -164,13 +164,13 @@ void moCalibrationModule::guiBuild(void) {
     CvSeqReader  reader;
     int i, total = this->subdiv->edges->total;
     int elem_size = this->subdiv->edges->elem_size;
-    
+
     cvStartReadSeq( (CvSeq*)(this->subdiv->edges), &reader, 0 );
-    
+
     for( i = 0; i < total; i++ )
     {
         CvQuadEdge2D* edge = (CvQuadEdge2D*)(reader.ptr);
-        
+
         if( CV_IS_SET_ELEM( edge ))
         {
 			CvSubdiv2DPoint* org_pt;
@@ -180,7 +180,7 @@ void moCalibrationModule::guiBuild(void) {
 
 			org_pt = cvSubdiv2DEdgeOrg((CvSubdiv2DEdge)edge);
 			dst_pt = cvSubdiv2DEdgeDst((CvSubdiv2DEdge)edge);
-           
+
            if(  org_pt && dst_pt &&
                  this->delaunayToScreen.find(org_pt) != this->delaunayToScreen.end() &&
                  this->delaunayToScreen.find(dst_pt) != this->delaunayToScreen.end() )
@@ -195,11 +195,11 @@ void moCalibrationModule::guiBuild(void) {
 				oss << " " << int(dst.x * 1000.);
 				oss << " " << int(dst.y * 1000.);
 				this->gui.push_back(oss.str());
-				LOG(MO_DEBUG) << "drawing line: " << i << "   surface pos:" << org_pt->pt.x << ","<< org_pt->pt.y<<"|"<<dst_pt->pt.x << ","<< dst_pt->pt.y;
-				LOG(MO_DEBUG) << "    creen points: " << oss.str();
+				LOG(MO_DEBUG, "drawing line: " << i << "   surface pos:" << org_pt->pt.x << ","<< org_pt->pt.y<<"|"<<dst_pt->pt.x << ","<< dst_pt->pt.y);
+				LOG(MO_DEBUG, "    creen points: " << oss.str());
 			}
         }
-        
+
         CV_NEXT_SEQ_ELEM( elem_size, reader );
     }
 
@@ -245,8 +245,8 @@ void moCalibrationModule::triangulate() {
 
 	this->delaunayToScreen.clear();
     this->subdiv = cvCreateSubdivDelaunay2D(this->rect, this->storage);
-	
-	//add all the  surfacepoints we collected to the subdivision 
+
+	//add all the  surfacepoints we collected to the subdivision
 	//use the delaunayToScreen map to associate them with corrosponding screen point
 	moPointList::iterator it, its;
 	for(it = surfacePoints.begin(), its = screenPoints.begin(); it != surfacePoints.end();  it++, its++) {
@@ -294,14 +294,14 @@ void moCalibrationModule::calibrate() {
 	}
 	this->last_id = touch->properties["id"]->asInteger();
 
-	LOG(MO_DEBUG) << "calibrarting   # of screenPoints: " << screenPoints.size() << "# of surfacePoints: " << surfacePoints.size() ;
-	LOG(MO_DEBUG) << "Processing point #" << this->active_point;
+	LOG(MO_DEBUG, "calibrarting   # of screenPoints: " << screenPoints.size() << "# of surfacePoints: " << surfacePoints.size());
+	LOG(MO_DEBUG, "Processing point #" << this->active_point);
 
 	// TODO While calibrating, this list MUST NOT change!
 	screenPoints = this->property("screenPoints").asPointList();
 	if (this->active_point == screenPoints.size()) {
 		// We have calibrated all points, so we're done.
-		LOG(MO_DEBUG) << "Calibration complete!";
+		LOG(MO_DEBUG, "Calibration complete!");
 		this->active_point = 0;
 		this->property("calibrate").set(false);
 		this->calibrated = true;
@@ -310,8 +310,8 @@ void moCalibrationModule::calibrate() {
 		return;
 	}
 
-	LOG(MO_DEBUG) << "# of screenPoints: " << screenPoints.size();
-	LOG(MO_DEBUG) << "Processing point #" << this->active_point;
+	LOG(MO_DEBUG, "# of screenPoints: " << screenPoints.size());
+	LOG(MO_DEBUG, "Processing point #" << this->active_point);
 
 	// We're starting calibration again, so discard all old calibration results
 	if ( this->active_point == 0 )
@@ -319,10 +319,10 @@ void moCalibrationModule::calibrate() {
 
 	surfacePoints.push_back(surfacePoint);
 	this->property("surfacePoints").set(surfacePoints);
-	
+
 	p = screenPoints[this->active_point];
-	LOG(MO_DEBUG) << "(" << p.x << ", " << p.y << ") is mapped to (" \
-		<< surfacePoint.x << ", " << surfacePoint.y << ").";
+	LOG(MO_DEBUG, "(" << p.x << ", " << p.y << ") is mapped to (" \
+		<< surfacePoint.x << ", " << surfacePoint.y << ").");
 
 	// Proceed with the next grid point
 	this->active_point++;
@@ -335,7 +335,7 @@ void moCalibrationModule::transformPoints() {
 	// Calibration & triangulation is done. Just convert the point coordinates.
 	moDataGenericList *blobs = static_cast<moDataGenericList*>(input->getData());
 	moDataGenericList::iterator it;
-	
+
 	this->blobs.clear();
 	for (it = blobs->begin(); it != blobs->end(); it++) {
 		// Get the camera/surface coordinates of the blob
@@ -347,7 +347,7 @@ void moCalibrationModule::transformPoints() {
 		CvSubdiv2DPoint* vertex;
 		CvPoint2D32f P = cvPoint2D32f(blob_x, blob_y);
 		cvSubdiv2DLocate(this->subdiv, P, &edge, &vertex);
-		
+
 		// P is inside the triangle, so we must compute barycentric coords for P with
 		// respect to the triangle. To find the triangle, we traverse the edges
 		// around the right facet, to get the vertices that make up the triangle containing P.
@@ -382,13 +382,13 @@ void moCalibrationModule::transformPoints() {
 		moPoint A_screen = this->delaunayToScreen[A];
 		moPoint B_screen = this->delaunayToScreen[B];
 		moPoint C_screen = this->delaunayToScreen[C];
-		
+
 		// Transform the point into screen space by interpolating the three vertices
 		// of the enclosing triangle in screen space with the barycentric coordinates.
 		moPoint P_transformed;
 		P_transformed.x = alpha*A_screen.x + beta*B_screen.x + gamma*C_screen.x;
 		P_transformed.y = alpha*A_screen.y + beta*B_screen.y + gamma*C_screen.y;
-		
+
 		// TODO This should copy ALL blob attributes, even unknown ones (from different detectors)
 		// Copy the blob, but adjust x/y
 		// XXX Do we need to adjust w/h too?
@@ -400,9 +400,9 @@ void moCalibrationModule::transformPoints() {
 		blob->properties["x"] = new moProperty(P_transformed.x);
 		blob->properties["y"] = new moProperty(P_transformed.y);
 		this->blobs.push_back(blob);
-		
-		LOG(MO_DEBUG) << "transformed Point |" << " in: " << P.x << "," << P.y 
-					  << " out: " << P_transformed.x << "," << P_transformed.y;
+
+		LOG(MO_DEBUG, "transformed Point |" << " in: " << P.x << "," << P.y
+					  << " out: " << P_transformed.x << "," << P_transformed.y);
 	}
 
 	if (this->output != NULL) delete this->output;
@@ -420,15 +420,15 @@ void moCalibrationModule::update() {
 
 	assert(this->input != NULL);
 
-	this->input->lock();	
-	
+	this->input->lock();
+
 	if ( calibrate ) {
 		this->calibrate();
 	} else {
 		if (this->calibrated)
 			this->transformPoints();
 	}
-	this->input->unlock();	
+	this->input->unlock();
 }
 
 void moCalibrationModule::notifyData(moDataStream *input) {
