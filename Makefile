@@ -76,6 +76,8 @@ SOURCES = \
 	src/modules/moTuioModule.cpp \
 	src/modules/moVideoModule.cpp \
 	src/modules/moYCrCbThresholdModule.cpp \
+	src/modules/moBlobFinderModule.cpp \
+	src/modules/moGreedyBlobTrackerModule.cpp \
 	#AUTOMODULE_DoNotRemoveThisComment
 
 

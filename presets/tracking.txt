@@ -16,5 +16,5 @@ pipeline connect b 0 tr 0
 pipeline connect tr 1 tu 0
 
 pipeline set v filename blob.avi
-config delay 50
+config delay 100
 
