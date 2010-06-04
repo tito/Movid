@@ -62,7 +62,7 @@ void moGreedyBlobTrackerModule::trackBlobs() {
         
         moDataGenericList::iterator it_old;
 	    for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
-            if ((*it_old)->properties["id"]->asInteger() < 0)  //already assigned
+            if ((*it_old)->properties["blob_id"]->asInteger() < 0)  //already assigned
                 continue;
 
             int old_x = (*it_old)->properties["x"]->asInteger();
@@ -77,13 +77,13 @@ void moGreedyBlobTrackerModule::trackBlobs() {
         
         //found the closest one out of teh ones that are left, assign id, and invalidate old blob
         if (closest_blob){
-            int old_id = closest_blob->properties["id"]->asInteger();
-            (*it)->properties["id"]->set( old_id );
-            closest_blob->properties["id"]->set( -1 * old_id );  //we mark matched blob by negative id's
+            int old_id = closest_blob->properties["blob_id"]->asInteger();
+            (*it)->properties["blob_id"]->set( old_id );
+            closest_blob->properties["blob_id"]->set( -1 * old_id );  //we mark matched blob by negative id's
         }
         //this must be a new blob, so assign new ID
         else{
-            (*it)->properties["id"]->set(++this->id_counter);
+            (*it)->properties["blob_id"] = new moProperty(++this->id_counter);
         }
 
         
@@ -100,7 +100,7 @@ void moGreedyBlobTrackerModule::update() {
 	moDataGenericList *blobs = (moDataGenericList*) this->input->getData();
     this->input->lock();
 	for ( it = blobs->begin(); it != blobs->end(); it++ ){
-        (*it)->properties["id"] = 0;
+        (*it)->properties["blob_id"] = 0;
         this->new_blobs->push_back(*it);   
     }
     this->input->unlock();

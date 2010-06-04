@@ -34,11 +34,13 @@ void moFactory::init() {
 	REGISTER_MODULE(Amplify);
 	REGISTER_MODULE(BackgroundSubtract);
 	REGISTER_MODULE(BlobTracker)
+	REGISTER_MODULE(BlobFinder)
 	REGISTER_MODULE(Camera);
 	REGISTER_MODULE(Combine);
 	REGISTER_MODULE(Dump);
 	REGISTER_MODULE(FiducialTracker);
 	REGISTER_MODULE(GrayScale);
+	REGISTER_MODULE(GreedyBlobTracker);
 	REGISTER_MODULE(Highpass);
 	REGISTER_MODULE(Image);
 	REGISTER_MODULE(ImageDisplay);

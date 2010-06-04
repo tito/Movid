@@ -50,10 +50,12 @@ SOURCES = \
 	src/modules/moAmplifyModule.cpp \
 	src/modules/moBackgroundSubtractModule.cpp \
 	src/modules/moBlobTrackerModule.cpp \
+	src/modules/moBlobFinderModule.cpp \
 	src/modules/moCameraModule.cpp \
 	src/modules/moCannyModule.cpp \
 	src/modules/moCombineModule.cpp \
 	src/modules/moFingerTipFinderModule.cpp \
+	src/modules/moGreedyBlobTrackerModule.cpp \
 	src/modules/moDilateModule.cpp \
 	src/modules/moDistanceTransformModule.cpp \
 	src/modules/moDumpModule.cpp \
