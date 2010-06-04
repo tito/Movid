@@ -33,7 +33,7 @@
 #include <windows.h>
 #endif
 
-#include "SDL/SDL.h"
+#include "SDL.h"
 #include "SDL_gfxPrimitives.h"
 
 LOG_DECLARE("Daemon");
