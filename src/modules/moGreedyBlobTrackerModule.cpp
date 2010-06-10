@@ -36,7 +36,7 @@ moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPU
 
     // How many frames may a blob survive without finding a successor?
 	this->properties["max_age"] = new moProperty(3);
-	this->properties["max_dist"] = new moProperty(5.);
+	this->properties["max_dist"] = new moProperty(0.1);
 
     this->id_counter = 1;
     this->new_blobs = new moDataGenericList();
@@ -54,12 +54,16 @@ void moGreedyBlobTrackerModule::pruneBlobs() {
 
 void moGreedyBlobTrackerModule::trackBlobs() {
     
+
     moDataGenericList::iterator it;
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
         
+
+
+
         //for each of blobs in teh new frame, find teh closest matching one from before
         moDataGenericContainer* closest_blob = NULL;
-        int min_dist = pow(this->properties["max_dist"]->asDouble(), 2);
+        double min_dist = pow(this->properties["max_dist"]->asDouble(), 2);
         
         moDataGenericList::iterator it_old;
 	    for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
@@ -67,11 +71,14 @@ void moGreedyBlobTrackerModule::trackBlobs() {
             if ((*it_old)->properties["id"]->asInteger() < 0)  //already assigned
                 continue;
 
-            int old_x = (*it_old)->properties["x"]->asDouble();
-			int old_y = (*it_old)->properties["y"]->asDouble();
-			int new_x = (*it)->properties["x"]->asDouble();
-			int new_y = (*it)->properties["y"]->asDouble();
-			int dist = pow(old_x - new_x, 2) + pow(old_y - new_y, 2);
+            double old_x = (*it_old)->properties["x"]->asDouble();
+			double old_y = (*it_old)->properties["y"]->asDouble();
+			double new_x = (*it)->properties["x"]->asDouble();
+			double new_y = (*it)->properties["y"]->asDouble();
+			double dist = pow(old_x - new_x, 2) + pow(old_y - new_y, 2);
+            
+            
+            //std::cout << "dist: " << dist << " min:" << min_dist << std::endl; 
             if (dist < min_dist) {
                 closest_blob = (*it_old);
                 min_dist = dist;
