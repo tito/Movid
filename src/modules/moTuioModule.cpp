@@ -137,7 +137,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 		bundle->Add(msg);
 
 
-	} else if ( input->getFormat() == "GenericTouch" ) {
+	} else if ( input->getFormat() == "GenericBlob" ) {
 		// /tuio/2Dcur set s x y X Y m
 
 
@@ -148,14 +148,14 @@ void moTuioModule::notifyData(moDataStream *input) {
 		moDataGenericList::iterator it;
 		moDataGenericList *list = (moDataGenericList *)this->input->getData();
 		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert((*it)->properties["type"]->asString() == "touch");
+			assert((*it)->properties["type"]->asString() == "blob");
 			msg->Add(atoi((*it)->properties["id"]->asString().c_str()));
 		}
 
 		bundle->Add(msg);
 
 		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert((*it)->properties["type"]->asString() == "touch");
+			assert((*it)->properties["type"]->asString() == "blob");
 
 			msg = new WOscMessage("/tuio/2Dcur");
 			msg->Add("set");
@@ -165,10 +165,10 @@ void moTuioModule::notifyData(moDataStream *input) {
 			msg->Add((float)0.); // X
 			msg->Add((float)0.); // Y
 			msg->Add((float)0.); // m
-			if ( this->property("sendsize").asBool() ) {
-				msg->Add((float)(*it)->properties["w"]->asDouble()); // w
-				msg->Add((float)(*it)->properties["h"]->asDouble()); // h
-			}
+//			if ( this->property("sendsize").asBool() ) {
+//				msg->Add((float)(*it)->properties["w"]->asDouble()); // w
+//				msg->Add((float)(*it)->properties["h"]->asDouble()); // h
+//			}
 			bundle->Add(msg);
 		}
 
@@ -198,7 +198,7 @@ void moTuioModule::setInput(moDataStream *stream, int n) {
 		this->input->removeObserver(this);
 	this->input = stream;
 	if ( stream != NULL ) {
-		if ( stream->getFormat() != "GenericTouch" &&
+		if ( stream->getFormat() != "GenericBlob" &&
 			 stream->getFormat() != "GenericFiducial" ) {
 			this->setError("Input 0 accept only touch or fiducial");
 			this->input = NULL;

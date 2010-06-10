@@ -84,9 +84,9 @@ moBlobTrackerModule::moBlobTrackerModule() : moImageFilterModule() {
     
 
 
-	this->output_data	= new moDataStream("GenericTouch");
+	this->output_data	= new moDataStream("GenericBlob");
 	this->output_count	= 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "GenericTouch", "Data stream with touch info");
+	this->output_infos[1] = new moDataStreamInfo("data", "GenericBlob", "Data stream with touch info");
 
 	this->next_id		= 1;
 	this->new_blobs		= new CvBlobSeq();
@@ -170,7 +170,7 @@ void moBlobTrackerModule::applyFilter(IplImage *src) {
 
 		// add the blob in data
 		moDataGenericContainer *touch = new moDataGenericContainer();
-		touch->properties["type"] = new moProperty("touch");
+		touch->properties["type"] = new moProperty("blob");
 		touch->properties["id"] = new moProperty(pB->ID);
 		touch->properties["x"] = new moProperty(pB->x / size.width);
 		touch->properties["y"] = new moProperty(pB->y / size.height);

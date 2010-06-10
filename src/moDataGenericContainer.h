@@ -33,6 +33,9 @@ public:
 	bool exist(const std::string &name);
 
 	std::map<std::string, moProperty*> properties;
+
+    moDataGenericContainer* clone();
+
 };
 
 typedef std::vector<moDataGenericContainer *> moDataGenericList;
