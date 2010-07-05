@@ -91,83 +91,37 @@ it must go in C:\OpenCV, otherwise you need to change the library include direct
 + OSX Compile Notes
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
-On OSX, you must build OpenCV before buildiong Movid, see OpenCV compile instruction further down if you dont know how to do this yourself
+You will need OpenCV to build movid. To learn how to best
+install OpenCV, please refer to the according section below.
 
-
-==================================================
-To build Movid on OSX:
-==================================================
-The included XCode project should be set up for you to just build and run Movid
-The Xcode project is set up to use the regular Makefile to build Movid.  
-
-The XCode project has some environment variables defined for the Makefile build configuraton.  
-(To see or change the build variables: double click the Movid Tagrget in XCode and see the Build Setting section)
-
-The custom setting that have been changed from the default Makefile XCode are:
-	CXX = g++-4.0
-	PATH = ${PATH}:/opt/local/bin
-	PKG_CONFIG_PATH = /usr/local/lib/pkgconfig
-	
-
-The only reason why you would have to change these, is if you istalled openCV or pkg-config to non standard locations on your system. 
-Here is what they are set to in the Movid Project, and why:
-
-CXX: 
-    is set to g++-4.0, because OpenCV has to be compiled with that on OSX, 
-	so you need to  compile your programs using it too if you link against OpenCV
-	
-PATH: 
-    /opt/local/bin is added, becasue otherwise XCode can't find the 
-	'pkg-config' program (installed by fink)
-	
-PKG_CONFIG_PATH 
-    /usr/local/lib/pkgconfig is added becasue thats where OpenCV 
-	installs its opencv.pc (for pkg-config) file by default.
+Movid comes with an XCode project that you can just open & build.
+Note, however, that this project file is NOT guaranteed to be always
+up to date.
+We therefore recommend that you use the actual Makefile on the console
+(which is also used by XCode) which we always keep updated.
 
 
 ==================================================
 To build OpenCV on OSX:
 ==================================================
-*install macports (http://www.macports.org/)
 
-*install svn and cmake (run in terminal the following):
-    sudo port install subversion
-    sudo port install cmake
+On OSX, you must build OpenCV before building Movid.
+To do this, simply download and compile it using your
+favorite tool or do it yourself.
+We *strongly* suggest you use homebrew for this.
+See http://mxcl.github.com/homebrew/ for more details.
+After you have installed homebrew, simply type this at
+the command prompt:
+	brew install opencv
 
-*Get OpenCV source code (run in terminal the following):
-    svn co https://code.ros.org/svn/opencv/trunk opencv
+Depending on your configuration, this maybe has to be
+run as root with `sudo` before the command.
 
-*Configure OpenCV (run in terminal the following):
-    cd opencv
-	mkdir opencv/build
-	cd opencv/build
-	cmake ..
-	ccmake .    <--starts cmake config, you must change CMAKE_CXX_COMPILER, and CMAKE_C_COMPILER !!
-
-IMPORTANT!!! : 
-On Snow Leaopard (OSX 10.6), you must change which compiler is being used for OpenCV to build.  
-Inside the cmake config do the following:
-    press 't'  (now advanced options are also shown)
-    find 'CMAKE_CXX_COMPILER' in the list of variales. (use up/down keys)
-        change the value to '/usr/bin/g++-4.0' (was /usr/bin/g++ before, hit enter to edit, and again to finish editing)
-    find 'CMAKE_C_COMPILER' in teh list of variables
-        change the value to '/usr/bin/gcc-4.0' (enter key to edit, enter key again when done editing )
-	
-*finish configuration:
-    hit 'c', to run the configuration
-    hit 'g ' to generate the makefile
-
-*build and install OpenCV (run in terminal the following):
-    make                <-- this compiles OpenCV
-    sudo make install   <-- if make completed without error, run this to install OpenCV to system
+If OpenCV installed properly, you can proceed with the
+compilation of Movid as usual.
 
 
 
 
 That's it! You can now play with Movid! If you have questions, feature requests, find bugs or want to help, please see the following page: http://movid.org/Documentation/HowToContribute
-
-
-
-
-
 
