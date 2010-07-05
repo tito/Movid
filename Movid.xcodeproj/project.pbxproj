@@ -1291,9 +1291,9 @@
 		12C746A8113C7E8900BC55DF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CC = "gcc-4.0";
+				CC = gcc;
 				COPY_PHASE_STRIP = NO;
-				CXX = "c++-4.0";
+				CXX = "g++";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = Documentation;
@@ -1314,12 +1314,12 @@
 		12F67291112F008300456186 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CC = "gcc-4.0";
+				CC = gcc;
 				COPY_PHASE_STRIP = NO;
-				CXX = "c++-4.0";
+				CXX = "g++";
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				OS_CXXOPTS_ST = "-arch i386";
+				OS_CXXOPTS_ST = "";
 				PRODUCT_NAME = Dependencies;
 			};
 			name = Debug;
@@ -1338,15 +1338,15 @@
 		1DEB919008733D9F0010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CC = "gcc-4.0";
+				CC = gcc;
 				COPY_PHASE_STRIP = NO;
-				CXX = "g++-4.0";
+				CXX = "g++";
 				DEBUGGING_SYMBOLS = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				OS_CXXOPTS_ST = "-arch i386";
+				OS_CXXOPTS_ST = "";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				PATH = "${PATH}:/opt/local/bin";
@@ -1372,7 +1372,7 @@
 		1DEB919408733D9F0010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
