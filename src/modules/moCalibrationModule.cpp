@@ -70,9 +70,9 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 
 	// declare input/output
 
-	this->output = new moDataStream("GenericTouch");
-	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
-	this->output_infos[0] = new moDataStreamInfo("data", "GenericTouch", "Data stream with type of 'touch' or 'fiducial'");
+	this->output = new moDataStream("blob");
+	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'blob'");
+	this->output_infos[0] = new moDataStreamInfo("data", "blob", "Data stream with type of 'blob'");
 
 	this->properties["rows"] = new moProperty(3);
 	this->properties["rows"]->setMin(2);
@@ -279,7 +279,7 @@ void moCalibrationModule::calibrate() {
 	surfacePoint.x = touch->properties["x"]->asDouble();
 	surfacePoint.y = touch->properties["y"]->asDouble();
 
-	if (touch->properties["id"]->asInteger() == (int)this->last_id) {
+	if (touch->properties["blob_id"]->asInteger() == (int)this->last_id) {
 		// This means we have seen this touch before in the previous frame.
 		// Don't reuse it to calibrate the next point, but refine the surfacePoints
 		// position by taking the mean. Useful for e.g. laser tracking where you don't
@@ -292,7 +292,7 @@ void moCalibrationModule::calibrate() {
 		this->property("surfacePoints").set(surfacePoints);
 		return;
 	}
-	this->last_id = touch->properties["id"]->asInteger();
+	this->last_id = touch->properties["blob_id"]->asInteger();
 
 	LOG(MO_DEBUG, "calibrarting   # of screenPoints: " << screenPoints.size() << "# of surfacePoints: " << surfacePoints.size());
 	LOG(MO_DEBUG, "Processing point #" << this->active_point);
@@ -394,9 +394,9 @@ void moCalibrationModule::transformPoints() {
 		// XXX Do we need to adjust w/h too?
 		moDataGenericContainer *blob = new moDataGenericContainer();
 		blob->properties["type"] = new moProperty("blob");
-		blob->properties["id"] = new moProperty((*it)->properties["id"]->asInteger());
-		blob->properties["w"] = new moProperty((*it)->properties["w"]->asDouble());
-		blob->properties["h"] = new moProperty((*it)->properties["h"]->asDouble());
+		blob->properties["blob_id"] = new moProperty((*it)->properties["blob_id"]->asInteger());
+		//blob->properties["w"] = new moProperty((*it)->properties["w"]->asDouble());
+		//blob->properties["h"] = new moProperty((*it)->properties["h"]->asDouble());
 		blob->properties["x"] = new moProperty(P_transformed.x);
 		blob->properties["y"] = new moProperty(P_transformed.y);
 		this->blobs.push_back(blob);
@@ -405,8 +405,8 @@ void moCalibrationModule::transformPoints() {
 					  << " out: " << P_transformed.x << "," << P_transformed.y);
 	}
 
-	if (this->output != NULL) delete this->output;
-	this->output = new moDataStream("GenericTouch");
+	//if (this->output != NULL) delete this->output;
+	//this->output = new moDataStream("blob");
 	this->output->push(&this->blobs);
 	this->notifyGui();
 }
@@ -454,9 +454,8 @@ void moCalibrationModule::setInput(moDataStream *stream, int n) {
 		this->input->removeObserver(this);
 	this->input = stream;
 	if ( stream != NULL ) {
-		if ( stream->getFormat() != "GenericTouch" &&
-			stream->getFormat() != "GenericFiducial" ) {
-			this->setError("Input 0 accept only touch or fiducial");
+		if ( stream->getFormat() != "blob") {
+			this->setError("Input 0 only accepts blobs, but got " + stream->getFormat());
 			this->input = NULL;
 			return;
 		}
