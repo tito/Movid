@@ -63,7 +63,7 @@ moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 
 	// declare inputs
 	this->input_infos[0] = new moDataStreamInfo(
-			"data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
+			"data", "moDataGenericList", "Data stream with type of 'blob' or 'fiducial'");
 
 	// declare properties
 	this->properties["ip"] = new moProperty("127.0.0.1");
@@ -91,7 +91,7 @@ void moTuioModule::stop() {
 }
 
 void moTuioModule::notifyData(moDataStream *input) {
-	WOscBundle	*bundle = NULL;
+	WOscBundle *bundle = NULL;
 
 	assert( input != NULL );
 	assert( input == this->input );
@@ -100,6 +100,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 	LOGM(MO_TRACE, "Updating Tuio stream");
 	this->input->lock();
 
+	// TODO also adapt fiducial tracker to new blob protocol
 	if ( input->getFormat() == "GenericFiducial" ) {
 
 		bundle = new WOscBundle();
@@ -138,9 +139,8 @@ void moTuioModule::notifyData(moDataStream *input) {
 		bundle->Add(msg);
 
 
-	} else if ( input->getFormat() == "GenericTouch" ) {
+	} else if ( input->getFormat() == "blob" ) {
 		// /tuio/2Dcur set s x y X Y m
-
 
 		bundle = new WOscBundle();
 		WOscMessage *msg = new WOscMessage("/tuio/2Dcur");
@@ -149,27 +149,28 @@ void moTuioModule::notifyData(moDataStream *input) {
 		moDataGenericList::iterator it;
 		moDataGenericList *list = (moDataGenericList *)this->input->getData();
 		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert((*it)->properties["type"]->asString() == "touch");
-			msg->Add(atoi((*it)->properties["id"]->asString().c_str()));
+			assert((*it)->properties["type"]->asString() == "blob");
+			// XXX Add an assert that checks if the blob implements x/y
+			msg->Add((*it)->properties["blob_id"]->asInteger());
 		}
 
 		bundle->Add(msg);
 
 		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert((*it)->properties["type"]->asString() == "touch");
+			assert((*it)->properties["type"]->asString() == "blob");
 
 			msg = new WOscMessage("/tuio/2Dcur");
 			msg->Add("set");
-			msg->Add((*it)->properties["id"]->asInteger()); // class id
+			msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
 			msg->Add((float)(*it)->properties["x"]->asDouble()); // x
 			msg->Add((float)(*it)->properties["y"]->asDouble()); // y
 			msg->Add((float)0.); // X
 			msg->Add((float)0.); // Y
 			msg->Add((float)0.); // m
-			if ( this->property("sendsize").asBool() ) {
-				msg->Add((float)(*it)->properties["w"]->asDouble()); // w
-				msg->Add((float)(*it)->properties["h"]->asDouble()); // h
-			}
+//			if ( this->property("sendsize").asBool() ) {
+//				msg->Add((float)(*it)->properties["w"]->asDouble()); // w
+//				msg->Add((float)(*it)->properties["h"]->asDouble()); // h
+//			}
 			bundle->Add(msg);
 		}
 
@@ -202,9 +203,9 @@ void moTuioModule::setInput(moDataStream *stream, int n) {
 		this->input->removeObserver(this);
 	this->input = stream;
 	if ( stream != NULL ) {
-		if ( stream->getFormat() != "GenericTouch" &&
+		if ( stream->getFormat() != "blob" &&
 			 stream->getFormat() != "GenericFiducial" ) {
-			this->setError("Input 0 accept only touch or fiducial");
+			this->setError("Input 0 only accepts blobs or fiducial, but got " + stream->getFormat());
 			this->input = NULL;
 			return;
 		}

@@ -365,6 +365,11 @@ void moModule::poll() {
 }
 
 void moModule::notifyUpdate() {
+	// If a module was added AFTER the pipeline was started,
+	// start it manually.
+	if (!this->is_started)
+		// XXX Is this the right place?
+		this->start();
 	this->need_update = true;
 	if ( this->use_thread )
 		this->thread_trigger->post();

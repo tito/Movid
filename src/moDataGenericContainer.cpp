@@ -29,6 +29,15 @@ moDataGenericContainer::~moDataGenericContainer() {
 	this->properties.clear();
 }
 
+
+moDataGenericContainer* moDataGenericContainer::clone(){
+	std::map<std::string, moProperty*>::iterator it;
+    moDataGenericContainer* clone = new moDataGenericContainer();
+    for ( it = this->properties.begin(); it != this->properties.end(); it++ )
+		clone->properties[it->first] = new moProperty(it->second->asString());
+    return clone;
+}
+
 bool moDataGenericContainer::exist(const std::string &name) {
 	std::map<std::string, moProperty*>::iterator it;
 	it = this->properties.find(name);

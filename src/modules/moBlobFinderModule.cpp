@@ -29,9 +29,9 @@ moBlobFinderModule::moBlobFinderModule() : moImageFilterModule(){
 
 	this->storage = cvCreateMemStorage(0);
 
-	this->output_data = new moDataStream("GenericBlob");
+	this->output_data = new moDataStream("blob");
 	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "GenericBlob", "Data stream with Blob info");
+	this->output_infos[1] = new moDataStreamInfo("data", "blob", "Data stream with Blob info");
 	this->blobs = new moDataGenericList();
 }
 
@@ -54,8 +54,8 @@ void moBlobFinderModule::applyFilter(IplImage *src) {
 	
     CvSeq *contours = 0;
 	cvFindContours(this->output_buffer, this->storage, &contours, sizeof(CvContour), CV_RETR_CCOMP);
-	if (!contours)
-		return;
+//	if (!contours)
+//		return;
 
     cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
 
@@ -66,16 +66,17 @@ void moBlobFinderModule::applyFilter(IplImage *src) {
 
 		moDataGenericContainer *blob = new moDataGenericContainer();
 		blob->properties["type"] = new moProperty("blob");
-		blob->properties["x"] = new moProperty(rect.x + rect.width / 2);
-		blob->properties["y"] = new moProperty(rect.y + rect.height / 2);
+		blob->properties["x"] = new moProperty((rect.x + rect.width / 2) / (double) src->width);
+		blob->properties["y"] = new moProperty((rect.y + rect.height / 2) / (double) src->height);
 		blob->properties["width"] = new moProperty(rect.width);
         blob->properties["height"] = new moProperty(rect.height);
-        blobs->push_back(blob);
-
+        blob->properties["implements"] = new moProperty("x,y,width,height");
+        this->blobs->push_back(blob);
+        LOG(MO_DEBUG, "blob finder: " << blob->properties["x"]->asInteger() );
 		cur_cont = cur_cont->h_next;
 	}
 	
-    this->output_data->push(blobs);
+    this->output_data->push(this->blobs);
 }
 
 moDataStream* moBlobFinderModule::getOutput(int n) {

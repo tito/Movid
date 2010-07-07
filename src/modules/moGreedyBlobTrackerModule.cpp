@@ -21,22 +21,22 @@
 
 MODULE_DECLARE(GreedyBlobTracker, "native", "Track Blobs based on a simple greedy algorithm");
 
-moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT, 1, 2){
+moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT, 1, 1){
 
 	MODULE_INIT();
 
 	// initialize input/output
 	this->input = NULL;
-	this->output = NULL;
+	this->output = new moDataStream("blob");
 
 	// declare input/output
 	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream of type 'blob'");
 	this->output_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream of type 'blob'");
-	this->output_infos[1] = new moDataStreamInfo("image", "IplImage", "Image showing the currently tracked blobs in different colors");
+	//this->output_infos[1] = new moDataStreamInfo("image", "IplImage", "Image showing the currently tracked blobs in different colors");
 
     // How many frames may a blob survive without finding a successor?
-	this->properties["max_age"] = new moProperty(3);
-	this->properties["max_dist"] = new moProperty(5.);
+	this->properties["max_age"] = new moProperty(48);
+	this->properties["max_dist"] = new moProperty(0.2);
 
     this->id_counter = 1;
     this->new_blobs = new moDataGenericList();
@@ -45,6 +45,7 @@ moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPU
 }
 
 moGreedyBlobTrackerModule::~moGreedyBlobTrackerModule() {
+    delete this->output;
 }
 
 void moGreedyBlobTrackerModule::pruneBlobs() {
@@ -52,26 +53,28 @@ void moGreedyBlobTrackerModule::pruneBlobs() {
 }
 
 void moGreedyBlobTrackerModule::trackBlobs() {
-    
     moDataGenericList::iterator it;
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
-        
         //for each of blobs in teh new frame, find teh closest matching one from before
         moDataGenericContainer* closest_blob = NULL;
-        int min_dist = 9999;
+        double min_dist = pow(this->properties["max_dist"]->asDouble(), 2);
         
         moDataGenericList::iterator it_old;
 	    for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
+            LOG(MO_DEBUG, "old blob:" << (*it_old)->properties["blob_id"]->asString() <<"  x:" << (*it)->properties["x"]->asDouble() );
             if ((*it_old)->properties["blob_id"]->asInteger() < 0)  //already assigned
                 continue;
 
-            int old_x = (*it_old)->properties["x"]->asInteger();
-			int old_y = (*it_old)->properties["y"]->asInteger();
-			int new_x = (*it)->properties["x"]->asInteger();
-			int new_y = (*it)->properties["y"]->asInteger();
-			int dist = pow(old_x - new_x, 2) + pow(old_y - new_y, 2);
-            if (dist < min_dist && dist < this->properties["max_dist"]->asInteger()){
+            double old_x = (*it_old)->properties["x"]->asDouble();
+			double old_y = (*it_old)->properties["y"]->asDouble();
+			double new_x = (*it)->properties["x"]->asDouble();
+			double new_y = (*it)->properties["y"]->asDouble();
+			// XXX Make sure that our INPUT is in 0.0 - 1.0. I checked and it seemed to not always be...
+			double dist = pow(old_x - new_x, 2) + pow(old_y - new_y, 2);
+            
+            if (dist < min_dist) {
                 closest_blob = (*it_old);
+                min_dist = dist;
             }
         }
         
@@ -83,25 +86,25 @@ void moGreedyBlobTrackerModule::trackBlobs() {
         }
         //this must be a new blob, so assign new ID
         else{
-            (*it)->properties["blob_id"] = new moProperty(++this->id_counter);
+            (*it)->properties["blob_id"]->set(++this->id_counter);
         }
-
-        
-
     }
-
 }
 
 void moGreedyBlobTrackerModule::update() {
+    LOG(MO_DEBUG, "update called");
+    
     this->new_blobs->clear();
    
     //copy teh new blobs to our new_blobs list, afterwards well assign id's 
     moDataGenericList::iterator it;
 	moDataGenericList *blobs = (moDataGenericList*) this->input->getData();
+
     this->input->lock();
 	for ( it = blobs->begin(); it != blobs->end(); it++ ){
-        (*it)->properties["blob_id"] = 0;
-        this->new_blobs->push_back(*it);   
+        moDataGenericContainer* blob = (*it)->clone();
+        blob->properties["blob_id"] = new moProperty(0);
+        this->new_blobs->push_back(blob);   
     }
     this->input->unlock();
 
@@ -136,8 +139,8 @@ void moGreedyBlobTrackerModule::setInput(moDataStream *stream, int n) {
 		this->input->removeObserver(this);
 	this->input = stream;
 	if ( stream != NULL ) {
-		if ( stream->getFormat() != "GenericBlob" ) {
-			this->setError("Input 0 accept only blobs");
+		if ( stream->getFormat() != "blob" ) {
+			this->setError("Input 0 only accepts blobs but got " + stream->getFormat());
 			this->input = NULL;
 			return;
 		}
@@ -157,5 +160,4 @@ moDataStream* moGreedyBlobTrackerModule::getInput(int n) {
 moDataStream* moGreedyBlobTrackerModule::getOutput(int n) {
 	return this->output;
 }
-
 

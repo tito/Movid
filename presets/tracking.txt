@@ -2,7 +2,7 @@ pipeline create Video v
 pipeline create GrayScale g
 pipeline create Threshold t
 pipeline create BlobFinder b
-pipeline create BlobTracker tr
+pipeline create GreedyBlobTracker tr
 pipeline create Tuio tu
 pipeline create ImageDisplay d1
 pipeline create ImageDisplay d2
@@ -12,9 +12,9 @@ pipeline connect g 0 t 0
 pipeline connect t 0 b 0
 pipeline connect t 0 d1 0
 pipeline connect b 0 d2 0
-pipeline connect b 0 tr 0
+pipeline connect b 1 tr 0
 pipeline connect tr 1 tu 0
 
-pipeline set v filename blob.avi
-config delay 50
+pipeline set v filename media/blob.avi
+
 

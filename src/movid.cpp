@@ -99,6 +99,8 @@ public:
 	}
 
 	void notifyData(moDataStream *source) {
+		if (source->getFormat() != "IplImage")
+			return;
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL )
 			return;
