@@ -21,22 +21,22 @@
 
 MODULE_DECLARE(GreedyBlobTracker, "native", "Track Blobs based on a simple greedy algorithm");
 
-moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT, 1, 2){
+moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT, 1, 1){
 
 	MODULE_INIT();
 
 	// initialize input/output
 	this->input = NULL;
-	this->output = new moDataStream("GenericBlob");
+	this->output = new moDataStream("blob");
 
 	// declare input/output
 	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream of type 'blob'");
 	this->output_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream of type 'blob'");
-	this->output_infos[1] = new moDataStreamInfo("image", "IplImage", "Image showing the currently tracked blobs in different colors");
+	//this->output_infos[1] = new moDataStreamInfo("image", "IplImage", "Image showing the currently tracked blobs in different colors");
 
     // How many frames may a blob survive without finding a successor?
-	this->properties["max_age"] = new moProperty(3);
-	this->properties["max_dist"] = new moProperty(0.1);
+	this->properties["max_age"] = new moProperty(48);
+	this->properties["max_dist"] = new moProperty(0.2);
 
     this->id_counter = 1;
     this->new_blobs = new moDataGenericList();
@@ -75,10 +75,10 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 			double old_y = (*it_old)->properties["y"]->asDouble();
 			double new_x = (*it)->properties["x"]->asDouble();
 			double new_y = (*it)->properties["y"]->asDouble();
+			// XXX Make sure that our input is in 0.0 - 1.0. I checked and it seemed to not always be...
 			double dist = pow(old_x - new_x, 2) + pow(old_y - new_y, 2);
             
             
-            //std::cout << "dist: " << dist << " min:" << min_dist << std::endl; 
             if (dist < min_dist) {
                 closest_blob = (*it_old);
                 min_dist = dist;
@@ -110,10 +110,7 @@ void moGreedyBlobTrackerModule::update() {
     //copy teh new blobs to our new_blobs list, afterwards well assign id's 
     moDataGenericList::iterator it;
 	moDataGenericList *blobs = (moDataGenericList*) this->input->getData();
-    
-    
 
-    std::cout << blobs->size() << std::endl;
     this->input->lock();
 	for ( it = blobs->begin(); it != blobs->end(); it++ ){
         moDataGenericContainer* blob = (*it)->clone();
@@ -153,8 +150,8 @@ void moGreedyBlobTrackerModule::setInput(moDataStream *stream, int n) {
 		this->input->removeObserver(this);
 	this->input = stream;
 	if ( stream != NULL ) {
-		if ( stream->getFormat() != "GenericBlob" ) {
-			this->setError("Input 0 accept only blobs");
+		if ( stream->getFormat() != "blob" ) {
+			this->setError("Input 0 only accepts blobs but got " + stream->getFormat());
 			this->input = NULL;
 			return;
 		}
@@ -174,5 +171,4 @@ moDataStream* moGreedyBlobTrackerModule::getInput(int n) {
 moDataStream* moGreedyBlobTrackerModule::getOutput(int n) {
 	return this->output;
 }
-
 

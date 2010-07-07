@@ -29,9 +29,9 @@ moBlobFinderModule::moBlobFinderModule() : moImageFilterModule(){
 
 	this->storage = cvCreateMemStorage(0);
 
-	this->output_data = new moDataStream("GenericBlob");
+	this->output_data = new moDataStream("blob");
 	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "GenericBlob", "Data stream with Blob info");
+	this->output_infos[1] = new moDataStreamInfo("data", "blob", "Data stream with Blob info");
 	this->blobs = new moDataGenericList();
 }
 
@@ -70,6 +70,7 @@ void moBlobFinderModule::applyFilter(IplImage *src) {
 		blob->properties["y"] = new moProperty((rect.y + rect.height / 2) / (double) src->height);
 		blob->properties["width"] = new moProperty(rect.width);
         blob->properties["height"] = new moProperty(rect.height);
+        blob->properties["implements"] = new moProperty("x,y,width,height");
         this->blobs->push_back(blob);
         LOG(MO_DEBUG, "blob finder: " << blob->properties["x"]->asInteger() );
 		cur_cont = cur_cont->h_next;
