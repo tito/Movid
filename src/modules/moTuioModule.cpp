@@ -63,7 +63,7 @@ moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 
 	// declare inputs
 	this->input_infos[0] = new moDataStreamInfo(
-			"data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
+			"data", "moDataGenericList", "Data stream with type of 'blob' or 'fiducial'");
 
 	// declare properties
 	this->properties["ip"] = new moProperty("127.0.0.1");
@@ -91,7 +91,7 @@ void moTuioModule::stop() {
 }
 
 void moTuioModule::notifyData(moDataStream *input) {
-	WOscBundle	*bundle = NULL;
+	WOscBundle *bundle = NULL;
 
 	assert( input != NULL );
 	assert( input == this->input );
@@ -99,6 +99,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 	// out input have been updated !
 	this->input->lock();
 
+	// TODO also adapt fiducial tracker to new blob protocol
 	if ( input->getFormat() == "GenericFiducial" ) {
 
 		bundle = new WOscBundle();
@@ -137,7 +138,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 		bundle->Add(msg);
 
 
-	} else if ( input->getFormat() == "GenericBlob" ) {
+	} else if ( input->getFormat() == "blob" ) {
 		// /tuio/2Dcur set s x y X Y m
 
 		bundle = new WOscBundle();
@@ -198,9 +199,9 @@ void moTuioModule::setInput(moDataStream *stream, int n) {
 		this->input->removeObserver(this);
 	this->input = stream;
 	if ( stream != NULL ) {
-		if ( stream->getFormat() != "GenericBlob" &&
+		if ( stream->getFormat() != "blob" &&
 			 stream->getFormat() != "GenericFiducial" ) {
-			this->setError("Input 0 accept only touch or fiducial");
+			this->setError("Input 0 only accepts blobs or fiducial, but got " + stream->getFormat());
 			this->input = NULL;
 			return;
 		}
