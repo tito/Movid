@@ -140,7 +140,6 @@ void moTuioModule::notifyData(moDataStream *input) {
 	} else if ( input->getFormat() == "GenericBlob" ) {
 		// /tuio/2Dcur set s x y X Y m
 
-
 		bundle = new WOscBundle();
 		WOscMessage *msg = new WOscMessage("/tuio/2Dcur");
 		msg->Add("alive");
@@ -149,7 +148,8 @@ void moTuioModule::notifyData(moDataStream *input) {
 		moDataGenericList *list = (moDataGenericList *)this->input->getData();
 		for ( it = list->begin(); it != list->end(); it++ ) {
 			assert((*it)->properties["type"]->asString() == "blob");
-			msg->Add(atoi((*it)->properties["id"]->asString().c_str()));
+			// XXX Add an assert that checks if the blob implements x/y
+			msg->Add((*it)->properties["blob_id"]->asInteger());
 		}
 
 		bundle->Add(msg);
@@ -159,7 +159,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 
 			msg = new WOscMessage("/tuio/2Dcur");
 			msg->Add("set");
-			msg->Add((*it)->properties["id"]->asInteger()); // class id
+			msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
 			msg->Add((float)(*it)->properties["x"]->asDouble()); // x
 			msg->Add((float)(*it)->properties["y"]->asDouble()); // y
 			msg->Add((float)0.); // X

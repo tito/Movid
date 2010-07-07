@@ -53,31 +53,24 @@ void moGreedyBlobTrackerModule::pruneBlobs() {
 }
 
 void moGreedyBlobTrackerModule::trackBlobs() {
-    
-
     moDataGenericList::iterator it;
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
-        
-
-
-
         //for each of blobs in teh new frame, find teh closest matching one from before
         moDataGenericContainer* closest_blob = NULL;
         double min_dist = pow(this->properties["max_dist"]->asDouble(), 2);
         
         moDataGenericList::iterator it_old;
 	    for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
-            LOG(MO_DEBUG, "old blob:" << (*it_old)->properties["id"]->asString() <<"  x:" << (*it)->properties["x"]->asDouble() );
-            if ((*it_old)->properties["id"]->asInteger() < 0)  //already assigned
+            LOG(MO_DEBUG, "old blob:" << (*it_old)->properties["blob_id"]->asString() <<"  x:" << (*it)->properties["x"]->asDouble() );
+            if ((*it_old)->properties["blob_id"]->asInteger() < 0)  //already assigned
                 continue;
 
             double old_x = (*it_old)->properties["x"]->asDouble();
 			double old_y = (*it_old)->properties["y"]->asDouble();
 			double new_x = (*it)->properties["x"]->asDouble();
 			double new_y = (*it)->properties["y"]->asDouble();
-			// XXX Make sure that our input is in 0.0 - 1.0. I checked and it seemed to not always be...
+			// XXX Make sure that our INPUT is in 0.0 - 1.0. I checked and it seemed to not always be...
 			double dist = pow(old_x - new_x, 2) + pow(old_y - new_y, 2);
-            
             
             if (dist < min_dist) {
                 closest_blob = (*it_old);
@@ -87,19 +80,15 @@ void moGreedyBlobTrackerModule::trackBlobs() {
         
         //found the closest one out of teh ones that are left, assign id, and invalidate old blob
         if (closest_blob){
-            int old_id = closest_blob->properties["id"]->asInteger();
-            (*it)->properties["id"]->set( old_id );
-            closest_blob->properties["id"]->set( -1 * old_id );  //we mark matched blob by negative id's
+            int old_id = closest_blob->properties["blob_id"]->asInteger();
+            (*it)->properties["blob_id"]->set( old_id );
+            closest_blob->properties["blob_id"]->set( -1 * old_id );  //we mark matched blob by negative id's
         }
         //this must be a new blob, so assign new ID
         else{
-            (*it)->properties["id"]->set(++this->id_counter);
+            (*it)->properties["blob_id"]->set(++this->id_counter);
         }
-
-        
-
     }
-
 }
 
 void moGreedyBlobTrackerModule::update() {
@@ -114,7 +103,7 @@ void moGreedyBlobTrackerModule::update() {
     this->input->lock();
 	for ( it = blobs->begin(); it != blobs->end(); it++ ){
         moDataGenericContainer* blob = (*it)->clone();
-        blob->properties["id"] = new moProperty(0);
+        blob->properties["blob_id"] = new moProperty(0);
         this->new_blobs->push_back(blob);   
     }
     this->input->unlock();
