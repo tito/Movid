@@ -19,16 +19,25 @@
 #ifndef UMO_FINGERTIPFINDER_MODULE_H
 #define UMO_FINGERTIPFINDER_MODULE_H
 
+#include "../moDataGenericContainer.h"
 #include "moImageFilterModule.h"
 
-class moFingerTipFinderModule : public moImageFilterModule{
+class moFingerTipFinderModule : public moImageFilterModule {
 public:
 	moFingerTipFinderModule();
 	virtual ~moFingerTipFinderModule();
+	virtual moDataStream *getOutput(int n=0);
+
 
 protected:
-	CvMemStorage *storage;
+	moDataGenericList fingertips;
+
+	moDataStream *output_data;
 	void applyFilter(IplImage*);
+	//void allocateBuffers();
+	void clearFingertips();
+
+	CvMemStorage *storage;
 
 	MODULE_INTERNALS();
 };

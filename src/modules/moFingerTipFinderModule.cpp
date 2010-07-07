@@ -46,8 +46,11 @@ MODULE_DECLARE(FingerTipFinder, "native", "Module capable of detecting hands in 
 typedef std::pair<float, CvConvexityDefect*> depthToDefect;
 
 moFingerTipFinderModule::moFingerTipFinderModule() : moImageFilterModule(){
-
 	MODULE_INIT();
+
+	this->output_data = new moDataStream("blob");
+	this->output_count = 2;
+	this->output_infos[1] = new moDataStreamInfo("data", "blob", "Data stream with blobs");
 
 	this->storage = cvCreateMemStorage(0);
 	this->properties["min_distance"] = new moProperty(20.);
@@ -70,12 +73,21 @@ bool _in2(std::vector<int> &vec, int e) {
 	return false;
 }
 
-void moFingerTipFinderModule::applyFilter(IplImage *src) {
+void moFingerTipFinderModule::clearFingertips() {
+	moDataGenericList::iterator it;
+	for ( it = this->fingertips.begin(); it != this->fingertips.end(); it++ )
+		delete (*it);
+	this->fingertips.clear();
+}
+
+void moFingerTipFinderModule::applyFilter(IplImage *source) {
 	// Create a copy since cvFindContours will manipulate its input
+	IplImage *src = (IplImage*) this->input->getData();
 	cvCopy(src, this->output_buffer);
 	CvSeq *contours = 0;
 	cvFindContours(this->output_buffer, this->storage, &contours, sizeof(CvContour), CV_RETR_CCOMP);
 	cvZero(this->output_buffer);
+	this->clearFingertips();
 	if(contours) {
 		// Find the exterior contour (i.e. the hand has to be white) that has the greatest area
 		CvSeq *max_cont = contours, *cur_cont = contours;
@@ -152,11 +164,36 @@ void moFingerTipFinderModule::applyFilter(IplImage *src) {
 
 		// Draw the points
 		CvPoint *p;
+		bool do_image = this->output->getObserverCount() > 0 ? true : false;
+		if (do_image) {
+			CvPoint *p;
+			for (unsigned int i = 0; i < good_points.size(); i++) {
+				p = good_points[i];
+				int radius = cvRound(10);
+				cvCircle(this->output_buffer, *p, radius, CV_RGB(255, 255, 255), -1);
+			}
+		}
+		// Push as fingertip blobs
+		moDataGenericContainer *fingertip;
+		CvSize size = cvGetSize(src);
+		float width = (float) size.width;
+		float height = (float) size.height;
 		for (unsigned int i = 0; i < good_points.size(); i++) {
 			p = good_points[i];
-			int radius = cvRound(10);
-			cvCircle(this->output_buffer, *p, radius, CV_RGB(255, 255, 255), -1);
+			fingertip = new moDataGenericContainer();
+			fingertip->properties["type"] = new moProperty("blob");
+			fingertip->properties["implements"] = new moProperty("fingertip,x,y");
+			fingertip->properties["x"] = new moProperty(p->x / width);
+			fingertip->properties["y"] = new moProperty(p->y / height);
+			this->fingertips.push_back(fingertip);
 		}
+		this->output_data->push(&this->fingertips);
 	}
+}
+
+moDataStream* moFingerTipFinderModule::getOutput(int n) {
+	if ( n == 1 )
+		return this->output_data;
+	return moImageFilterModule::getOutput(n);
 }
 
