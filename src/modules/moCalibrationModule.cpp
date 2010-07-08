@@ -85,12 +85,18 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->properties["surfacePoints"]->addCallback(mocalibrationmodule_triangulate, this);
 	this->properties["calibrate"] = new moProperty(false);
 	this->properties["calibrate"]->addCallback(mocalibrationmodule_activate_calibration, this);
+	// Minimum frames that the user has to press a calibration point
+	this->properties["duration_per_point"] = new moProperty(50);
+	this->properties["duration_per_point"]->addCallback(mocalibrationmodule_activate_calibration, this);
 
 	this->retriangulate = false;
 	this->rect = cvRect(0, 0, 5000, 5000);
 	this->storage = cvCreateMemStorage(0);
 	this->active_point = 0;
 	this->last_id = -1;
+	this->last_finished_id = -1;
+	this->current_duration = 0;
+	this->current_touch = NULL;
 	this->input = NULL;
 	this->calibrated = false;
 
@@ -279,20 +285,46 @@ void moCalibrationModule::calibrate() {
 	surfacePoint.x = touch->properties["x"]->asDouble();
 	surfacePoint.y = touch->properties["y"]->asDouble();
 
-	if (touch->properties["blob_id"]->asInteger() == (int)this->last_id) {
+	unsigned int blob_id = touch->properties["blob_id"]->asInteger();
+	if (blob_id == this->last_id) {
 		// This means we have seen this touch before in the previous frame.
 		// Don't reuse it to calibrate the next point, but refine the surfacePoints
 		// position by taking the mean. Useful for e.g. laser tracking where you don't
 		// hit the calibration point right immediately.
-		unsigned int last_index = surfacePoints.size()-1;
-		moPoint old_touch = surfacePoints[last_index];
-		surfacePoint.x = (old_touch.x + surfacePoint.x) / 2.;
-		surfacePoint.y = (old_touch.y + surfacePoint.y) / 2.;
-		surfacePoints[last_index] = surfacePoint;
-		this->property("surfacePoints").set(surfacePoints);
+		//unsigned int last_index = surfacePoints.size()-1;
+		if (this->last_finished_id == blob_id) {
+			return;
+		}
+		if (this->current_touch == NULL) {
+			this->current_touch = &(surfacePoint);
+			assert(this->current_duration == 0);
+		}
+		this->current_touch->x = (this->current_touch->x + surfacePoint.x) / 2.;
+		this->current_touch->y = (this->current_touch->y + surfacePoint.y) / 2.;
+		this->current_duration++;
+	}
+	else {
+		// The calibration touch was interrupted. Start new calibration attempt for that touch.
+		this->current_touch = NULL;
+		this->current_duration = 0;
+		this->last_id = -1;
+	}
+
+	this->last_id = touch->properties["blob_id"]->asInteger();
+
+	if (this->current_duration < this->property("duration_per_point").asInteger()) {
+		std::cout << "RETURNING " << this->current_duration << std::endl;
 		return;
 	}
-	this->last_id = touch->properties["blob_id"]->asInteger();
+
+	// OK, this point was calibrated long enough
+	surfacePoints.push_back(*(this->current_touch));
+	this->current_touch = NULL;
+	this->current_duration = 0;
+	this->property("surfacePoints").set(surfacePoints);
+	// Indicate that this blob id is finished and shouldn't be used to calibrate anymore
+	this->last_finished_id = this->last_id;
+	assert(last_id == blob_id);
 
 	LOG(MO_DEBUG, "calibrarting   # of screenPoints: " << screenPoints.size() << "# of surfacePoints: " << surfacePoints.size());
 	LOG(MO_DEBUG, "Processing point #" << this->active_point);

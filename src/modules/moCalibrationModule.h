@@ -54,6 +54,9 @@ private:
 	void triangulate();
 	unsigned int active_point;
 	unsigned int last_id;
+	unsigned int last_finished_id;
+	int current_duration;
+	moPoint *current_touch;
 	std::vector<moPoint> surfacePoints;
 //	std::map<CvSubdiv2DPoint*, moPoint> delaunayToSurface;
 	std::map<CvSubdiv2DPoint*, moPoint> delaunayToScreen;
