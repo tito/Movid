@@ -280,6 +280,10 @@ void moCalibrationModule::calibrate() {
 	// We now want to assign each point its coordinates on the touch surface
 	touch = (*blobs)[0];
 
+	// We're starting calibration again, so discard all old calibration results
+	if ( this->active_point == 0 )
+		this->property("surfacePoints").set("");
+
 	// screenPoints and corresponding surfacePoint have the same index in their respective vector
 	moPointList surfacePoints = this->property("surfacePoints").asPointList();
 	surfacePoint.x = touch->properties["x"]->asDouble();
@@ -288,6 +292,7 @@ void moCalibrationModule::calibrate() {
 	unsigned int blob_id = touch->properties["blob_id"]->asInteger();
 	if (blob_id == this->last_id) {
 		// This means we have seen this touch before in the previous frame.
+		// TODO refine
 		// Don't reuse it to calibrate the next point, but refine the surfacePoints
 		// position by taking the mean. Useful for e.g. laser tracking where you don't
 		// hit the calibration point right immediately.
@@ -313,25 +318,24 @@ void moCalibrationModule::calibrate() {
 	this->last_id = touch->properties["blob_id"]->asInteger();
 
 	if (this->current_duration < this->property("duration_per_point").asInteger()) {
-		std::cout << "RETURNING " << this->current_duration << std::endl;
 		return;
 	}
 
 	// OK, this point was calibrated long enough
+	// Indicate that this blob id is finished and shouldn't be used to calibrate anymore
+	this->last_finished_id = this->last_id;
+	assert(last_id == blob_id);
 	surfacePoints.push_back(*(this->current_touch));
 	this->current_touch = NULL;
 	this->current_duration = 0;
 	this->property("surfacePoints").set(surfacePoints);
-	// Indicate that this blob id is finished and shouldn't be used to calibrate anymore
-	this->last_finished_id = this->last_id;
-	assert(last_id == blob_id);
 
 	LOG(MO_DEBUG, "calibrarting   # of screenPoints: " << screenPoints.size() << "# of surfacePoints: " << surfacePoints.size());
 	LOG(MO_DEBUG, "Processing point #" << this->active_point);
 
 	// TODO While calibrating, this list MUST NOT change!
 	screenPoints = this->property("screenPoints").asPointList();
-	if (this->active_point == screenPoints.size()) {
+	if (this->active_point == screenPoints.size()-1) {
 		// We have calibrated all points, so we're done.
 		LOG(MO_DEBUG, "Calibration complete!");
 		this->active_point = 0;
@@ -345,12 +349,8 @@ void moCalibrationModule::calibrate() {
 	LOG(MO_DEBUG, "# of screenPoints: " << screenPoints.size());
 	LOG(MO_DEBUG, "Processing point #" << this->active_point);
 
-	// We're starting calibration again, so discard all old calibration results
-	if ( this->active_point == 0 )
-		this->property("surfacePoints").set("");
-
-	surfacePoints.push_back(surfacePoint);
-	this->property("surfacePoints").set(surfacePoints);
+	//surfacePoints.push_back(surfacePoint);
+	//this->property("surfacePoints").set(surfacePoints);
 
 	p = screenPoints[this->active_point];
 	LOG(MO_DEBUG, "(" << p.x << ", " << p.y << ") is mapped to (" \
@@ -370,6 +370,14 @@ void moCalibrationModule::transformPoints() {
 
 	this->blobs.clear();
 	for (it = blobs->begin(); it != blobs->end(); it++) {
+		unsigned int blob_id = (*it)->properties["blob_id"]->asDouble();
+		if (blob_id == this->last_finished_id) {
+			// HOTFIX: Don't transform if this is the last blob we calibrated
+			//	   that is still being held down. Cause then the blob pos
+			// 	   is ON a calib point, which apparently results in edge
+			//	   being NULL. Just skip it now. Should rather detect & handle edge == NULL.
+			continue;
+		}
 		// Get the camera/surface coordinates of the blob
 		double blob_x = (*it)->properties["x"]->asDouble();
 		double blob_y = (*it)->properties["y"]->asDouble();
