@@ -370,14 +370,6 @@ void moCalibrationModule::transformPoints() {
 
 	this->blobs.clear();
 	for (it = blobs->begin(); it != blobs->end(); it++) {
-		unsigned int blob_id = (*it)->properties["blob_id"]->asDouble();
-		if (blob_id == this->last_finished_id) {
-			// HOTFIX: Don't transform if this is the last blob we calibrated
-			//	   that is still being held down. Cause then the blob pos
-			// 	   is ON a calib point, which apparently results in edge
-			//	   being NULL. Just skip it now. Should rather detect & handle edge == NULL.
-			continue;
-		}
 		// Get the camera/surface coordinates of the blob
 		double blob_x = (*it)->properties["x"]->asDouble();
 		double blob_y = (*it)->properties["y"]->asDouble();
@@ -386,8 +378,44 @@ void moCalibrationModule::transformPoints() {
 		CvSubdiv2DEdge edge;
 		CvSubdiv2DPoint* vertex;
 		CvPoint2D32f P = cvPoint2D32f(blob_x, blob_y);
-		cvSubdiv2DLocate(this->subdiv, P, &edge, &vertex);
-
+		CvSubdiv2DPointLocation loc;
+		loc = cvSubdiv2DLocate(this->subdiv, P, &edge, &vertex);
+		if (loc == CV_PTLOC_VERTEX) {
+			std::cout << "ON_VERTEX" << std::endl;
+			moPoint screen_point = this->delaunayToScreen[vertex];
+			moDataGenericContainer *blob = new moDataGenericContainer();
+			blob->properties["type"] = new moProperty("blob");
+			blob->properties["blob_id"] = new moProperty((*it)->properties["blob_id"]->asInteger());
+			blob->properties["x"] = new moProperty(screen_point.x);
+			blob->properties["y"] = new moProperty(screen_point.y);
+			this->blobs.push_back(blob);
+			continue;
+		}
+		//switch (loc) {
+		//	case CV_PTLOC_INSIDE:
+		//		std::cout << "INSIDE" << std::endl;
+		//		break;
+		//	case CV_PTLOC_ON_EDGE:
+		//		std::cout << "ON_EDGE" << std::endl;
+		//		moPoint screen_point = this->delaunayToScreen[vertex];
+		//		moDataGenericContainer *blob = new moDataGenericContainer();
+		//		blob->properties["type"] = new moProperty("blob");
+		//		blob->properties["blob_id"] = new moProperty((*it)->properties["blob_id"]->asInteger());
+		//		blob->properties["x"] = new moProperty(screen_point.x);
+		//		blob->properties["y"] = new moProperty(screen_point.y);
+		//		this->blobs.push_back(blob);
+		//		continue;
+		//		break;
+		//	case CV_PTLOC_VERTEX:
+		//		std::cout << "VERTEX" << std::endl;
+		//		break;
+		//	case CV_PTLOC_OUTSIDE_RECT:
+		//		std::cout << "OUTSIDE_RECT" << std::endl;
+		//		break;
+		//	case CV_PTLOC_ERROR:
+		//		std::cout << "ERROR" << std::endl;
+		//		break;
+		//}
 		// P is inside the triangle, so we must compute barycentric coords for P with
 		// respect to the triangle. To find the triangle, we traverse the edges
 		// around the right facet, to get the vertices that make up the triangle containing P.
