@@ -31,8 +31,6 @@ LIBCJSON_PATH 		= $(CONTRIB_PATH)/cJSON
 LIBFIDTRACK_PATH 	= $(CONTRIB_PATH)/libfidtrack
 WOSCLIB_PATH 		= $(CONTRIB_PATH)/WOscLib-00.09
 PTYPES_PATH 		= $(CONTRIB_PATH)/ptypes-2.1.1
-SDL_PATH			= $(CONTRIB_PATH)/SDL-1.2.14
-SDLGFX_PATH			= $(CONTRIB_PATH)/SDL_gfx-2.0.21
 
 #
 # Source files
@@ -119,10 +117,6 @@ WOSCLIB_CFLAGS		?= -I$(WOSCLIB_PATH)
 WOSCLIB_LIB			?= $(WOSCLIB_PATH)/libwosclib.a
 PTYPES_CFLAGS		?= -I$(PTYPES_PATH)/include
 PTYPES_LIB			?= $(PTYPES_PATH)/lib/libptypes.a
-SDL_CFLAGS			?= -I$(SDL_PATH)/include
-SDL_LIB				?= $(SDL_PATH)/build/lib/libSDL.a
-SDLGFX_CFLAGS		?= -I$(SDLGFX_PATH)
-SDLGFX_LIB			?= $(SDLGFX_PATH)/.libs/libSDL_gfx.a
 
 ALL_CFLAGS			= $(CFLAGS) $(OPENCV_CFLAGS) $(WOSCLIB_CFLAGS) $(PTYPES_CFLAGS)
 ALL_LIBS			= $(LIBS) $(OPENCV_LIBS)
@@ -157,15 +151,13 @@ Makefile.depend: $(SOURCES)
 # Contribs
 #
 
-contrib: $(SDL_LIB) $(SDLGFX_LIB) $(LIBEVENT_LIB) $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB)
+contrib: $(LIBEVENT_LIB) $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB)
 
 cleancontrib:
 	-$(MAKE) -C $(LIBEVENT_PATH) distclean
 	-$(MAKE) -C $(WOSCLIB_PATH) clean
 	-$(MAKE) -C $(PTYPES_PATH) clean
 	-$(MAKE) -C $(LIBFIDTRACK_PATH) clean
-	-$(MAKE) -C $(SDL_PATH) distclean
-	-$(MAKE) -C $(SDLGFX_PATH) distclean
 
 $(LIBEVENT_LIB):
 	cd $(LIBEVENT_PATH) && sh ./configure --disable-shared && $(MAKE)
@@ -178,13 +170,6 @@ $(WOSCLIB_LIB):
 
 $(PTYPES_LIB):
 	cd $(PTYPES_PATH) && make
-
-$(SDL_LIB):
-	cd $(SDL_PATH) && ./configure --disable-audio --disable-joystick --disable-cdrom --disable-threads --disable-timers --disable-file --disable-loadso --disable-cpuinfo --disable-shared --prefix=`pwd`/build && $(MAKE) all install-bin install-hdrs install-lib install-data
-
-$(SDLGFX_LIB):
-	cd $(SDLGFX_PATH) && ./autogen.sh && ./configure --disable-sdltest --disable-shared --with-sdl-prefix=`pwd`/../../$(SDL_PATH)/build && $(MAKE)
-
 
 
 #
