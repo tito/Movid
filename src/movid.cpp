@@ -887,6 +887,8 @@ void web_file(struct evhttp_request *req, void *arg) {
 		evhttp_add_header(req->output_headers, "Content-Type", "text/css");
 	else if ( strncmp(filename + strlen(filename) - 3, "png", 3) == 0 )
 		evhttp_add_header(req->output_headers, "Content-Type", "image/png");
+	else if ( strncmp(filename + strlen(filename) - 3, "swf", 3) == 0 )
+		evhttp_add_header(req->output_headers, "Content-Type", "application/x-shockwave-flash");
 	else
 		evhttp_add_header(req->output_headers, "Content-Type", "text/html");
 
