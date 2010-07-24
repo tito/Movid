@@ -19,17 +19,11 @@
 #ifndef MO_DAEMON_H
 #define MO_DAEMON_H
 
-#include "moPipeline.h"
-
 class moDaemon {
 public:
 	static void init();
 	static bool detach(std::string pidfilename);
 	static void cleanup();
-	static void poll(moPipeline *);
-	static void showGui(const char *moduleid);
-	static void hideGui();
-	static bool isGuiShowed();
 };
 
 #endif

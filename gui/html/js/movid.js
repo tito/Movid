@@ -22,7 +22,6 @@ var mo_available_outputs = [];
 var mo_streamscale = 2;
 var mo_widget_selected = null;
 var mo_status_text = 'stopped';
-var mo_gui_mode = 'remote';
 var mo_uniqidx = 0;
 var mo_data = null;
 
@@ -212,7 +211,7 @@ function mo_properties(elem) {
 					.attr('id', uniq)
 					.attr('type', 'checkbox')
 					.attr('onchange', 'javascript:mo_gui("'
-						+ elem + '", 0, this)');
+						+ elem + '", 0)');
 				var tr = $('<tr></tr>')
 					.append( $('<td></td>')
 						.addClass('label')
@@ -385,16 +384,9 @@ function mo_select(elem) {
 	mo_stream(elem);
 }
 
-function mo_gui(elem, is_update, btn) {
-	if ( mo_gui_mode == 'remote' ) {
-		if ( btn && btn.checked == false ) {
-			$.get(mo_baseurl + '/pipeline/gui?hide=1');
-			return;
-		}
-	}
-	$.get(mo_baseurl + '/pipeline/gui?objectname=' + elem + '&show=1', function(data) {
-		if ( mo_gui_mode == 'local' )
-			widgetConfigure(data, is_update);
+function mo_gui(elem, is_update) {
+	$.get(mo_baseurl + '/pipeline/gui?objectname=' + elem, function(data) {
+		widgetConfigure(data, is_update);
 	});
 }
 
