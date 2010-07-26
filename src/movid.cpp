@@ -836,7 +836,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 	long filesize = 0;
 	struct evbuffer *evb;
 	char filename[256],
-		 *buf;
+		 *buf, *uri;
 
 	/* web_file accept only file from gui
 	 */
@@ -850,8 +850,11 @@ void web_file(struct evhttp_request *req, void *arg) {
 		return;
 	}
 
+	uri = strsep(&req->uri, "?");
+	LOG(MO_INFO, "web: URI=" << uri);
+
 	snprintf(filename, sizeof(filename), "%s/%s",
-		config_guidir.c_str(), req->uri + sizeof("/gui/") - 1);
+		config_guidir.c_str(), uri + sizeof("/gui/") - 1);
 
 	LOG(MO_INFO, "web: GET " << filename);
 	fd = fopen(filename, "rb");

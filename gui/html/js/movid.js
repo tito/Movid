@@ -24,6 +24,8 @@ var mo_widget_selected = null;
 var mo_status_text = 'stopped';
 var mo_uniqidx = 0;
 var mo_data = null;
+var mo_host = null;
+var mo_port = '7500';
 
 function mo_uniq() {
 	mo_uniqidx += 1;
@@ -46,6 +48,16 @@ function mo_resize() {
 }
 
 function mo_bootstrap() {
+
+	var hostport = mo_baseurl.split('/');
+	hostport = hostport[hostport.length - 1].split(':');
+	if ( hostport.length == 1 ) {
+		mo_host = hostport[0];
+	} else {
+		mo_host = hostport[0];
+		mo_port = hostport[1];
+	}
+
 	$('#container-preview').hide();
 	$('#container-properties').hide();
 	$('#btn-create').addClass('ui-state-active');
@@ -382,12 +394,61 @@ function mo_select(elem) {
 	mo_widget_selected = elem;
 	mo_properties(elem);
 	mo_stream(elem);
+	mo_gui_cancel()
+}
+
+function mo_gui_cancel() {
+	var base = document.getElementById('flashgui');
+	if ( base )
+		base.parentNode.removeChild(base);
 }
 
 function mo_gui(elem, is_update) {
+	/**
 	$.get(mo_baseurl + '/pipeline/gui?objectname=' + elem, function(data) {
 		widgetConfigure(data, is_update);
 	});
+	**/
+
+	// toggle GUI
+	var base = document.getElementById('flashgui');
+	if ( base ) {
+		base.parentNode.removeChild(base);
+		return;
+	}
+
+	// construct basics parameters
+	var src = mo_baseurl + '/gui/flashgui.swf?objectname=' + elem;
+	var flashvars = [
+		'objectname=', encodeURIComponent(elem),
+		'&ip=', mo_host,
+		'&port=', mo_port
+	].join('');
+
+	// Internet explorer support
+	base = document.createElement('OBJECT');
+	base.setAttribute('id', 'flashgui');
+	param = document.createElement('PARAM');
+	param.setAttribute('name', 'movie');
+	param.setAttribute('value', src);
+	base.appendChild(param);
+	param = document.createElement('PARAM');
+	param.setAttribute('name', 'FlashVars');
+	param.setAttribute('value', flashvars);
+	base.appendChild(param);
+	param = document.createElement('PARAM');
+	param.setAttribute('name', 'allowFullScreen');
+	param.setAttribute('value', 'true');
+	base.appendChild(param);
+
+	// Firefox support
+	embed = document.createElement('EMBED');
+	embed.setAttribute('src', src);
+	embed.setAttribute('flashvars', flashvars);
+	embed.setAttribute('allowfullscreen', 'true');
+	base.appendChild(embed);
+
+	document.body.appendChild(base);
 }
 
 function mo_stats() {
