@@ -428,6 +428,8 @@ function mo_gui(elem, is_update) {
 	// Internet explorer support
 	base = document.createElement('OBJECT');
 	base.setAttribute('id', 'flashgui');
+	base.setAttribute('width', '640');
+	base.setAttribute('height', '480');
 	param = document.createElement('PARAM');
 	param.setAttribute('name', 'movie');
 	param.setAttribute('value', src);
@@ -446,9 +448,17 @@ function mo_gui(elem, is_update) {
 	embed.setAttribute('src', src);
 	embed.setAttribute('flashvars', flashvars);
 	embed.setAttribute('allowfullscreen', 'true');
+	embed.setAttribute('width', '640');
+	embed.setAttribute('height', '480');
 	base.appendChild(embed);
 
 	document.body.appendChild(base);
+	$('#flashgui').dialog({
+		modal: true,
+		width: 660,
+		height: 480,
+		title: elem + '\'s GUI',
+	});
 }
 
 function mo_stats() {
