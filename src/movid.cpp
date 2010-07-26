@@ -836,7 +836,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 	long filesize = 0;
 	struct evbuffer *evb;
 	char filename[256],
-		 *buf, *uri;
+		 *buf, *uri, *baseuri;
 
 	/* web_file accept only file from gui
 	 */
@@ -850,11 +850,19 @@ void web_file(struct evhttp_request *req, void *arg) {
 		return;
 	}
 
-	uri = strsep(&req->uri, "?");
-	LOG(MO_INFO, "web: URI=" << uri);
+	uri = strdup(req->uri);
+	if ( uri == NULL ) {
+		LOG(MO_ERROR, "unable to duplicate uri, memory missing ?");
+		evhttp_send_error(req, 500, "Memory error");
+		return;
+	}
+
+	baseuri = strsep(&uri, "?");
 
 	snprintf(filename, sizeof(filename), "%s/%s",
-		config_guidir.c_str(), uri + sizeof("/gui/") - 1);
+		config_guidir.c_str(), baseuri + sizeof("/gui/") - 1);
+
+	free(baseuri);
 
 	LOG(MO_INFO, "web: GET " << filename);
 	fd = fopen(filename, "rb");
