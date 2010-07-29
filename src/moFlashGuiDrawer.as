@@ -3,11 +3,7 @@
 	 *
 	 * TODO:
 	 *	* Support rest of the drawing instructions (line, ...).
-	 *	* Make fullscreen work.
-	 *		Apparently needs an extra button to trigger it due to security reasons
 	 *	* Get refreshDelay from pipeline update speed.
-	 *	* Integrate with Movid (may need to accept some additional args for that)
-	 *		Get current URL: trace("loaderurl " + loaderInfo.loaderURL);
 	 *
 	 */
 	import flash.display.Sprite;
@@ -16,6 +12,7 @@
 	import flash.net.URLRequest;
 	import flash.events.IOErrorEvent;
 	import flash.events.ErrorEvent;
+	import flash.events.MouseEvent;
 	import flash.utils.setTimeout;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
@@ -23,6 +20,7 @@
 	import flash.display.StageAlign;
 	import flash.display.StageDisplayState;
 	import flash.display.LoaderInfo;
+	import flash.text.TextField;
 
 	public class moFlashGuiDrawer extends Sprite {
 		private var request:URLRequest;
@@ -32,14 +30,12 @@
 		private var drawing:Sprite;
 		private var viewport_width:int;
 		private var viewport_height:int;
+		private var fullscreenbtn:Sprite;
 
 		public function moFlashGuiDrawer() {
 			stage.scaleMode = StageScaleMode.NO_SCALE;
 			stage.align = StageAlign.TOP_LEFT;
-			//var screenRectangle:Rectangle = new Rectangle(0, 0, stage.stageWidth, stage.stageHeight);
-			//var screenRectangle:Rectangle = new Rectangle(0, 0, stage.fullScreenWidth, stage.fullScreenHeight);
-			//stage.fullScreenSourceRect = screenRectangle;
-			//stage.displayState = StageDisplayState.FULL_SCREEN;
+			this.stage.addEventListener(Event.RESIZE, this.handle_stage_resize);
 			drawing = new Sprite();
 			addChild(drawing);
 			refreshDelay = 100;
@@ -54,6 +50,35 @@
 							setTimeout(perform_request, refreshDelay);
 						});
 			this.perform_request();
+
+			// Flash plugin (fortunately) doesn't allow to launch in fullscreen directly.
+			// Unfortunately that means we need an extra button to go fullscreen, tho.
+			fullscreenbtn = new Sprite();
+			fullscreenbtn.graphics.beginFill(0xCC6600, 0.7);
+			fullscreenbtn.graphics.drawRoundRect(0, 0, 80, 25, 10, 10);
+			fullscreenbtn.graphics.endFill();
+			fullscreenbtn.buttonMode = true;
+			fullscreenbtn.addEventListener(MouseEvent.CLICK, go_fullscreen);
+			var label:TextField = new TextField()
+			label.text = "Fullscreen";
+			label.x = 10;
+			label.y = 5;
+			label.selectable = false;
+			fullscreenbtn.addChild(label)
+
+			addChild(fullscreenbtn);
+		}
+
+		public function handle_stage_resize(e:Event):void {
+			// We're leaving fullscreen mode. Add button back.
+			addChild(fullscreenbtn);
+		}
+
+		public function go_fullscreen(event:MouseEvent):void {
+			var screenRectangle:Rectangle = new Rectangle(0, 0, stage.fullScreenWidth, stage.fullScreenHeight);
+			stage.fullScreenSourceRect = screenRectangle;
+			stage.displayState = StageDisplayState.FULL_SCREEN;
+			removeChild(fullscreenbtn);
 		}
 
 		public function perform_request():void {

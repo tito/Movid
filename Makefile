@@ -198,7 +198,7 @@ $(MOVID_LIB): $(OBJECTS)
 # Compile the flash gui drawing tool. Needs mxmlc installed: http://opensource.adobe.com/wiki/display/flexsdk/Download+Flex+4
 #
 flashgui:
-	mxmlc -debug=true -use-network=true -incremental -warnings -strict -default-background-color=0x000000 src/moFlashGuiDrawer.as -o gui/html/flashgui.swf
+	mxmlc -debug=true -use-network=true -incremental -warnings -strict -default-background-color=0x030303 src/moFlashGuiDrawer.as -o gui/html/flashgui.swf
 
 #
 # Create a new module
