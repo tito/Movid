@@ -22,6 +22,7 @@
 	import flash.display.StageScaleMode;
 	import flash.display.StageAlign;
 	import flash.display.StageDisplayState;
+	import flash.display.LoaderInfo;
 
 	public class moFlashGuiDrawer extends Sprite {
 		private var request:URLRequest;
@@ -42,7 +43,11 @@
 			drawing = new Sprite();
 			addChild(drawing);
 			refreshDelay = 100;
-			request = new URLRequest("http://127.0.0.1:7500/pipeline/gui?objectname=calib");
+			// Movid tells us where to load the drawing instructions from (via FlashVars):
+			var params:Object = LoaderInfo(this.root.loaderInfo).parameters;
+			var url:String = "http://" + params["ip"] + ":" + params["port"] +
+					 "/pipeline/gui?objectname=" + params["objectname"];
+			request = new URLRequest(url);
 			loader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE, request_complete);
 			loader.addEventListener(IOErrorEvent.IO_ERROR, function(e:IOErrorEvent):void {
