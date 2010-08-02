@@ -40,7 +40,6 @@
 #include "../moLog.h"
 #include "cv.h"
 
-// XXX This is currently rather the scratchspace for a fingertip finder...
 MODULE_DECLARE(FingerTipFinder, "native", "Module capable of detecting hands in an image. Detection is based on color-segmentation, contour-shape and distance transform. Finds fingertips & centerpoint of the palm.");
 
 typedef std::pair<float, CvConvexityDefect*> depthToDefect;
@@ -55,7 +54,10 @@ moFingerTipFinderModule::moFingerTipFinderModule() : moImageFilterModule(){
 	this->storage = cvCreateMemStorage(0);
 	this->properties["min_distance"] = new moProperty(20.);
 	this->properties["min_area"] = new moProperty(150.);
-	this->properties["merge_distance"] = new moProperty(10.);
+	this->properties["merge_distance"] = new moProperty(25.);
+	this->properties["merge_distance"]->setMin(0.0);
+	this->properties["merge_distance"]->setMax(100.0);
+	this->properties["adaptive_merge"] = new moProperty(true);
 }
 
 moFingerTipFinderModule::~moFingerTipFinderModule() {
@@ -88,7 +90,7 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 	cvFindContours(this->output_buffer, this->storage, &contours, sizeof(CvContour), CV_RETR_CCOMP);
 	cvZero(this->output_buffer);
 	this->clearFingertips();
-	if(contours) {
+	if (contours) {
 		// Find the exterior contour (i.e. the hand has to be white) that has the greatest area
 		CvSeq *max_cont = contours, *cur_cont = contours;
 		double area, max_area = 0;
@@ -145,17 +147,27 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 		double merge_distance = this->property("merge_distance").asDouble();
 		CvPoint *p1, *p2;
 		std::vector<int> suppressed;
+		std::vector<double> distances;
 		for (unsigned int i = 0; i < points.size(); i++) {
 			p1 = points[i];
 			for (unsigned int j = i+1; j < points.size(); j++) {
-				if (i == j) continue;
 				if (_in2(suppressed, j)) continue;
 				p2 = points[j];
 				distance = sqrt(pow(p1->x - p2->x, 2.0) + pow(p1->y - p2->y, 2.0));
+				distances.push_back(distance);
 				if (distance <= merge_distance) {
 					suppressed.push_back(j);
 				}
 			}
+		}
+		// If there were more or less than 5 fingers detected, we should adapt the merge distance
+		bool should_adapt = (points.size() - suppressed.size()) != 5 ? true : false;
+		// Heuristic: If the hand was somewhat spread out, there were >= 18 distances computed
+		if (this->property("adaptive_merge").asBool() && 18 <= distances.size() && should_adapt) {
+			std::sort(distances.begin(), distances.end());
+			// Now we want to set the merge_distance to a bit more than the
+			// largest of the three smallest distances.			
+			this->property("merge_distance").set(distances[2] + 1.);
 		}
 		std::vector<CvPoint*> good_points;
 		for (unsigned int i = 0; i < points.size(); i++) {
