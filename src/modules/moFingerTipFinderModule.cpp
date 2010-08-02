@@ -127,11 +127,11 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 		}
 		std::sort(def_depths.begin(), def_depths.end(), _sort_pred);
 
-		// Find the start and end points of the 5 best defects
+		// Find the start and end points of the 4 best defects
 		std::vector<CvPoint*> points;
 		for (unsigned int i=0; i < def_depths.size(); i++) {
-			// 5 Fingers max
-			if (i == 5)
+			// 5 Fingers max, i.e. 4 defects max.
+			if (i == 4)
 				break;
 			float depth = def_depths[i].first;
 			double min_dist = this->property("min_distance").asDouble();
