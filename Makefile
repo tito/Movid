@@ -80,6 +80,7 @@ SOURCES = \
 	src/modules/moYCrCbThresholdModule.cpp \
 	src/modules/moBlobFinderModule.cpp \
 	src/modules/moGreedyBlobTrackerModule.cpp \
+	src/modules/moTuio2Module.cpp \
 	#AUTOMODULE_DoNotRemoveThisComment
 
 
