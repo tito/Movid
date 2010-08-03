@@ -50,6 +50,16 @@ struct Point {
 typedef std::pair<float, CvConvexityDefect*> depthToDefect;
 typedef std::pair<double, Point> doubleToPoint;
 
+template <class T>
+bool sort_pred(T left, T right) { return left.first > right.first; }
+
+bool _in2(std::vector<int> &vec, int e) {
+	for (unsigned int i = 0; i < vec.size(); i++) {
+		if (vec[i] == e) return true;
+	}
+	return false;
+}
+
 moFingerTipFinderModule::moFingerTipFinderModule() : moImageFilterModule(){
 	MODULE_INIT();
 
@@ -68,16 +78,6 @@ moFingerTipFinderModule::moFingerTipFinderModule() : moImageFilterModule(){
 
 moFingerTipFinderModule::~moFingerTipFinderModule() {
 	cvReleaseMemStorage(&this->storage);
-}
-
-template <class T>
-bool sort_pred(T left, T right) { return left.first > right.first; }
-
-bool _in2(std::vector<int> &vec, int e) {
-	for (unsigned int i = 0; i < vec.size(); i++) {
-		if (vec[i] == e) return true;
-	}
-	return false;
 }
 
 void moFingerTipFinderModule::clearFingertips() {
@@ -258,6 +258,10 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 		CvSize size = cvGetSize(src);
 		float width = (float) size.width;
 		float height = (float) size.height;
+		// The node id can be the same per frame. It's just needed to establish
+		// a relation, and only equality checks are performed. It's NOT used as
+		// a tracking ID.
+		int node_id = 0;
 		// Add hand center
 		if (found_center) {
 			center = new moDataGenericContainer();
@@ -265,6 +269,7 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 			center->properties["implements"] = new moProperty("handcenter,x,y");
 			center->properties["x"] = new moProperty(peak_x / width);
 			center->properties["y"] = new moProperty(peak_y / height);
+			center->properties["node_id"] = new moProperty(node_id++);
 			this->fingertips.push_back(center);
 		}
 		// Add fingertips
@@ -275,6 +280,8 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 			fingertip->properties["implements"] = new moProperty("fingertip,x,y");
 			fingertip->properties["x"] = new moProperty(p->x / width);
 			fingertip->properties["y"] = new moProperty(p->y / height);
+			fingertip->properties["node_id"] = new moProperty(node_id++);
+			fingertip->properties["parent_node_id"] = new moProperty(center->properties["node_id"]->asInteger());
 			this->fingertips.push_back(fingertip);
 		}
 		this->output_data->push(&this->fingertips);
