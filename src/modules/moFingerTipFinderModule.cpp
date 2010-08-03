@@ -42,7 +42,13 @@
 
 MODULE_DECLARE(FingerTipFinder, "native", "Module capable of detecting hands in an image. Detection is based on color-segmentation, contour-shape and distance transform. Finds fingertips & centerpoint of the palm.");
 
+struct Point {
+	int x;
+	int y;
+};
+
 typedef std::pair<float, CvConvexityDefect*> depthToDefect;
+typedef std::pair<double, Point> doubleToPoint;
 
 moFingerTipFinderModule::moFingerTipFinderModule() : moImageFilterModule(){
 	MODULE_INIT();
@@ -64,9 +70,8 @@ moFingerTipFinderModule::~moFingerTipFinderModule() {
 	cvReleaseMemStorage(&this->storage);
 }
 
-bool _sort_pred(const depthToDefect &left, const depthToDefect &right) {
-	return left.first > right.first;
-}
+template <class T>
+bool sort_pred(T left, T right) { return left.first > right.first; }
 
 bool _in2(std::vector<int> &vec, int e) {
 	for (unsigned int i = 0; i < vec.size(); i++) {
@@ -91,6 +96,7 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 	cvZero(this->output_buffer);
 	this->clearFingertips();
 	if (contours) {
+		// Find fingertips ----------------------------------------------------
 		// Find the exterior contour (i.e. the hand has to be white) that has the greatest area
 		CvSeq *max_cont = contours, *cur_cont = contours;
 		double area, max_area = 0;
@@ -108,8 +114,7 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 			return;
 		contours = max_cont;
 
-		cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
-
+		//cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
 		// Compute the convex hull of the contour
 		CvSeq* hull = 0;
 		hull = cvConvexHull2(contours, contours->storage, CV_CLOCKWISE, 0);
@@ -125,7 +130,7 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 			CvConvexityDefect* defect = (CvConvexityDefect*)cvGetSeqElem (defects, i);
 			def_depths.push_back(depthToDefect(defect->depth, defect));
 		}
-		std::sort(def_depths.begin(), def_depths.end(), _sort_pred);
+		std::sort(def_depths.begin(), def_depths.end(), sort_pred<depthToDefect>);
 
 		// Find the start and end points of the 4 best defects
 		std::vector<CvPoint*> points;
@@ -174,22 +179,95 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 			if (!_in2(suppressed, i)) good_points.push_back(points[i]);
 		}
 
-		// Draw the points
+
+		// Find center of the palm --------------------------------------------
+		IplImage* filledhand = cvCreateImage(cvGetSize(source), IPL_DEPTH_8U, 1);
+		IplImage *dist = cvCreateImage(cvGetSize(source), IPL_DEPTH_32F, 1);
+		cvDrawContours(filledhand, contours, cvScalarAll(255), cvScalarAll(255), 100, CV_FILLED);
+		cvDistTransform(filledhand, dist, CV_DIST_L2, CV_DIST_MASK_PRECISE);
+		cvConvertScale(dist, this->output_buffer, 5, 0);
+
+		// Find all the peaks in the image that have their value
+		// between min_dist_value and max_dist_value
+		int step = this->output_buffer->widthStep;
+		int rows = this->output_buffer->height;
+		int cols = this->output_buffer->width;
+		// XXX use proper values...
+		double min = 0.0;
+		double max = 500.;
+		double cur_val;
+		char *data = this->output_buffer->imageData;
+		std::vector<doubleToPoint> peaks;
+
+		for (int i = 0; i < cols; i++) {
+			for (int j = 0; j < rows; j++) {
+				cur_val = ((int) data[j * step + i]);
+				if ((min < cur_val) && (cur_val < max)) {
+					peaks.push_back(doubleToPoint(cur_val, (Point) {i, j}));
+				}
+			}
+		}
+
+		// We're only interested in the strongest peak. Discard the rest.
+		std::sort(peaks.begin(), peaks.end(), sort_pred<doubleToPoint>);
+		int peak_x = 0, peak_y = 0;
+		bool found_center = peaks.size() >= 1;
+		if (found_center) {
+			// Likely we have many strong peaks with a very similar value in
+			// close proximity to each other. In that case, take the mean
+			// of their position.
+			double tolerance = 0.5;
+			std::vector<doubleToPoint> strong_peaks;
+			for (unsigned int i = 0; i < peaks.size(); i++) {
+				if (peaks[0].first - peaks[i].first < tolerance)
+					strong_peaks.push_back(peaks[i]);
+			}
+			int xsum = 0, ysum = 0;
+			for (unsigned int i = 0; i < strong_peaks.size(); i++) {
+				xsum += strong_peaks[i].second.x;
+				ysum += strong_peaks[i].second.y;
+			}
+			peak_x = xsum / strong_peaks.size();
+			peak_y = ysum / strong_peaks.size();
+		}
+
+		// Draw the contour, fingertips and palm center
 		CvPoint *p;
 		bool do_image = this->output->getObserverCount() > 0 ? true : false;
 		if (do_image) {
-			CvPoint *p;
+			cvZero(this->output_buffer);
+			cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
 			for (unsigned int i = 0; i < good_points.size(); i++) {
 				p = good_points[i];
 				int radius = cvRound(10);
 				cvCircle(this->output_buffer, *p, radius, CV_RGB(255, 255, 255), -1);
 			}
+			if (found_center) {
+				int radius = 5;
+				CvPoint botleft, topright;
+				botleft = cvPoint(cvRound(peak_x-radius),
+								  cvRound(peak_y-radius));
+				topright = cvPoint(cvRound(peak_x+radius),
+								   cvRound(peak_y+radius));
+				cvRectangle(this->output_buffer, botleft, topright, CV_RGB(255, 255, 255));
+			}
 		}
-		// Push as fingertip blobs
-		moDataGenericContainer *fingertip;
+
+		// Push as fingertip blobs --------------------------------------------
+		moDataGenericContainer *fingertip, *center;
 		CvSize size = cvGetSize(src);
 		float width = (float) size.width;
 		float height = (float) size.height;
+		// Add hand center
+		if (found_center) {
+			center = new moDataGenericContainer();
+			center->properties["type"] = new moProperty("blob");
+			center->properties["implements"] = new moProperty("handcenter,x,y");
+			center->properties["x"] = new moProperty(peak_x / width);
+			center->properties["y"] = new moProperty(peak_y / height);
+			this->fingertips.push_back(center);
+		}
+		// Add fingertips
 		for (unsigned int i = 0; i < good_points.size(); i++) {
 			p = good_points[i];
 			fingertip = new moDataGenericContainer();
