@@ -97,6 +97,15 @@ else
 CFLAGS_TARGET 		?= -O0 -ggdb
 endif
 endif
+
+# Gotta compile 32 bit on OSX, or Movid won't find some
+# cameras such as the PS3Eye
+BUILD_32 =
+#ifeq ($(shell uname),Darwin)
+ifeq ($(BUILD_32),1)
+CFLAGS_TARGET += -m32
+endif
+
 CFLAGS				?= $(CFLAGS_TARGET) -I$(CONTRIB_PATH) -Wall
 LIBS   				?=
 
@@ -132,7 +141,7 @@ distclean: cleandepend cleancontrib clean
 
 
 #
-# Dependices
+# Dependencies
 #
 
 include Makefile.depend
