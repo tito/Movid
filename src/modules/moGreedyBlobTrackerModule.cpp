@@ -92,17 +92,23 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 }
 
 void moGreedyBlobTrackerModule::update() {
+    moDataGenericList::iterator it;
+	moDataGenericList *blobs;
+	std::string implements;
+
     LOG(MO_DEBUG, "update called");
     
     this->new_blobs->clear();
    
-    //copy teh new blobs to our new_blobs list, afterwards well assign id's 
-    moDataGenericList::iterator it;
-	moDataGenericList *blobs = (moDataGenericList*) this->input->getData();
+    // copy teh new blobs to our new_blobs list, afterwards well assign id's
+	blobs = static_cast<moDataGenericList*>(this->input->getData());
 
     this->input->lock();
-	for ( it = blobs->begin(); it != blobs->end(); it++ ){
+	for ( it = blobs->begin(); it != blobs->end(); it++ ) {
         moDataGenericContainer* blob = (*it)->clone();
+		implements = blob->properties["implements"]->asString();
+		implements += ",blob";
+		blob->properties["implements"]->set(implements);
         blob->properties["blob_id"] = new moProperty(0);
         this->new_blobs->push_back(blob);   
     }
