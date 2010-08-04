@@ -22,6 +22,8 @@
 #include "../moDataGenericContainer.h"
 #include "moImageFilterModule.h"
 
+class CvSeq;
+
 class moFingerTipFinderModule : public moImageFilterModule {
 public:
 	moFingerTipFinderModule();
@@ -34,8 +36,10 @@ protected:
 
 	moDataStream *output_data;
 	void applyFilter(IplImage*);
-	//void allocateBuffers();
 	void clearFingertips();
+
+	bool searchFingerTips(IplImage *, CvSeq *);
+	bool searchPalmCenter(IplImage *, CvSeq *);
 
 	CvMemStorage *storage;
 
