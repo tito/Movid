@@ -20,9 +20,9 @@
  *
  * Specifications : http://tuio.org/?tuio20
  *
- * Currently implemented : FRM, ALV, PTR, ALA, LIA, TOK, BND(for PTR)
+ * Currently implemented : FRM, ALV, PTR, ALA, COA, TOK, BND(for PTR)
  *
- * Todo : SYM, T3D, P3D, B3D
+ * Todo : LIA, SYM, T3D, P3D, B3D
  * + support multiple input (sync frame problem)
  * + check implements
  *
@@ -169,7 +169,7 @@ void moTuio2Module::notifyData(moDataStream *input) {
 			msg->Add(*it_blob);
 		bundle->Add(msg);
 
-		// now send relation with lia message
+		// now send relation with coa message
 		for ( it_parent = ids_parent.begin(); it_parent != ids_parent.end(); it_parent++ ) {
 
 			id_parent = -1;
@@ -192,10 +192,10 @@ void moTuio2Module::notifyData(moDataStream *input) {
 			if ( id_parent == -1 )
 				assert(0 && "unable to found item of current *it_parent");
 
-			// create the lia message, and add the parent blob_id
-			msg = new WOscMessage("/tuio2/lia");
+			// create the coa message, and add the parent blob_id
+			msg = new WOscMessage("/tuio2/coa");
 			msg->Add(id_parent);
-			msg->Add(false);
+			msg->Add(0); // FIXME slot
 
 			// now add all children of this current parent
 			for ( it = list->begin(); it != list->end(); it++ ) {
