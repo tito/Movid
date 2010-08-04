@@ -52,6 +52,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Roi);
 	REGISTER_MODULE(Threshold);
 	REGISTER_MODULE(Tuio);
+	REGISTER_MODULE(Tuio2);
 	REGISTER_MODULE(Video);
 	REGISTER_MODULE(Erode);
 	REGISTER_MODULE(Dilate);
@@ -92,7 +93,7 @@ moModule *moFactory::create(const std::string &name) {
 	std::string sname = std::string(name);
 
 	// for easier creation, remove the ot at start
-	if ( sname.size() > 2 && sname.substr(0, 2) == "ot" )
+	if ( sname.size() > 2 && sname.substr(0, 2) == "mo" )
 		sname =	sname.substr(2, sname.length() - 2);
 	if ( sname.size() > 6 && sname.substr(sname.length() - 6, 6) == "Module" )
 		sname = sname.substr(0, sname.length() - 6);
