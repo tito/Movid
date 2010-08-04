@@ -50,6 +50,7 @@
 #include "../moDataGenericContainer.h"
 #include "../moDataStream.h"
 #include "../moOSC.h"
+#include "../moUtils.h"
 
 MODULE_DECLARE(Tuio, "native", "Convert stream to TUIO format (touch & fiducial)");
 
@@ -100,7 +101,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 	this->input->lock();
 
 	// TODO also adapt fiducial tracker to new blob protocol
-	if ( input->getFormat() == "GenericFiducial" ) {
+	if ( input->getFormat() == "fiducial" ) {
 
 		bundle = new WOscBundle();
 		WOscMessage *msg = new WOscMessage("/tuio/2Dobj");
@@ -109,18 +110,19 @@ void moTuioModule::notifyData(moDataStream *input) {
 		moDataGenericList::iterator it;
 		moDataGenericList *list = (moDataGenericList *)this->input->getData();
 		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert((*it)->properties["type"]->asString() == "fiducial");
+			assert(moUtils::inList("fiducial", (*it)->properties["implements"]->asString()));
+			assert(moUtils::inList("pos", (*it)->properties["implements"]->asString()));
+			assert(moUtils::inList("tracked", (*it)->properties["implements"]->asString()));
 			msg->Add(atoi((*it)->properties["id"]->asString().c_str()));
 		}
 
 		bundle->Add(msg);
 
 		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert((*it)->properties["type"]->asString() == "fiducial");
 			msg = new WOscMessage("/tuio/2Dobj");
 			msg->Add("set");
 			msg->Add(9843); // session id
-			msg->Add((*it)->properties["id"]->asInteger()); // class id
+			msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
 			msg->Add((float)(*it)->properties["x"]->asDouble()); // x
 			msg->Add((float)(*it)->properties["y"]->asDouble()); // y
 			msg->Add((float)(*it)->properties["angle"]->asDouble()); // a
@@ -148,7 +150,8 @@ void moTuioModule::notifyData(moDataStream *input) {
 		moDataGenericList::iterator it;
 		moDataGenericList *list = (moDataGenericList *)this->input->getData();
 		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert((*it)->properties["type"]->asString() == "blob");
+			assert(moUtils::inList("tracked", (*it)->properties["implements"]->asString()));
+			assert(moUtils::inList("pos", (*it)->properties["implements"]->asString()));
 			// XXX Add an assert that checks if the blob implements x/y
 			msg->Add((*it)->properties["blob_id"]->asInteger());
 		}
@@ -156,8 +159,6 @@ void moTuioModule::notifyData(moDataStream *input) {
 		bundle->Add(msg);
 
 		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert((*it)->properties["type"]->asString() == "blob");
-
 			msg = new WOscMessage("/tuio/2Dcur");
 			msg->Add("set");
 			msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
@@ -166,10 +167,12 @@ void moTuioModule::notifyData(moDataStream *input) {
 			msg->Add((float)0.); // X
 			msg->Add((float)0.); // Y
 			msg->Add((float)0.); // m
-//			if ( this->property("sendsize").asBool() ) {
-//				msg->Add((float)(*it)->properties["w"]->asDouble()); // w
-//				msg->Add((float)(*it)->properties["h"]->asDouble()); // h
-//			}
+			if ( this->property("sendsize").asBool()
+				&& moUtils::inList("size", (*it)->properties["implements"]->asString())
+			) {
+				msg->Add((float)(*it)->properties["width"]->asDouble()); // w
+				msg->Add((float)(*it)->properties["height"]->asDouble()); // h
+			}
 			bundle->Add(msg);
 		}
 
@@ -200,8 +203,8 @@ void moTuioModule::setInput(moDataStream *stream, int n) {
 	this->input = stream;
 	if ( stream != NULL ) {
 		if ( stream->getFormat() != "blob" &&
-			 stream->getFormat() != "GenericFiducial" ) {
-			this->setError("Input 0 only accepts blobs or fiducial, but got " + stream->getFormat());
+			 stream->getFormat() != "fiducial" ) {
+			this->setError("Input 0 only accepts blob or fiducial, but got " + stream->getFormat());
 			this->input = NULL;
 			return;
 		}
