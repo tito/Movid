@@ -28,10 +28,10 @@
  *
  *
  * Needed from the previous module:
- * - blob_id
- * - parent_id
- * - x
- * - y
+ * - blob_id (from tracked implements)
+ * - parent_node_id (from node implements)
+ * - x (from pos implements)
+ * - y (from pos implements)
  */
 
 
@@ -89,7 +89,7 @@ void moTuio2Module::notifyData(moDataStream *input) {
 	moDataGenericList *list;
 	WOscBundle *bundle;
 	WOscMessage *msg;
-	std::string format;
+	std::string format, implements;
 	bool ret = false,
 		 have_relation = false;
 	std::list<int> ids_parent, ids_blob;
@@ -116,15 +116,29 @@ void moTuio2Module::notifyData(moDataStream *input) {
 	msg = new WOscMessage("/tuio2/alv");
 	list = (moDataGenericList *)this->input->getData();
 	for ( it = list->begin(); it != list->end(); it++ ) {
+
+		implements = (*it)->properties["implements"]->asString();
+
+		// ensure the item is tracked
+		if ( !moUtils::inList("tracked", implements) ) {
+			// FIXME launch error, we have received a item without tracked implementation !
+			continue;
+		}
+
+		// item is tracked, we can safely use blob_id
 		id_blob = (*it)->properties["blob_id"]->asInteger();
 		msg->Add(id_blob);
 
 		// use this loop to determine if we must send link relation
-		if ( (*it)->exist("parent_id") )
-		{
-			have_relation = true;
-			ids_blob.push_back(id_blob);
-			ids_parent.push_back((*it)->properties["parent_id"]->asInteger());
+
+		// item have tree information, use it !
+		if ( moUtils::inList("node", implements) ) {
+			// since parent_node_id is not mandatory, check first.
+			if ( (*it)->exist("parent_node_id") ) {
+				have_relation = true;
+				ids_blob.push_back(id_blob);
+				ids_parent.push_back((*it)->properties["parent_node_id"]->asInteger());
+			}
 		}
 	}
 	bundle->Add(msg);
@@ -158,12 +172,37 @@ void moTuio2Module::notifyData(moDataStream *input) {
 		// now send relation with lia message
 		for ( it_parent = ids_parent.begin(); it_parent != ids_parent.end(); it_parent++ ) {
 
+			id_parent = -1;
+
+			// the iterator value is parent_node_id
+			// search the blob_id corresponding
+			for ( it = list->begin(); it != list->end(); it++ ) {
+
+				// FIXME we assume here that the parent node have "tracked"
+				// and "node" implements. We should check and launch assert
+				// if it's not the case !
+				if ( (*it)->properties["node_id"]->asInteger() != *it_parent )
+					continue;
+
+				// got a node id that match the parent_id
+				id_parent = (*it)->properties["blob_id"]->asInteger();
+				break;
+			}
+
+			if ( id_parent == -1 )
+				assert(0 && "unable to found item of current *it_parent");
+
+			// create the lia message, and add the parent blob_id
 			msg = new WOscMessage("/tuio2/lia");
-			msg->Add(*it_parent);
+			msg->Add(id_parent);
 			msg->Add(false);
 
+			// now add all children of this current parent
 			for ( it = list->begin(); it != list->end(); it++ ) {
-				id_parent = (*it)->properties["parent_id"]->asInteger();
+				implements = (*it)->properties["implements"]->asString();
+				if ( moUtils::inList("node", implements) )
+					continue;
+				id_parent = (*it)->properties["parent_node_id"]->asInteger();
 				if ( id_parent != *it_parent )
 					continue;
 				msg->Add((*it)->properties["blob_id"]->asInteger());
