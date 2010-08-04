@@ -13,7 +13,7 @@ List of implements
 * x: property x
 * y: property y
 * node: properties node_id, parent_node_id
-* blob: property blob_id
+* tracked: property blob_id
 * handcenter: -
 * fingertip: -
 

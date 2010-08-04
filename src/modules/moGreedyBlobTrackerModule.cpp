@@ -107,7 +107,7 @@ void moGreedyBlobTrackerModule::update() {
 	for ( it = blobs->begin(); it != blobs->end(); it++ ) {
         moDataGenericContainer* blob = (*it)->clone();
 		implements = blob->properties["implements"]->asString();
-		implements += ",blob";
+		implements += ",tracked";
 		blob->properties["implements"]->set(implements);
         blob->properties["blob_id"] = new moProperty(0);
         this->new_blobs->push_back(blob);   
