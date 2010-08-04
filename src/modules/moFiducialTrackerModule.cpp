@@ -45,9 +45,9 @@ typedef struct {
 moFiducialTrackerModule::moFiducialTrackerModule() : moImageFilterModule() {
 	MODULE_INIT();
 
-	this->output_data = new moDataStream("GenericFiducial");
+	this->output_data = new moDataStream("fiducial");
 	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "GenericFiducial", "Data stream with fiducial info");
+	this->output_infos[1] = new moDataStreamInfo("data", "fiducial", "Data stream with fiducial info");
 
 	this->internal = malloc(sizeof(fiducials_data_t));
 }
@@ -134,8 +134,8 @@ void moFiducialTrackerModule::applyFilter(IplImage *src) {
 			<< fdx->x << "," << fdx->y << " angle=" << fdx->angle);
 
 		fiducial = new moDataGenericContainer();
-		fiducial->properties["type"] = new moProperty("fiducial");
-		fiducial->properties["id"] = new moProperty(fdx->id);
+		fiducial->properties["implements"] = new moProperty("fiducial,pos,tracked");
+		fiducial->properties["blob_id"] = new moProperty(fdx->id);
 		fiducial->properties["x"] = new moProperty(fdx->x / size.width);
 		fiducial->properties["y"] = new moProperty(fdx->y / size.height);
 		fiducial->properties["angle"] = new moProperty(fdx->angle);

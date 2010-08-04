@@ -65,12 +65,11 @@ void moBlobFinderModule::applyFilter(IplImage *src) {
 		CvRect rect	= cvBoundingRect(cur_cont, 0);
 
 		moDataGenericContainer *blob = new moDataGenericContainer();
-		blob->properties["type"] = new moProperty("blob");
+        blob->properties["implements"] = new moProperty("pos,size");
 		blob->properties["x"] = new moProperty((rect.x + rect.width / 2) / (double) src->width);
 		blob->properties["y"] = new moProperty((rect.y + rect.height / 2) / (double) src->height);
 		blob->properties["width"] = new moProperty(rect.width);
         blob->properties["height"] = new moProperty(rect.height);
-        blob->properties["implements"] = new moProperty("x,y,width,height");
         this->blobs->push_back(blob);
         LOG(MO_DEBUG, "blob finder: " << blob->properties["x"]->asInteger() );
 		cur_cont = cur_cont->h_next;
