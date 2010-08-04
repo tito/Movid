@@ -20,9 +20,9 @@
  *
  * Specifications : http://tuio.org/?tuio20
  *
- * Currently implemented : FRM, ALV, PTR, ALA, LIA
+ * Currently implemented : FRM, ALV, PTR, ALA, LIA, TOK, BND(for PTR)
  *
- * Todo : TOK, BND, SYM, T3D, P3D, B3D
+ * Todo : SYM, T3D, P3D, B3D
  * + support multiple input (sync frame problem)
  * + check implements
  *
@@ -228,6 +228,7 @@ bool moTuio2Module::packBlob(WOscBundle *bundle) {
 	moDataGenericList *list;
 	WOscMessage *msg;
 
+	list = (moDataGenericList *)this->input->getData();
 	for ( it = list->begin(); it != list->end(); it++ ) {
 		// format is /tuio2/ptr s_id tu_id c_id x_pos y_pos width press [x_vel y_vel m_acc] 
 		msg = new WOscMessage("/tuio2/ptr");
@@ -239,13 +240,42 @@ bool moTuio2Module::packBlob(WOscBundle *bundle) {
 		msg->Add(0);											// width
 		msg->Add(1);											// press (1=pressed)
 		bundle->Add(msg);
+
+		if ( moUtils::inList("size", (*it)->properties["implements"]->asString()) ) {
+			msg = new WOscMessage("/tuio2/bnd");
+			msg->Add((*it)->properties["blob_id"]->asInteger());	// s_id
+			msg->Add((float)(*it)->properties["x"]->asDouble());	// x_pos
+			msg->Add((float)(*it)->properties["y"]->asDouble());	// y_pos
+			msg->Add((float)0);										// angle
+			msg->Add((float)(*it)->properties["width"]->asDouble());	// width
+			msg->Add((float)(*it)->properties["height"]->asDouble());	// height
+			msg->Add((float)1.0);									// area (FIXME)
+			bundle->Add(msg);
+		}
 	}
 
 	return true;
 }
 
 bool moTuio2Module::packFiducial(WOscBundle *bundle) {
-	return false;
+	moDataGenericList::iterator it;
+	moDataGenericList *list;
+	WOscMessage *msg;
+
+	list = (moDataGenericList *)this->input->getData();
+	for ( it = list->begin(); it != list->end(); it++ ) {
+		// format is /tuio2/tok s_id tu_id c_id x_pos y_pos angle [x_vel y_vel a_vel m_acc r_acc]
+		msg = new WOscMessage("/tuio2/tok");
+		msg->Add((*it)->properties["blob_id"]->asInteger());	// s_id
+		msg->Add((*it)->properties["blob_id"]->asInteger());	// tu_id
+		msg->Add((*it)->properties["blob_id"]->asInteger());	// c_id
+		msg->Add((float)(*it)->properties["x"]->asDouble());	// x_pos
+		msg->Add((float)(*it)->properties["y"]->asDouble());	// y_pos
+		msg->Add((float)(*it)->properties["angle"]->asDouble());// y_pos
+		bundle->Add(msg);
+	}
+
+	return true;
 }
 
 void moTuio2Module::setInput(moDataStream *stream, int n) {
