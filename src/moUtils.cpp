@@ -62,3 +62,17 @@ double moUtils::time()
 	return ((double)tv.tv_sec) + ((double)tv.tv_usec) / 1000000.;
 #endif // _WIN32
 }
+
+bool moUtils::inList(const std::string &pattern, const std::string &str, const std::string &delimiters) {
+	std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
+	std::string::size_type pos     = str.find_first_of(delimiters, lastPos);
+
+    while ( std::string::npos != pos || std::string::npos != lastPos ) {
+        if ( str.substr(lastPos, pos - lastPos) == pattern )
+			return true;
+        lastPos = str.find_first_not_of(delimiters, pos);
+        pos = str.find_first_of(delimiters, lastPos);
+    }
+
+	return false;
+}
