@@ -171,7 +171,7 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 		if (this->property("adaptive_merge").asBool() && 18 <= distances.size() && should_adapt) {
 			std::sort(distances.begin(), distances.end());
 			// Now we want to set the merge_distance to a bit more than the
-			// largest of the three smallest distances.			
+			// largest of the three smallest distances.
 			this->property("merge_distance").set(distances[2] + 1.);
 		}
 		std::vector<CvPoint*> good_points;
@@ -211,25 +211,24 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 		// We're only interested in the strongest peak. Discard the rest.
 		std::sort(peaks.begin(), peaks.end(), sort_pred<doubleToPoint>);
 		int peak_x = 0, peak_y = 0;
-		bool found_center = peaks.size() >= 1;
-		if (found_center) {
-			// Likely we have many strong peaks with a very similar value in
-			// close proximity to each other. In that case, take the mean
-			// of their position.
-			double tolerance = 0.5;
-			std::vector<doubleToPoint> strong_peaks;
-			for (unsigned int i = 0; i < peaks.size(); i++) {
-				if (peaks[0].first - peaks[i].first < tolerance)
-					strong_peaks.push_back(peaks[i]);
-			}
-			int xsum = 0, ysum = 0;
-			for (unsigned int i = 0; i < strong_peaks.size(); i++) {
-				xsum += strong_peaks[i].second.x;
-				ysum += strong_peaks[i].second.y;
-			}
-			peak_x = xsum / strong_peaks.size();
-			peak_y = ysum / strong_peaks.size();
+		// If there is a contour, there are peaks and hence there's a center.
+		assert(peaks.size() >= 1);
+		// Likely we have many strong peaks with a very similar value in
+		// close proximity to each other. In that case, take the mean
+		// of their position.
+		double tolerance = 0.5;
+		std::vector<doubleToPoint> strong_peaks;
+		for (unsigned int i = 0; i < peaks.size(); i++) {
+			if (peaks[0].first - peaks[i].first < tolerance)
+				strong_peaks.push_back(peaks[i]);
 		}
+		int xsum = 0, ysum = 0;
+		for (unsigned int i = 0; i < strong_peaks.size(); i++) {
+			xsum += strong_peaks[i].second.x;
+			ysum += strong_peaks[i].second.y;
+		}
+		peak_x = xsum / strong_peaks.size();
+		peak_y = ysum / strong_peaks.size();
 
 		// Draw the contour, fingertips and palm center
 		CvPoint *p;
@@ -242,15 +241,13 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 				int radius = cvRound(10);
 				cvCircle(this->output_buffer, *p, radius, CV_RGB(255, 255, 255), -1);
 			}
-			if (found_center) {
-				int radius = 5;
-				CvPoint botleft, topright;
-				botleft = cvPoint(cvRound(peak_x-radius),
-								  cvRound(peak_y-radius));
-				topright = cvPoint(cvRound(peak_x+radius),
-								   cvRound(peak_y+radius));
-				cvRectangle(this->output_buffer, botleft, topright, CV_RGB(255, 255, 255));
-			}
+			int radius = 5;
+			CvPoint botleft, topright;
+			botleft = cvPoint(cvRound(peak_x-radius),
+							  cvRound(peak_y-radius));
+			topright = cvPoint(cvRound(peak_x+radius),
+							   cvRound(peak_y+radius));
+			cvRectangle(this->output_buffer, botleft, topright, CV_RGB(255, 255, 255));
 		}
 
 		// Push as fingertip blobs --------------------------------------------
@@ -263,15 +260,13 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 		// a tracking ID.
 		int node_id = 0;
 		// Add hand center
-		if (found_center) {
-			center = new moDataGenericContainer();
-			center->properties["type"] = new moProperty("blob");
-			center->properties["implements"] = new moProperty("handcenter,x,y");
-			center->properties["x"] = new moProperty(peak_x / width);
-			center->properties["y"] = new moProperty(peak_y / height);
-			center->properties["node_id"] = new moProperty(node_id++);
-			this->fingertips.push_back(center);
-		}
+		center = new moDataGenericContainer();
+		center->properties["type"] = new moProperty("blob");
+		center->properties["implements"] = new moProperty("handcenter,x,y");
+		center->properties["x"] = new moProperty(peak_x / width);
+		center->properties["y"] = new moProperty(peak_y / height);
+		center->properties["node_id"] = new moProperty(node_id++);
+		this->fingertips.push_back(center);
 		// Add fingertips
 		for (unsigned int i = 0; i < good_points.size(); i++) {
 			p = good_points[i];
