@@ -101,16 +101,19 @@ void moFingerTipFinderModule::applyFilter(IplImage *source) {
 
 	// No contours found ? Just leave :)
 	if ( contours == NULL )
-		return;
+		goto send_and_exit;
 
 	// Search palm center, if not found, leave.
 	if ( ! this->searchPalmCenter(source, contours) )
-		return;
+		goto send_and_exit;
 
 	// Search finger, if any problem, leave.
-	if ( ! this->searchFingerTips(source, contours) )
-		return;
+	if ( ! this->searchFingerTips(source, contours) ) {
+		this->clearFingertips();
+		goto send_and_exit;
+	}
 
+send_and_exit:;
 	// All ok, push fingers on output !
 	this->output_data->push(&this->fingertips);
 }
