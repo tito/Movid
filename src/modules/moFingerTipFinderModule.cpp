@@ -197,7 +197,7 @@ bool moFingerTipFinderModule::searchPalmCenter(IplImage *source, CvSeq *contours
 	// Push the center (center will be always 0)
 	item = new moDataGenericContainer();
 	item->properties["type"] = new moProperty("blob");
-	item->properties["implements"] = new moProperty("handcenter,x,y,node");
+	item->properties["implements"] = new moProperty("handcenter,pos,node");
 	item->properties["x"] = new moProperty(peak_x / static_cast<float>(size.width));
 	item->properties["y"] = new moProperty(peak_y / static_cast<float>(size.height));
 	item->properties["node_id"] = new moProperty(0);
@@ -313,7 +313,7 @@ bool moFingerTipFinderModule::searchFingerTips(IplImage *source, CvSeq *contours
 		p = points[i];
 		item = new moDataGenericContainer();
 		item->properties["type"] = new moProperty("blob");
-		item->properties["implements"] = new moProperty("fingertip,x,y,node");
+		item->properties["implements"] = new moProperty("fingertip,pos,node");
 		item->properties["x"] = new moProperty(p->x / static_cast<float>(size.width));
 		item->properties["y"] = new moProperty(p->y / static_cast<float>(size.height));
 		item->properties["node_id"] = new moProperty(static_cast<int>(i + 1));

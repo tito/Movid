@@ -10,9 +10,8 @@ This property indicate what the container implement.
 List of implements
 ------------------
 
-* x: property x
-* y: property y
-* node: properties node_id, parent_node_id
+* pos: property x, y
+* node: properties node_id, parent_node_id (optionnal)
 * tracked: property blob_id
 * handcenter: -
 * fingertip: -
@@ -22,6 +21,6 @@ List of properties
 
 * x: x position with a normalized value in 0-1 range
 * y: y position with a normalized value in 0-1 range
-* node_id: temporary id for the current item
+* node_id: temporary id for the current item (-1 mean root)
 * parent_node_id: temporary id of his parent
 * blob_id: uniq id that represent the blob during his whole life
