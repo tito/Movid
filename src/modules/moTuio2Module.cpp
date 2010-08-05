@@ -94,6 +94,7 @@ void moTuio2Module::notifyData(moDataStream *input) {
 		 have_relation = false;
 	std::list<int> ids_parent, ids_blob;
 	std::list<int>::iterator it_parent, it_blob;
+	std::map<int,int> map_node_blob;
 	int id_blob, id_parent;
 
 	assert( input != NULL );
@@ -133,6 +134,7 @@ void moTuio2Module::notifyData(moDataStream *input) {
 
 		// item have tree information, use it !
 		if ( moUtils::inList("node", implements) ) {
+			map_node_blob[(*it)->properties["node_id"]->asInteger()] = id_blob;
 			// since parent_node_id is not mandatory, check first.
 			if ( (*it)->exist("parent_node_id") ) {
 				have_relation = true;
@@ -154,43 +156,22 @@ void moTuio2Module::notifyData(moDataStream *input) {
 
 	// if relation have been found between blob, just add them
 	if ( have_relation == true ) {
-		// ensure parent are not duplicate
+		// ensure parent / blob are not duplicate
 		ids_parent.unique();
-
-		// merge blob and parent list, and ensure no duplication too
-		// (note: parent can also be a parent, that's why we have mergelist)
-		std::list<int> mergelist = std::list<int>(ids_blob);
-		mergelist.merge(ids_parent);
-		mergelist.unique();
+		ids_blob.unique();
 
 		// send alive message only for item who have relation
 		msg = new WOscMessage("/tuio2/ala");
-		for ( it_blob = mergelist.begin(); it_blob != mergelist.end(); it_blob++ )
+		for ( it_parent = ids_parent.begin(); it_parent != ids_parent.end(); it_parent++ )
+			msg->Add(map_node_blob[*it_parent]);
+		for ( it_blob = ids_blob.begin(); it_blob != ids_blob.end(); it_blob++ )
 			msg->Add(*it_blob);
 		bundle->Add(msg);
 
 		// now send relation with coa message
 		for ( it_parent = ids_parent.begin(); it_parent != ids_parent.end(); it_parent++ ) {
 
-			id_parent = -1;
-
-			// the iterator value is parent_node_id
-			// search the blob_id corresponding
-			for ( it = list->begin(); it != list->end(); it++ ) {
-
-				// FIXME we assume here that the parent node have "tracked"
-				// and "node" implements. We should check and launch assert
-				// if it's not the case !
-				if ( (*it)->properties["node_id"]->asInteger() != *it_parent )
-					continue;
-
-				// got a node id that match the parent_id
-				id_parent = (*it)->properties["blob_id"]->asInteger();
-				break;
-			}
-
-			if ( id_parent == -1 )
-				assert(0 && "unable to found item of current *it_parent");
+			id_parent = map_node_blob[*it_parent];
 
 			// create the coa message, and add the parent blob_id
 			msg = new WOscMessage("/tuio2/coa");
@@ -200,7 +181,9 @@ void moTuio2Module::notifyData(moDataStream *input) {
 			// now add all children of this current parent
 			for ( it = list->begin(); it != list->end(); it++ ) {
 				implements = (*it)->properties["implements"]->asString();
-				if ( moUtils::inList("node", implements) )
+				if ( !moUtils::inList("node", implements) )
+					continue;
+				if ( !(*it)->exist("parent_node_id") )
 					continue;
 				id_parent = (*it)->properties["parent_node_id"]->asInteger();
 				if ( id_parent != *it_parent )
