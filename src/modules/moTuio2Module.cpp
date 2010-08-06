@@ -298,5 +298,3 @@ moDataStream* moTuio2Module::getOutput(int n) {
 void moTuio2Module::update() {
 }
 
-
-

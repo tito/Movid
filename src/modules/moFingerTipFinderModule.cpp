@@ -45,6 +45,11 @@ MODULE_DECLARE(FingerTipFinder, "native", "Module capable of detecting hands in 
 struct Point {
 	int x;
 	int y;
+
+	Point(int x, int y) {
+		this->x = x;
+		this->y = y;
+	}
 };
 
 typedef std::pair<float, CvConvexityDefect*> depthToDefect;
@@ -159,7 +164,7 @@ bool moFingerTipFinderModule::searchPalmCenter(IplImage *source, CvSeq *contours
 		for ( j = 0; j < rows; j++ ) {
 			cur_val = ((int)data[j * step + i]);
 			if ( (min < cur_val) && (cur_val < max) )
-				peaks.push_back(doubleToPoint(cur_val, (Point) {i, j}));
+				peaks.push_back(doubleToPoint(cur_val, Point(i, j)));
 		}
 	}
 
