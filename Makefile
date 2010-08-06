@@ -49,19 +49,18 @@ SOURCES = \
 	src/moUtils.cpp \
 	src/modules/moAmplifyModule.cpp \
 	src/modules/moBackgroundSubtractModule.cpp \
-	src/modules/moBlobTrackerModule.cpp \
 	src/modules/moBlobFinderModule.cpp \
 	src/modules/moCalibrationModule.cpp \
 	src/modules/moCameraModule.cpp \
 	src/modules/moCannyModule.cpp \
 	src/modules/moCombineModule.cpp \
-	src/modules/moFingerTipFinderModule.cpp \
-	src/modules/moGreedyBlobTrackerModule.cpp \
 	src/modules/moDilateModule.cpp \
 	src/modules/moDistanceTransformModule.cpp \
 	src/modules/moDumpModule.cpp \
 	src/modules/moErodeModule.cpp \
 	src/modules/moFiducialTrackerModule.cpp \
+	src/modules/moFingerTipFinderModule.cpp \
+	src/modules/moGreedyBlobTrackerModule.cpp \
 	src/modules/moGrayScaleModule.cpp \
 	src/modules/moHighpassModule.cpp \
 	src/modules/moHsvModule.cpp \
@@ -79,8 +78,6 @@ SOURCES = \
 	src/modules/moTuioModule.cpp \
 	src/modules/moVideoModule.cpp \
 	src/modules/moYCrCbThresholdModule.cpp \
-	src/modules/moBlobFinderModule.cpp \
-	src/modules/moGreedyBlobTrackerModule.cpp \
 	#AUTOMODULE_DoNotRemoveThisComment
 
 
