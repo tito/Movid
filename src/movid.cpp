@@ -438,6 +438,7 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 		cJSON_AddStringToObject(mod, "description", module->getDescription().c_str());
 		cJSON_AddStringToObject(mod, "author", module->getAuthor().c_str());
 		cJSON_AddNumberToObject(mod, "running", module->isStarted() ? 1 : 0);
+		cJSON_AddNumberToObject(mod, "gui", module->getCapabilities() & MO_MODULE_GUI ? 1 : 0);
 		cJSON_AddItemToObject(mod, "properties", properties=cJSON_CreateObject());
 
 		for ( it = module->getProperties().begin(); it != module->getProperties().end(); it++ ) {
@@ -549,6 +550,7 @@ void web_factory_desribe(struct evhttp_request *req, void *arg) {
 	cJSON_AddStringToObject(mod, "description", module->getDescription().c_str());
 	cJSON_AddStringToObject(mod, "author", module->getAuthor().c_str());
 	cJSON_AddNumberToObject(mod, "running", module->isStarted() ? 1 : 0);
+	cJSON_AddNumberToObject(mod, "gui", (module->getCapabilities() & MO_MODULE_GUI) ? 1 : 0);
 	cJSON_AddItemToObject(mod, "properties", properties=cJSON_CreateObject());
 
 	for ( it = module->getProperties().begin(); it != module->getProperties().end(); it++ ) {
@@ -766,6 +768,37 @@ void web_pipeline_remove(struct evhttp_request *req, void *arg) {
 	evhttp_clear_headers(&headers);
 }
 
+void web_pipeline_gui(struct evhttp_request *req, void *arg) {
+	moModule *module;
+	struct evkeyvalq headers;
+	const char *uri;
+
+	uri = evhttp_request_uri(req);
+	evhttp_parse_query(uri, &headers);
+
+	if ( evhttp_find_header(&headers, "objectname") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing objectname");
+	}
+
+	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
+	if ( module == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "object not found");
+	}
+
+	evhttp_clear_headers(&headers);
+
+	struct evbuffer *evb = evbuffer_new();
+	std::vector<std::string> gui = module->getGui();
+	std::vector<std::string>::iterator it;
+	for ( it = gui.begin(); it != gui.end(); it++ )
+		evbuffer_add_printf(evb, "%s\n", (*it).c_str());
+	evhttp_add_header(req->output_headers, "Content-Type", "text/plain");
+	evhttp_send_reply(req, HTTP_OK, "Everything is fine", evb);
+	evbuffer_free(evb);
+}
+
 void web_pipeline_start(struct evhttp_request *req, void *arg) {
 	pipeline->start();
 	web_message(req, "ok");
@@ -803,7 +836,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 	long filesize = 0;
 	struct evbuffer *evb;
 	char filename[256],
-		 *buf;
+		 *buf, *uri, *baseuri;
 
 	/* web_file accept only file from gui
 	 */
@@ -817,8 +850,19 @@ void web_file(struct evhttp_request *req, void *arg) {
 		return;
 	}
 
+	uri = strdup(req->uri);
+	if ( uri == NULL ) {
+		LOG(MO_ERROR, "unable to duplicate uri, memory missing ?");
+		evhttp_send_error(req, 500, "Memory error");
+		return;
+	}
+
+	baseuri = strsep(&uri, "?");
+
 	snprintf(filename, sizeof(filename), "%s/%s",
-		config_guidir.c_str(), req->uri + sizeof("/gui/") - 1);
+		config_guidir.c_str(), baseuri + sizeof("/gui/") - 1);
+
+	free(baseuri);
 
 	LOG(MO_INFO, "web: GET " << filename);
 	fd = fopen(filename, "rb");
@@ -854,6 +898,8 @@ void web_file(struct evhttp_request *req, void *arg) {
 		evhttp_add_header(req->output_headers, "Content-Type", "text/css");
 	else if ( strncmp(filename + strlen(filename) - 3, "png", 3) == 0 )
 		evhttp_add_header(req->output_headers, "Content-Type", "image/png");
+	else if ( strncmp(filename + strlen(filename) - 3, "swf", 3) == 0 )
+		evhttp_add_header(req->output_headers, "Content-Type", "application/x-shockwave-flash");
 	else
 		evhttp_add_header(req->output_headers, "Content-Type", "text/html");
 
@@ -979,7 +1025,7 @@ int main(int argc, char **argv) {
 
 	// initialize daemon (factory, network...)
 	moDaemon::init();
-	
+
 	// detach from console
 	if (config_detach)
 		if (! moDaemon::detach(config_pidfile))
@@ -1029,7 +1075,7 @@ int main(int argc, char **argv) {
 				#ifndef WIN32
 				sleep(3);
 				#endif
-				
+
 			}
 		} while ( ret == -1 );
 
@@ -1044,6 +1090,7 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/connect", web_pipeline_connect, NULL);
 		evhttp_set_cb(server, "/pipeline/set", web_pipeline_set, NULL);
 		evhttp_set_cb(server, "/pipeline/get", web_pipeline_get, NULL);
+		evhttp_set_cb(server, "/pipeline/gui", web_pipeline_gui, NULL);
 		evhttp_set_cb(server, "/pipeline/stream", web_pipeline_stream, NULL);
 		evhttp_set_cb(server, "/pipeline/start", web_pipeline_start, NULL);
 		evhttp_set_cb(server, "/pipeline/stop", web_pipeline_stop, NULL);

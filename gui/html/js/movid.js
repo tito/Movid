@@ -1,4 +1,22 @@
-var mo_baseurl = 'http://127.0.0.1:7500';
+/***********************************************************************
+ ** Copyright (C) 2010 Movid Authors.  All rights reserved.
+ **
+ ** This file is part of the Movid Software.
+ **
+ ** This file may be distributed under the terms of the Q Public License
+ ** as defined by Trolltech AS of Norway and appearing in the file
+ ** LICENSE included in the packaging of this file.
+ **
+ ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ **
+ ** Contact info@movid.org if any conditions of this licensing are
+ ** not clear to you.
+ **
+ **********************************************************************/
+
+// guess ourself the base url, needed for xhr
+var mo_baseurl = location.href.split('/', 3).join('/');
 var mo_available_inputs = [];
 var mo_available_outputs = [];
 var mo_streamscale = 2;
@@ -6,6 +24,8 @@ var mo_widget_selected = null;
 var mo_status_text = 'stopped';
 var mo_uniqidx = 0;
 var mo_data = null;
+var mo_host = null;
+var mo_port = '7500';
 
 function mo_uniq() {
 	mo_uniqidx += 1;
@@ -28,6 +48,16 @@ function mo_resize() {
 }
 
 function mo_bootstrap() {
+
+	var hostport = mo_baseurl.split('/');
+	hostport = hostport[hostport.length - 1].split(':');
+	if ( hostport.length == 1 ) {
+		mo_host = hostport[0];
+	} else {
+		mo_host = hostport[0];
+		mo_port = hostport[1];
+	}
+
 	$('#container-preview').hide();
 	$('#container-properties').hide();
 	$('#btn-create').addClass('ui-state-active');
@@ -113,13 +143,14 @@ function mo_status() {
 		for ( key in data['status']['modules'] ) {
 			var infos = data['status']['modules'][key];
 			if ( widgetGet(key) == null ) {
-				widgetCreate(key);
 				var _x = infos['properties']['x'];
 				var _y = infos['properties']['y'];
+				var _gui = infos['gui'];
 				if ( typeof _x == 'undefined' )
 					_x = 0;
 				if ( typeof _y == 'undefined' )
 					_y = 0;
+				widgetCreate(key, _gui);
 				widgetPosition(key, _x, _y);
 
 				if ( typeof(infos['inputs']) != 'undefined' ) {
@@ -185,6 +216,29 @@ function mo_properties(elem) {
 
 			// all elements will be in a table, prepare it
 			var table = $('<table></table>');
+			if ( infos['gui'] == 1 ) {
+				var uniq = mo_uniq();
+				var input =
+					$('<input></input>')
+					.attr('id', uniq)
+					.attr('type', 'checkbox')
+					.attr('onchange', 'javascript:mo_gui("'
+						+ elem + '", 0)');
+				var tr = $('<tr></tr>')
+					.append( $('<td></td>')
+						.addClass('label')
+						.html('GUI')
+					)
+					.append( $('<td></td>')
+						.append(input)
+						.append(
+							$('<label></label>')
+							.attr('for', uniq)
+							.html('Open'))
+					);
+				table.append(tr);
+			}
+
 
 			// enumerate properties
 			for ( var property in infos['properties'] ) {
@@ -294,9 +348,10 @@ function _mo_update_state() {
 	$('#properties input[type=\"checkbox\"]').button();
 }
 
-function mo_set(id, k, v) {
+function mo_set(id, k, v, callback) {
 	$.get(mo_baseurl + '/pipeline/set?objectname=' + id + '&name=' + k + '&value=' + v, function(data) {
-		// TODO
+		if ( typeof(callback) != 'undefined' )
+			callback();
 	});
 }
 
@@ -339,6 +394,71 @@ function mo_select(elem) {
 	mo_widget_selected = elem;
 	mo_properties(elem);
 	mo_stream(elem);
+	mo_gui_cancel()
+}
+
+function mo_gui_cancel() {
+	var base = document.getElementById('flashgui');
+	if ( base )
+		base.parentNode.removeChild(base);
+}
+
+function mo_gui(elem, is_update) {
+	/**
+	$.get(mo_baseurl + '/pipeline/gui?objectname=' + elem, function(data) {
+		widgetConfigure(data, is_update);
+	});
+	**/
+
+	// toggle GUI
+	var base = document.getElementById('flashgui');
+	if ( base ) {
+		base.parentNode.removeChild(base);
+		return;
+	}
+
+	// construct basics parameters
+	var src = mo_baseurl + '/gui/flashgui.swf?objectname=' + elem;
+	var flashvars = [
+		'objectname=', encodeURIComponent(elem),
+		'&ip=', mo_host,
+		'&port=', mo_port
+	].join('');
+
+	// Internet explorer support
+	base = document.createElement('OBJECT');
+	base.setAttribute('id', 'flashgui');
+	base.setAttribute('width', '640');
+	base.setAttribute('height', '480');
+	param = document.createElement('PARAM');
+	param.setAttribute('name', 'movie');
+	param.setAttribute('value', src);
+	base.appendChild(param);
+	param = document.createElement('PARAM');
+	param.setAttribute('name', 'FlashVars');
+	param.setAttribute('value', flashvars);
+	base.appendChild(param);
+	param = document.createElement('PARAM');
+	param.setAttribute('name', 'allowFullScreen');
+	param.setAttribute('value', 'true');
+	base.appendChild(param);
+
+	// Firefox support
+	embed = document.createElement('EMBED');
+	embed.setAttribute('src', src);
+	embed.setAttribute('flashvars', flashvars);
+	embed.setAttribute('allowfullscreen', 'true');
+	embed.setAttribute('width', '640');
+	embed.setAttribute('height', '480');
+	base.appendChild(embed);
+
+	document.body.appendChild(base);
+	$('#flashgui').dialog({
+		modal: true,
+		width: 660,
+		height: 480,
+		title: elem + '\'s GUI',
+	});
 }
 
 function mo_stats() {
@@ -362,4 +482,7 @@ function mo_stats() {
 	});
 }
 
-$(document).ready(function() { mo_bootstrap(); });
+// once our document is loaded, load our software.
+$(document).ready(function() {
+	mo_bootstrap();
+});

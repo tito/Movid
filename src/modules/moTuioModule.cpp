@@ -98,6 +98,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 	assert( input == this->input );
 
 	// out input have been updated !
+	LOGM(MO_TRACE, "Updating Tuio stream");
 	this->input->lock();
 
 	// TODO also adapt fiducial tracker to new blob protocol
@@ -186,11 +187,14 @@ void moTuioModule::notifyData(moDataStream *input) {
 		this->setError("Unsupported input type");
 	}
 
+
+    LOGM(MO_TRACE, "Sending OSC bundle");
 	this->osc->send(bundle);
 
 	delete bundle;
 
 	this->input->unlock();
+	LOGM(MO_TRACE, "TUIO done");
 }
 
 void moTuioModule::setInput(moDataStream *stream, int n) {

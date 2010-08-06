@@ -10,7 +10,7 @@
 #
 # This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 # WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-#
+
 # Contact info@movid.org if any conditions of this licensing are
 # not clear to you.
 #
@@ -49,18 +49,18 @@ SOURCES = \
 	src/moUtils.cpp \
 	src/modules/moAmplifyModule.cpp \
 	src/modules/moBackgroundSubtractModule.cpp \
-	src/modules/moBlobTrackerModule.cpp \
 	src/modules/moBlobFinderModule.cpp \
+	src/modules/moCalibrationModule.cpp \
 	src/modules/moCameraModule.cpp \
 	src/modules/moCannyModule.cpp \
 	src/modules/moCombineModule.cpp \
-	src/modules/moFingerTipFinderModule.cpp \
-	src/modules/moGreedyBlobTrackerModule.cpp \
 	src/modules/moDilateModule.cpp \
 	src/modules/moDistanceTransformModule.cpp \
 	src/modules/moDumpModule.cpp \
 	src/modules/moErodeModule.cpp \
 	src/modules/moFiducialTrackerModule.cpp \
+	src/modules/moFingerTipFinderModule.cpp \
+	src/modules/moGreedyBlobTrackerModule.cpp \
 	src/modules/moGrayScaleModule.cpp \
 	src/modules/moHighpassModule.cpp \
 	src/modules/moHsvModule.cpp \
@@ -76,11 +76,9 @@ SOURCES = \
 	src/modules/moSmoothModule.cpp \
 	src/modules/moThresholdModule.cpp \
 	src/modules/moTuioModule.cpp \
-	src/modules/moVideoModule.cpp \
-	src/modules/moYCrCbThresholdModule.cpp \
-	src/modules/moBlobFinderModule.cpp \
-	src/modules/moGreedyBlobTrackerModule.cpp \
 	src/modules/moTuio2Module.cpp \
+	src/modules/moVideoModule.cpp \
+	src/modules/moYCrCbThresholdModule.cpp
 	#AUTOMODULE_DoNotRemoveThisComment
 
 
@@ -202,6 +200,12 @@ movid: Makefile.depend contrib $(MOVID_LIB) src/movid.cpp
 $(MOVID_LIB): $(OBJECTS)
 	$(AR) rcs $(MOVID_LIB) $(OBJECTS)
 
+
+#
+# Compile the flash gui drawing tool. Needs mxmlc installed: http://opensource.adobe.com/wiki/display/flexsdk/Download+Flex+4
+#
+flashgui:
+	mxmlc -debug=true -use-network=true -incremental -warnings -strict -default-background-color=0x030303 src/moFlashGuiDrawer.as -o gui/html/flashgui.swf
 
 #
 # Create a new module

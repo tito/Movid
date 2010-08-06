@@ -35,8 +35,9 @@ moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPU
 	//this->output_infos[1] = new moDataStreamInfo("image", "IplImage", "Image showing the currently tracked blobs in different colors");
 
     // How many frames may a blob survive without finding a successor?
-	this->properties["max_age"] = new moProperty(48);
-	this->properties["max_dist"] = new moProperty(0.2);
+	this->properties["max_age"] = new moProperty(28);
+	this->properties["max_dist"] = new moProperty(0.1);
+	this->properties["jitter_dist"] = new moProperty(0.00002);
 
     this->id_counter = 1;
     this->new_blobs = new moDataGenericList();
@@ -53,24 +54,28 @@ void moGreedyBlobTrackerModule::pruneBlobs() {
 }
 
 void moGreedyBlobTrackerModule::trackBlobs() {
+	//std::cout << "------------------------------------------------------------------" << std::endl;
     moDataGenericList::iterator it;
+	double old_x, old_y, new_x, new_y, dist, min_dist;
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
         //for each of blobs in teh new frame, find teh closest matching one from before
         moDataGenericContainer* closest_blob = NULL;
-        double min_dist = pow(this->properties["max_dist"]->asDouble(), 2);
+        min_dist = this->properties["max_dist"]->asDouble();
         
+		new_x = (*it)->properties["x"]->asDouble();
+		new_y = (*it)->properties["y"]->asDouble();
         moDataGenericList::iterator it_old;
 	    for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
             LOG(MO_DEBUG, "old blob:" << (*it_old)->properties["blob_id"]->asString() <<"  x:" << (*it)->properties["x"]->asDouble() );
-            if ((*it_old)->properties["blob_id"]->asInteger() < 0)  //already assigned
+            if ((*it_old)->properties["blob_id"]->asInteger() < 0) {  //already assigned
+				//std::cout << "ALREADY TAKEN" << std::endl;
                 continue;
+			}
 
-            double old_x = (*it_old)->properties["x"]->asDouble();
-			double old_y = (*it_old)->properties["y"]->asDouble();
-			double new_x = (*it)->properties["x"]->asDouble();
-			double new_y = (*it)->properties["y"]->asDouble();
+            old_x = (*it_old)->properties["x"]->asDouble();
+			old_y = (*it_old)->properties["y"]->asDouble();
 			// XXX Make sure that our INPUT is in 0.0 - 1.0. I checked and it seemed to not always be...
-			double dist = pow(old_x - new_x, 2) + pow(old_y - new_y, 2);
+			dist = sqrt(pow(old_x - new_x, 2) + pow(old_y - new_y, 2));
             
             if (dist < min_dist) {
                 closest_blob = (*it_old);
@@ -83,9 +88,21 @@ void moGreedyBlobTrackerModule::trackBlobs() {
             int old_id = closest_blob->properties["blob_id"]->asInteger();
             (*it)->properties["blob_id"]->set( old_id );
             closest_blob->properties["blob_id"]->set( -1 * old_id );  //we mark matched blob by negative id's
+
+			// Dejitter
+            old_x = closest_blob->properties["x"]->asDouble();
+			old_y = closest_blob->properties["y"]->asDouble();
+			dist = pow(old_x - new_x, 2) + pow(old_y - new_y, 2);
+			//std::cout << "FOUND DISTANCE: " << dist << std::endl;
+			if (dist < this->properties["jitter_dist"]->asDouble()) {
+				//std::cout << "DOING DEJITTER!!!!!!!!!!!!!!!!!!!!!" << dist << std::endl;
+				(*it)->properties["x"]->set(old_x);
+				(*it)->properties["y"]->set(old_y);
+			}
         }
         //this must be a new blob, so assign new ID
         else{
+			//std::cout << "NEW BLOB " << dist << " < " << min_dist << std::endl;
             (*it)->properties["blob_id"]->set(++this->id_counter);
         }
     }

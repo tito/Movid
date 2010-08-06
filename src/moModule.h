@@ -91,7 +91,8 @@ typedef struct {
 enum {
 	MO_MODULE_NONE		= 0x00000000,		/*< Module have no input/output */
 	MO_MODULE_INPUT		= 0x00000001,		/*< Module have inputs */
-	MO_MODULE_OUTPUT	= 0x00000002		/*< Module have outputs */
+	MO_MODULE_OUTPUT	= 0x00000002,		/*< Module have outputs */
+	MO_MODULE_GUI       = 0x00000004,		/*< Module have a GUI */
 };
 
 /*! \brief Base class for all modules
@@ -259,6 +260,22 @@ public:
 	 */
 	virtual bool serializeConnections(std::ostringstream &oss);
 
+	/*! \brief Receive some feedback on the configuration ui
+	 */
+	virtual void guiFeedback(const std::string &type, double x, double y);
+
+	/*! \brief Build the gui
+	 */
+	virtual void guiBuild();
+
+	/*! \brief Get instruction about how to draw the GUI
+	 */
+	std::vector<std::string> &getGui();
+
+	/*! \brief Notify gui to rebuild itself
+	 */
+	void notifyGui();
+
 	/*! \brief Module statistics
 	 */
 	mo_module_stats_t stats;
@@ -291,6 +308,10 @@ private:
 	/*! \brief Boolean to known if we need to call update or not
 	 */
 	bool need_update;
+
+	/*! \brief Boolean to known if the gui must be rebuild
+	 */
+	bool need_gui_build;
 
 	/*! \brief Mutex to protect part of the module
 	 */
@@ -351,6 +372,10 @@ protected:
 	 * \param base name of the class to use it
 	 */
 	static std::string createId(std::string base);
+
+	/*! \brief Storage for GUI instruction
+	 */
+	std::vector<std::string> gui;
 
 	friend class moDataStream;
 	friend class moPipeline;

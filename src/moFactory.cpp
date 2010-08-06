@@ -31,42 +31,40 @@ LOG_DECLARE("Factory");
 static moFactory *instance = NULL;
 
 void moFactory::init() {
+	// Keep the alphabetical order when adding new modules!
 	REGISTER_MODULE(Amplify);
 	REGISTER_MODULE(BackgroundSubtract);
-	REGISTER_MODULE(BlobTracker)
 	REGISTER_MODULE(BlobFinder)
+	REGISTER_MODULE(Calibration);
 	REGISTER_MODULE(Camera);
+	REGISTER_MODULE(Canny);
 	REGISTER_MODULE(Combine);
+	REGISTER_MODULE(Dilate);
+	REGISTER_MODULE(DistanceTransform);
 	REGISTER_MODULE(Dump);
+	REGISTER_MODULE(Erode);
 	REGISTER_MODULE(FiducialTracker);
+	REGISTER_MODULE(FingerTipFinder);
 	REGISTER_MODULE(GrayScale);
 	REGISTER_MODULE(GreedyBlobTracker);
 	REGISTER_MODULE(Highpass);
+	REGISTER_MODULE(Hsv);
 	REGISTER_MODULE(Image);
 	REGISTER_MODULE(ImageDisplay);
 	REGISTER_MODULE(Invert);
 	REGISTER_MODULE(Justify);
 	REGISTER_MODULE(Mask);
 	REGISTER_MODULE(MirrorImage);
-	REGISTER_MODULE(Smooth);
+	REGISTER_MODULE(PeakFinder);
 	REGISTER_MODULE(Roi);
+	REGISTER_MODULE(Smooth);
 	REGISTER_MODULE(Threshold);
 	REGISTER_MODULE(Tuio);
 	REGISTER_MODULE(Tuio2);
 	REGISTER_MODULE(Video);
-	REGISTER_MODULE(Erode);
-	REGISTER_MODULE(Dilate);
-	REGISTER_MODULE(Canny);
-	REGISTER_MODULE(Hsv);
-	REGISTER_MODULE(DistanceTransform);
-	REGISTER_MODULE(PeakFinder);
-	REGISTER_MODULE(FingerTipFinder);
 	REGISTER_MODULE(YCrCbThreshold);
-	REGISTER_MODULE(BlobFinder);
-    REGISTER_MODULE(GreedyBlobTracker);
-    //    REGISTER_MODULE(ContourTracker);
     //DoNotRemoveThisComment
-	LOG(MO_INFO, "register " << moFactory::getInstance()->list().size() << " modules");
+	LOG(MO_INFO, "registered " << moFactory::getInstance()->list().size() << " modules");
 }
 
 void moFactory::cleanup() {

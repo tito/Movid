@@ -1,3 +1,21 @@
+<!--
+/***********************************************************************
+ ** Copyright (C) 2010 Movid Authors.  All rights reserved.
+ **
+ ** This file is part of the Movid Software.
+ **
+ ** This file may be distributed under the terms of the Q Public License
+ ** as defined by Trolltech AS of Norway and appearing in the file
+ ** LICENSE included in the packaging of this file.
+ **
+ ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+ ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+ **
+ ** Contact info@movid.org if any conditions of this licensing are
+ ** not clear to you.
+ **
+ **********************************************************************/
+-->
 <html>
 <head>
 	<title>Movid Web Admin</title>
@@ -9,6 +27,7 @@
 		widgetAddOutput = null,
 		widgetClearConnectivity = null,
 		widgetConnect = null,
+		widgetConfigure = null,
 		widgetCanvasResize = null;
 	</script>
 	<script type="text/javascript" src="js/processing.js"></script>
@@ -89,6 +108,7 @@ class Widget {
 	int w = 120;
 	int h = 75;
 	String name = 'UnknownID';
+	int gui = 0;
 	ArrayList inputs;
 	ArrayList outputs;
 
@@ -211,9 +231,10 @@ class Widget {
 // link with UI
 //
 
-widgetCreate = function(String _name) {
+widgetCreate = function(String _name, int have_gui) {
 	Widget w = new Widget();
 	w.name = _name;
+	w.gui = have_gui;
 	widgets.add(w);
 }
 
@@ -287,9 +308,88 @@ Widget connectivity_widget;
 String connectivity_io;
 int connectivity_idx;
 int connectivity_ok = 0;
+int config_show = 0;
+int screen_w = 800;
+int screen_h = 600;
 color cok = color(50, 200, 50);
 color cko = color(200, 50, 50);
 color cwait = color(200, 200, 50);
+
+widgetConfigure = function(guicommand, is_update) {
+	if ( is_update == 0 && config_show == 1 ) {
+		config_show = 0;
+		return;
+	}
+
+	config_show = 1;
+	config_insts = guicommand.split("\n");
+	draw();
+}
+
+void configDraw() {
+	if ( config_show == 0 )
+		return;
+
+	//mo_gui(mo_widget_selected);
+
+	// biggest task. decompile draw instruction
+	// and convert to processing one.
+	fill(255, 255, 255);
+	var y = 10;
+	var viewport_w = 1;
+	var viewport_h = 1;
+	function tb(x, a) {
+		if (x <= 0) return 1;
+		if (x >= a) return a - 1;
+		return x
+	}
+	function ttw(s) { return tw(parseInt(s)); }
+	function tth(s) { return th(parseInt(s)); }
+	function tw(x) { return tb(x * screen_w / viewport_w, screen_w); }
+	function th(x) { return tb(x * screen_h / viewport_h, screen_h); }
+	for ( var index in config_insts ) {
+		var args = config_insts[index].split(" ");
+
+		switch ( args[0] ) {
+			case '':
+				break;
+
+			case 'viewport':
+				viewport_w = parseInt(args[1]);
+				viewport_h = parseInt(args[2]);
+				break;
+				
+			case 'color':
+				fill(parseInt(args[1]), parseInt(args[2]), parseInt(args[3]));
+				break;
+
+			case 'rect':
+				rect(ttw(args[1]), tth(args[2]), ttw(args[3]), tth(args[4]));
+				break;
+
+			case 'circle':
+				ellipse(ttw(args[1]), tth(args[2]), ttw(args[3]), ttw(args[3]));
+				break;
+
+			case 'line':
+				line(ttw(args[1]), tth(args[2]), ttw(args[3]), tth(args[4]));
+				break;
+
+			default:
+				fill(150, 150, 150);
+				text('cmd:' + args[0], 10, y);
+				fill(255, 255, 255);
+				y += 10;
+		}
+	}
+}
+
+void configSendFeedback(type, x, y) {
+	mo_set(mo_widget_selected, "gui_feedback", "" + type + ";" + x + ";" + y, function() {
+		// nothing.
+	});
+}
+
 
 int textWidth(String s) {
 	return s.length * (fontsize / 2) + (s.length - 1);
@@ -299,11 +399,18 @@ int textHeight(String s) {
 	return fontsize;
 }
 
+update = new function() {
+	setTimeout('update()', 500);
+	if ( config_show )
+		mo_gui(mo_widget_selected);
+}
+
 void setup() {
 	frameRate(5);
 	noStroke();
 	textFont(fontA, fontsize);
 	widgets = new ArrayList();
+	setTimeout('update()', 500);
 }
 
 void draw() {
@@ -311,19 +418,28 @@ void draw() {
 
 	background(51);
 
-	for ( int i = 0; i < widgets.size(); i ++ ) {
-		w = widgets.get(i);
-		if ( selected_widget == i ) {
-			w.x = mouseX - selected_widget_x;
-			w.y = mouseY - selected_widget_y;
+	if ( config_show == 1 ) {
+
+		configDraw();
+
+	} else {
+
+		for ( int i = 0; i < widgets.size(); i ++ ) {
+			w = widgets.get(i);
+			if ( selected_widget == i ) {
+				w.x = mouseX - selected_widget_x;
+				w.y = mouseY - selected_widget_y;
+			}
+			w.draw();
 		}
-		w.draw();
+
+		searchConnectivity();
+		checkConnectivity();
+		drawConnectivity();
+
 	}
 
-	searchConnectivity();
-	checkConnectivity();
-	drawConnectivity();
-
+	frameCount += 1;
 	$('#framecount').html(frameCount);
 }
 
@@ -433,6 +549,11 @@ void mousePressed() {
 	Widget w;
 	int idx;
 
+	if ( config_show == 1 ) {
+		configSendFeedback('down', mouseX, mouseY);
+		return;
+	}
+
 	for ( int i = widgets.size() - 1; i >= 0; i-- ) {
 		w = widgets.get(i);
 		if ( w.collide(mouseX, mouseY) ) {
@@ -469,6 +590,12 @@ void mousePressed() {
 
 void mouseReleased() {
 
+	if ( config_show == 1 ) {
+		configSendFeedback('up', mouseX, mouseY);
+		draw();
+		return;
+	}
+
 	if ( connectivity_ok == 1 ) {
 		if ( selected_output_idx != -1 ) {
 			selected_output_widget.outputs.get(selected_output_idx).connect(
@@ -493,12 +620,14 @@ void mouseReleased() {
 	selected_output_idx = -1;
 
 	draw();
-	frameCount += 1;
 }
 
 void mouseDragged() {
 	draw();
-	frameCount += 1;
+	if ( config_show == 1 ) {
+		configSendFeedback('move', mouseX, mouseY);
+		return;
+	}
 }
 
 </script><canvas id="movidcanvas" width="100" height="100">You need HTML5 canvas support.</canvas>

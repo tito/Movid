@@ -1,0 +1,42 @@
+#
+# Blob tracking from video
+#
+
+# create defaults objects
+pipeline create Video cam
+pipeline set Video filename calib-test.avi
+
+pipeline create GrayScale gray
+#pipeline create Invert invert
+pipeline create BackgroundSubtract subtract
+pipeline create Threshold threshold
+pipeline set threshold threshold 80
+pipeline create Smooth smooth
+pipeline set smooth size 5
+pipeline create BlobTracker tracker
+pipeline create ImageDisplay win
+pipeline create ImageDisplay win2
+pipeline create Calibration calib
+pipeline create Tuio tuio
+
+# do connections
+pipeline connect cam 0 gray 0
+pipeline connect gray 0 smooth 0
+pipeline connect smooth 0 subtract 0
+pipeline connect subtract 0 threshold 0
+#pipeline connect smooth 0 threshold 0
+pipeline connect threshold 0 tracker 0
+pipeline connect threshold 0 win2 0
+pipeline connect tracker 0 win 0
+pipeline connect tracker 1 calib 0
+pipeline connect calib 0 tuio 0
+
+
+# thread ?
+#pipeline set video use_thread 1
+#pipeline set tracker use_thread 1
+#pipeline set calib screenPoints 1.09,2.09;2.09,3.09;4.09,5.09;5.09,6.09
+pipeline set smooth filter blur
+pipeline set calib calibrate 1
+pipeline set calib cols 3
+pipeline set calib rows 3

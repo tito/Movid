@@ -16,6 +16,7 @@
  **********************************************************************/
 
 
+#include <stdlib.h>
 #include <assert.h>
 #include <sstream>
 #include <iostream>
@@ -33,6 +34,30 @@
 LOG_DECLARE("Module");
 
 static unsigned int idcount = 0;
+
+// callback called when the property gui_feedback is changed.
+static void module_gui_feedback_cb(moProperty *property, void *userdata) {
+	assert( property != NULL );
+	assert( userdata != NULL );
+	moModule *module = NULL;
+	std::vector<std::string> tokens;
+
+	// split the value in 3 (type, x, y)
+	std::string s = property->asString();
+	if ( s == "" )
+		return;
+
+	tokens = moUtils::tokenize(s, ";");
+	if ( tokens.size() != 3 )
+		return;
+
+	module = static_cast<moModule *>(userdata);
+	module->guiFeedback(
+		tokens[0],
+		atof(tokens[1].c_str()),
+		atof(tokens[2].c_str())
+	);
+}
 
 static void stats_init(mo_module_stats_t *s) {
 	s->_last_time = moUtils::time();
@@ -85,11 +110,17 @@ moModule::moModule(unsigned int capabilities, int input_count, int output_count)
 	this->use_thread	= false;
 	this->need_update	= false;
 	this->thread_trigger = NULL;
+	this->need_gui_build = false;
 	this->mtx			= new pt::mutex();
 
 	memset(&this->stats,0,sizeof(mo_module_stats_t));
 
 	this->properties["use_thread"] = new moProperty(false);
+
+	// create the default properties used for gui
+	// the gui_feedback will be formatted as [down|move|up];x;y
+	this->properties["gui_feedback"] = new moProperty("");
+	this->properties["gui_feedback"]->addCallback(module_gui_feedback_cb, this);
 }
 
 moModule::~moModule() {
@@ -261,6 +292,8 @@ void moModule::describe() {
 		std::cout << "input,";
 	if ( this->getCapabilities() & MO_MODULE_OUTPUT )
 		std::cout << "output,";
+	if ( this->getCapabilities() & MO_MODULE_GUI )
+		std::cout << "gui,";
 	std::cout << std::endl;
 
 	if ( this->properties.size() > 0 ) {
@@ -401,3 +434,46 @@ bool moModule::serializeConnections(std::ostringstream &oss) {
 
 	return true;
 }
+
+//
+// Feedback part between GUI and Module
+//
+// Gui is transmit is information with mouse (down/move/up + position)
+// with the property gui_feedback.
+//
+// Module with MO_MODULE_GUI capability are able to send instruction on the GUI
+// Theses instructions are taken with the new /pipeline/gui command
+//
+// Here is a list of possible instructions:
+//   viewport w h;
+//   color r g b;
+//   text x y label;
+//   style <filled|stroke>;
+//   rect x y w h;
+//   circle x y r;
+//   line x1 y1 x2 y2;
+//
+//
+// Theses instructions are very basic, but can be understood by any UI.
+// Do not add your instruction without having the approbation of the core team.
+//
+
+void moModule::guiFeedback(const std::string& type, double x, double y) {
+}
+
+void moModule::guiBuild() {
+}
+
+void moModule::notifyGui() {
+	this->need_gui_build = true;
+}
+
+std::vector<std::string> &moModule::getGui(void) {
+	assert(this->getCapabilities() & MO_MODULE_GUI);
+	if ( this->need_gui_build ) {
+		this->need_gui_build = false;
+		this->guiBuild();
+	}
+	return this->gui;
+}
+
