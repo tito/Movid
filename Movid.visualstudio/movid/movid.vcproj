@@ -219,6 +219,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moBlobFinderModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moCalibrationModule.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moCameraModule.h"
 					>
 				</File>
@@ -256,6 +264,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moGrayScaleModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moGreedyBlobTrackerModule.h"
 					>
 				</File>
 				<File
@@ -308,6 +320,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moThresholdModule.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moTuio2Module.h"
 					>
 				</File>
 				<File
@@ -387,6 +403,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\src\modules\moBlobFinderModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moCalibrationModule.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\src\modules\moCameraModule.cpp"
 					>
 				</File>
@@ -424,6 +448,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moGrayScaleModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moGreedyBlobTrackerModule.cpp"
 					>
 				</File>
 				<File
@@ -476,6 +504,10 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moThresholdModule.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\src\modules\moTuio2Module.cpp"
 					>
 				</File>
 				<File
