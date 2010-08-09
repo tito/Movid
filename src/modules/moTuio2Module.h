@@ -42,6 +42,7 @@ private:
 
 	bool packBlob(WOscBundle *bundle);
 	bool packFiducial(WOscBundle *bundle);
+	int probe();
 
 	int frame;
 

@@ -48,6 +48,12 @@
 
 MODULE_DECLARE(Tuio2, "native", "Convert stream to TUIO2 format");
 
+enum {
+	TUIO2_UNKNOWN = 0,
+	TUIO2_CURSOR,
+	TUIO2_FIDUCIAL,
+};
+
 moTuio2Module::moTuio2Module() : moModule(MO_MODULE_INPUT) {
 
 	MODULE_INIT();
@@ -89,7 +95,8 @@ void moTuio2Module::notifyData(moDataStream *input) {
 	moDataGenericList *list;
 	WOscBundle *bundle;
 	WOscMessage *msg;
-	std::string format, implements;
+	std::string implements;
+	int format;
 	bool ret = false,
 		 have_relation = false;
 	std::list<int> ids_parent, ids_blob;
@@ -147,12 +154,11 @@ void moTuio2Module::notifyData(moDataStream *input) {
 
 	// pack every item into the bundle
 	// (format have already been checked at setInput()
-	format = input->getFormat();
-	if ( format == "fiducial" ) {
+	format = this->probe();
+	if ( format == TUIO2_FIDUCIAL )
 		ret = this->packFiducial(bundle);
-	} else if ( format == "blob" ) {
+	else if ( format == TUIO2_CURSOR )
 		ret = this->packBlob(bundle);
-	}
 
 	// if relation have been found between blob, just add them
 	if ( have_relation == true ) {
@@ -193,7 +199,7 @@ void moTuio2Module::notifyData(moDataStream *input) {
 
 			bundle->Add(msg);
 		}
-		
+
 	}
 
 	// unlock input before sending (no more input usage)
@@ -259,6 +265,19 @@ bool moTuio2Module::packFiducial(WOscBundle *bundle) {
 	}
 
 	return true;
+}
+
+int moTuio2Module::probe() {
+	moDataGenericList::iterator it;
+	moDataGenericList *list;
+
+	list = (moDataGenericList *)this->input->getData();
+	it = list->begin();
+	if ( it == list->end() )
+		return TUIO2_UNKNOWN;
+	if ( moUtils::inList("fiducial", (*it)->properties["implements"]->asString()) )
+		return TUIO2_FIDUCIAL;
+	return TUIO2_CURSOR;
 }
 
 void moTuio2Module::update() {
