@@ -443,16 +443,23 @@ void draw() {
 	$('#framecount').html(frameCount);
 }
 
+void coolLine(int x0, int y0, int x1, int y1) {
+	xmid = x0 + (x1 - x0) / 2;
+	line(x0, y0, xmid, y0);
+	line(xmid, y0, xmid, y1);
+	line(xmid, y1, x1, y1);
+}
+
 void drawConnectivity() {
 	if ( selected_input_idx != -1 ) {
-		line(
+		coolLine(
 			selected_input_widget.getInputX(selected_input_idx),
 			selected_input_widget.getInputY(selected_input_idx),
 			mouseX,
 			mouseY
 		);
 	} else if ( selected_output_idx != -1 ) {
-		line(
+		coolLine(
 			selected_output_widget.getOutputX(selected_output_idx),
 			selected_output_widget.getOutputY(selected_output_idx),
 			mouseX,
@@ -471,7 +478,7 @@ void drawConnectivity() {
 			for ( var k = 0; k < io.observers.size(); k++ ) {
 				w2 = io.observers.get(k);
 				idx = io.observers_idx.get(k);
-				line(w.getOutputX(j), w.getOutputY(j),
+				coolLine(w.getOutputX(j), w.getOutputY(j),
 					 w2.getInputX(idx), w2.getInputY(idx));
 			}
 		}
