@@ -646,7 +646,7 @@ void mousePressed() {
 						continue;
 					for ( int j = 0; j < w2.getOutputCount(); j++ ) {
 						iow2 = w2.getOutput(j);
-						if ( iow2.type != iow.type )
+						if ( !inList(iow2.type, iow.type, ',') )
 							continue
 						widgets_hover.add([w2, 'output', j]);
 					}
