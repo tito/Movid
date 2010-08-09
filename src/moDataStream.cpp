@@ -20,6 +20,13 @@
 
 #include "moDataStream.h"
 #include "moModule.h"
+#include "moUtils.h"
+
+bool moDataStreamInfo::isStreamValid(moDataStream *stream) {
+	if ( stream == NULL )
+		return false;
+	return moUtils::inList(stream->getFormat(), this->type, ",");
+}
 
 moDataStream::moDataStream(std::string format) {
 	this->format = format;

@@ -40,7 +40,7 @@ MODULE_DECLARE_EX(Pipeline,, "native", "Handle object list");
 extern int g_config_delay;
 
 
-moPipeline::moPipeline() : moModule(MO_MODULE_NONE, 0, 0) {
+moPipeline::moPipeline() : moModule(MO_MODULE_NONE) {
 	MODULE_INIT();
 }
 

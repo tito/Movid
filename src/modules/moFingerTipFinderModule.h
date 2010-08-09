@@ -28,7 +28,6 @@ class moFingerTipFinderModule : public moImageFilterModule {
 public:
 	moFingerTipFinderModule();
 	virtual ~moFingerTipFinderModule();
-	virtual moDataStream *getOutput(int n=0);
 
 
 protected:

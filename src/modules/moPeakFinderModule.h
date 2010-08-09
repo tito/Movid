@@ -38,7 +38,6 @@ protected:
 	void findMaxima();
 	void drawPeaks();
 	void applyFilter(IplImage*);
-	moDataStream* getOutput(int);
 
 	MODULE_INTERNALS();
 };

@@ -54,7 +54,7 @@
 
 MODULE_DECLARE(Tuio, "native", "Convert stream to TUIO format (touch & fiducial)");
 
-moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT, 1, 0) {
+moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT) {
 
 	MODULE_INIT();
 
@@ -63,8 +63,8 @@ moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 	this->fseq	= 0;
 
 	// declare inputs
-	this->input_infos[0] = new moDataStreamInfo(
-			"data", "moDataGenericList", "Data stream with type of 'blob' or 'fiducial'");
+	this->declareInput(0, &this->input, new moDataStreamInfo(
+			"data", "trackedblob", "Data stream with type of 'trackedblob'"));
 
 	// declare properties
 	this->properties["ip"] = new moProperty("127.0.0.1");
@@ -195,39 +195,6 @@ void moTuioModule::notifyData(moDataStream *input) {
 
 	this->input->unlock();
 	LOGM(MO_TRACE, "TUIO done");
-}
-
-void moTuioModule::setInput(moDataStream *stream, int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return;
-	}
-	if ( this->input != NULL )
-		this->input->removeObserver(this);
-	this->input = stream;
-	if ( stream != NULL ) {
-		if ( stream->getFormat() != "blob" &&
-			 stream->getFormat() != "fiducial" ) {
-			this->setError("Input 0 only accepts blob or fiducial, but got " + stream->getFormat());
-			this->input = NULL;
-			return;
-		}
-	}
-	if ( this->input != NULL )
-		this->input->addObserver(this);
-}
-
-moDataStream* moTuioModule::getInput(int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return NULL;
-	}
-	return this->input;
-}
-
-moDataStream* moTuioModule::getOutput(int n) {
-	this->setError("no output supported");
-	return NULL;
 }
 
 void moTuioModule::update() {

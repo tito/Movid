@@ -69,8 +69,8 @@ moFingerTipFinderModule::moFingerTipFinderModule() : moImageFilterModule(){
 	MODULE_INIT();
 
 	this->output_data = new moDataStream("blob");
-	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "blob", "Data stream with blobs");
+	this->declareOutput(1, &this->output_data, new moDataStreamInfo(
+			"data", "blob", "Data stream with blobs"));
 
 	this->storage = cvCreateMemStorage(0);
 	this->properties["min_distance"] = new moProperty(20.);
@@ -330,11 +330,5 @@ bool moFingerTipFinderModule::searchFingerTips(IplImage *source, CvSeq *contours
 	}
 
 	return true;
-}
-
-moDataStream* moFingerTipFinderModule::getOutput(int n) {
-	if ( n == 1 )
-		return this->output_data;
-	return moImageFilterModule::getOutput(n);
 }
 

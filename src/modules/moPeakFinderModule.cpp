@@ -37,10 +37,6 @@ moPeakFinderModule::moPeakFinderModule() : moImageFilterModule(){
 	this->properties["max_peaks"] = new moProperty(1);
 	// Avoid duplicate peaks that are close to each other.
 	this->properties["merge_distance"] = new moProperty(4.);
-
-//	this->output_data = new moDataStream("GenericBlob");
-//	this->output_count = 2;
-//	this->output_infos[1] = new moDataStreamInfo("data", "GenericBlob", "Data stream with Blob info");
 }
 
 moPeakFinderModule::~moPeakFinderModule() {
@@ -130,8 +126,3 @@ void moPeakFinderModule::applyFilter(IplImage *src) {
 //	this->output_data->push(this->blobs);
 }
 
-moDataStream* moPeakFinderModule::getOutput(int n) {
-	if ( n == 1 )
-		return this->output_data;
-	return moImageFilterModule::getOutput(n);
-}

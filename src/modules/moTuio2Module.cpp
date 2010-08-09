@@ -48,7 +48,7 @@
 
 MODULE_DECLARE(Tuio2, "native", "Convert stream to TUIO2 format");
 
-moTuio2Module::moTuio2Module() : moModule(MO_MODULE_INPUT, 1, 0) {
+moTuio2Module::moTuio2Module() : moModule(MO_MODULE_INPUT) {
 
 	MODULE_INIT();
 
@@ -56,13 +56,13 @@ moTuio2Module::moTuio2Module() : moModule(MO_MODULE_INPUT, 1, 0) {
 	this->osc	= NULL;
 	this->frame	= 0;
 
-	// declare inputs
-	this->input_infos[0] = new moDataStreamInfo(
-			"data", "moDataGenericList", "Data stream with type of 'blob' or 'fiducial'");
-
 	// declare properties
 	this->properties["ip"] = new moProperty("127.0.0.1");
 	this->properties["port"] = new moProperty(3333);
+
+	// declare input
+	this->declareInput(0, &this->input, new moDataStreamInfo(
+			"data", "trackedblob", "Data stream with type of 'trackedblob'"));
 }
 
 moTuio2Module::~moTuio2Module(){
@@ -259,40 +259,6 @@ bool moTuio2Module::packFiducial(WOscBundle *bundle) {
 	}
 
 	return true;
-}
-
-void moTuio2Module::setInput(moDataStream *stream, int n) {
-	std::string format;
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return;
-	}
-	if ( this->input != NULL )
-		this->input->removeObserver(this);
-	this->input = stream;
-	if ( stream != NULL ) {
-		format = stream->getFormat();
-		if ( format != "blob" && format != "fiducial" ) {
-			this->setError("Input 0 only accepts blobs or fiducial, but got " + stream->getFormat());
-			this->input = NULL;
-			return;
-		}
-	}
-	if ( this->input != NULL )
-		this->input->addObserver(this);
-}
-
-moDataStream* moTuio2Module::getInput(int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return NULL;
-	}
-	return this->input;
-}
-
-moDataStream* moTuio2Module::getOutput(int n) {
-	this->setError("no output supported");
-	return NULL;
 }
 
 void moTuio2Module::update() {

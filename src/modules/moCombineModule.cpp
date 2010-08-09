@@ -25,7 +25,7 @@
 
 MODULE_DECLARE(Combine, "native", "Take the maximum color from 2 image");
 
-moCombineModule::moCombineModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT, 2, 1) {
+moCombineModule::moCombineModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT) {
 	MODULE_INIT();
 
 	this->input1 = NULL;
@@ -33,13 +33,13 @@ moCombineModule::moCombineModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT, 
 	this->output = new moDataStream("IplImage");
 	this->output_buffer = NULL;
 
-	// declare outputs
-	this->input_infos[0] = new moDataStreamInfo(
-			"image1", "IplImage", "Background image");
-	this->input_infos[1] = new moDataStreamInfo(
-			"image2", "IplImage", "Image to combine to background (black is transparent)");
-	this->output_infos[0] = new moDataStreamInfo(
-			"combine", "IplImage", "Result of the combine");
+	// declare inputs/output
+	this->declareInput(0, &this->input1, new moDataStreamInfo(
+			"image1", "IplImage", "Background image"));
+	this->declareInput(1, &this->input2, new moDataStreamInfo(
+			"image2", "IplImage", "Image to combine to background (black is transparent)"));
+	this->declareOutput(0, &this->output, new moDataStreamInfo(
+			"combine", "IplImage", "Result of the combine"));
 }
 
 moCombineModule::~moCombineModule() {
@@ -102,49 +102,4 @@ void moCombineModule::update() {
 
 	cvReleaseImage(&d1);
 	cvReleaseImage(&d2);
-}
-
-void moCombineModule::setInput(moDataStream *stream, int n) {
-	assert( n == 0 || n == 1 );
-
-	if ( n == 0 ) {
-		if ( this->input1 != NULL )
-			this->input1->removeObserver(this);
-		this->input1 = stream;
-		if ( stream->getFormat() != "IplImage" ) {
-			this->setError("Input 0 accept only IplImage");
-			this->input1 = NULL;
-			return;
-		}
-	} else {
-		if ( this->input2 != NULL )
-			this->input2->removeObserver(this);
-		this->input2 = stream;
-		if ( stream->getFormat() != "IplImage" ) {
-			this->setError("Input 1 accept only IplImage");
-			this->input2 = NULL;
-			return;
-		}
-	}
-
-	if ( stream != NULL )
-		stream->addObserver(this);
-}
-
-moDataStream *moCombineModule::getInput(int n) {
-	if ( n == 0 )
-		return this->input1;
-	if ( n == 1 )
-		return this->input2;
-
-	this->setError("Invalid input index");
-	return NULL;
-}
-
-moDataStream *moCombineModule::getOutput(int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid output index");
-		return NULL;
-	}
-	return this->output;
 }

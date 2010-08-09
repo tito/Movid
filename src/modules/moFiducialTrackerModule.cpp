@@ -45,9 +45,9 @@ typedef struct {
 moFiducialTrackerModule::moFiducialTrackerModule() : moImageFilterModule() {
 	MODULE_INIT();
 
-	this->output_data = new moDataStream("fiducial");
-	this->output_count = 2;
-	this->output_infos[1] = new moDataStreamInfo("data", "fiducial", "Data stream with fiducial info");
+	this->output_data = new moDataStream("blob");
+	this->declareOutput(1, &this->output_data, new moDataStreamInfo(
+			"data", "blob", "Data stream with fiducial info"));
 
 	this->internal = malloc(sizeof(fiducials_data_t));
 }
@@ -61,7 +61,6 @@ void moFiducialTrackerModule::clearFiducials() {
 		delete (*it);
 	this->fiducials.clear();
 }
-
 
 void moFiducialTrackerModule::allocateBuffers() {
 	IplImage* src = (IplImage*)(this->input->getData());
@@ -165,11 +164,5 @@ void moFiducialTrackerModule::applyFilter(IplImage *src) {
 
 	LOGM(MO_DEBUG, "-> Found " << valid_fiducials << " fiducials");
 	this->output_data->push(&this->fiducials);
-}
-
-moDataStream* moFiducialTrackerModule::getOutput(int n) {
-	if ( n == 1 )
-		return this->output_data;
-	return moImageFilterModule::getOutput(n);
 }
 

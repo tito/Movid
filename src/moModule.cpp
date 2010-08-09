@@ -98,10 +98,8 @@ static void stats_process(mo_module_stats_t *s) {
 	}
 }
 
-moModule::moModule(unsigned int capabilities, int input_count, int output_count) {
+moModule::moModule(unsigned int capabilities) {
 	this->capabilities	= capabilities;
-	this->input_count	= input_count;
-	this->output_count	= output_count;
 	this->is_started	= false;
 	this->owner			= NULL;
 	this->is_error		= false;
@@ -162,11 +160,11 @@ unsigned int moModule::getCapabilities() {
 }
 
 int moModule::getInputCount() {
-	return this->input_count;
+	return this->input_infos.size();
 }
 
 int moModule::getOutputCount() {
-	return this->output_count;
+	return this->output_infos.size();
 }
 
 int moModule::getInputIndex(moDataStream *ds) {
@@ -477,3 +475,73 @@ std::vector<std::string> &moModule::getGui(void) {
 	return this->gui;
 }
 
+void moModule::declareInput(int n, moDataStream **storage, moDataStreamInfo *info) {
+	// FIXME ensure we are not leaking anything before reassign
+	assert(info != NULL);
+	assert(storage != NULL);
+	this->input_map[n] = storage;
+	this->input_infos[n] = info;
+}
+
+void moModule::declareOutput(int n, moDataStream **storage, moDataStreamInfo *info) {
+	// FIXME ensure we are not leaking anything before reassign
+	assert(info != NULL);
+	assert(storage != NULL);
+	this->output_map[n] = storage;
+	this->output_infos[n] = info;
+}
+
+moDataStream *moModule::getInput(int n) {
+	std::map<int, moDataStream**>::iterator it;
+	it = this->input_map.find(n);
+	if ( it == this->input_map.end() )
+		return NULL;
+	return *it->second;
+}
+
+moDataStream *moModule::getOutput(int n) {
+	std::map<int, moDataStream**>::iterator it;
+	it = this->output_map.find(n);
+	if ( it == this->output_map.end() )
+		return NULL;
+	return *it->second;
+}
+
+void moModule::setInput(moDataStream *stream, int n) {
+	std::ostringstream oss;
+	std::map<int, moDataStream**>::iterator it;
+	moDataStream **input = NULL;
+	moDataStreamInfo *info = NULL;
+
+	// search if the index is mapped to an input storage
+	it = this->input_map.find(n);
+	if ( it == this->input_map.end() ) {
+		this->setError("Invalid input index");
+		return;
+	}
+
+	// deference this input storage
+	input = it->second;
+	if ( input == NULL ) {
+		this->setError("Invalid input mapping");
+		return;
+	}
+
+	// get stream info for this storage
+	info = this->input_infos[n];
+
+	if ( *input != NULL )
+		(*input)->removeObserver(this);
+	*input = stream;
+	if ( stream != NULL ) {
+		if ( !info->isStreamValid(stream) ) {
+			oss << "Input " << n << " accept <" << info->getType() << \
+				"> but got <" << stream->getFormat() << ">";
+			this->setError(oss.str());
+			*input = NULL;
+			return;
+		}
+	}
+	if ( *input != NULL )
+		(*input)->addObserver(this);
+}

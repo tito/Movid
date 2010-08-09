@@ -25,6 +25,7 @@
 #include "pasync.h"
 
 class moModule;
+class moDataStream;
 
 class moDataStreamInfo {
 public:
@@ -47,6 +48,8 @@ public:
 	std::string getDescription() {
 		return this->description;
 	}
+
+	bool isStreamValid(moDataStream *stream);
 
 protected:
 	std::string name;

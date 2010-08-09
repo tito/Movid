@@ -26,7 +26,7 @@
 
 MODULE_DECLARE(Camera, "native", "Fetch camera stream");
 
-moCameraModule::moCameraModule() : moModule(MO_MODULE_OUTPUT, 0, 1) {
+moCameraModule::moCameraModule() : moModule(MO_MODULE_OUTPUT) {
 
 	MODULE_INIT();
 
@@ -34,8 +34,8 @@ moCameraModule::moCameraModule() : moModule(MO_MODULE_OUTPUT, 0, 1) {
 	this->stream = new moDataStream("IplImage");
 
 	// declare outputs
-	this->output_infos[0] = new moDataStreamInfo(
-			"camera", "IplImage", "Image stream of the camera");
+	this->declareOutput(0, &this->stream, new moDataStreamInfo(
+			"camera", "IplImage", "Image stream of the camera"));
 
 	// declare properties
 	this->properties["index"] = new moProperty(0);
@@ -78,21 +78,5 @@ void moCameraModule::update() {
 void moCameraModule::poll() {
 	this->notifyUpdate();
 	moModule::poll();
-}
-
-void moCameraModule::setInput(moDataStream* input, int n) {
-	this->setError("no input supported");
-}
-
-moDataStream* moCameraModule::getOutput(int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid output index");
-		return NULL;
-	}
-	return this->stream;
-}
-
-moDataStream* moCameraModule::getInput(int n) {
-	return NULL;
 }
 

@@ -64,15 +64,18 @@ void mocalibrationmodule_triangulate(moProperty *property, void *userdata)
 	module->notifyTriangulate();
 }
 
-moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT | MO_MODULE_GUI, 1, 1){
+moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT | MO_MODULE_GUI){
 
 	MODULE_INIT();
 
 	// declare input/output
 
+	this->input = NULL;
 	this->output = new moDataStream("blob");
-	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream with type of 'blob'");
-	this->output_infos[0] = new moDataStreamInfo("data", "blob", "Data stream with type of 'blob'");
+	this->declareInput(0, &this->input, new moDataStreamInfo(
+			"data", "blob", "Data stream with type of 'blob'"));
+	this->declareOutput(0, &this->output, new moDataStreamInfo(
+			"data", "blob", "Data stream with type of 'blob'"));
 
 	this->properties["rows"] = new moProperty(3);
 	this->properties["rows"]->setMin(2);
@@ -97,7 +100,6 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->last_finished_id = -1;
 	this->current_duration = 0;
 	this->current_touch = NULL;
-	this->input = NULL;
 	this->calibrated = false;
 
 	this->subdiv = NULL;
@@ -511,35 +513,4 @@ void moCalibrationModule::start() {
 
 void moCalibrationModule::stop() {
 	moModule::stop();
-}
-
-void moCalibrationModule::setInput(moDataStream *stream, int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return;
-	}
-	if ( this->input != NULL )
-		this->input->removeObserver(this);
-	this->input = stream;
-	if ( stream != NULL ) {
-		if ( stream->getFormat() != "blob") {
-			this->setError("Input 0 only accepts blobs, but got " + stream->getFormat());
-			this->input = NULL;
-			return;
-		}
-	}
-	if ( this->input != NULL )
-		this->input->addObserver(this);
-}
-
-moDataStream* moCalibrationModule::getInput(int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return NULL;
-	}
-	return this->input;
-}
-
-moDataStream* moCalibrationModule::getOutput(int n) {
-	return this->output;
 }

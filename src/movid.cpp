@@ -83,11 +83,13 @@ int g_config_delay = 5;
 
 class otStreamModule : public moModule {
 public:
-	otStreamModule() : moModule(MO_MODULE_INPUT, 1, 0) {
+	otStreamModule() : moModule(MO_MODULE_INPUT) {
 		this->input = new moDataStream("stream");
 		this->output_buffer = NULL;
 		this->properties["id"] = new moProperty(moModule::createId("WebStream"));
 		this->properties["scale"] = new moProperty(1);
+		this->declareInput(0, &this->input, new moDataStreamInfo(
+			"stream", "IplImage", "Image to stream on webbrowser"));
 	}
 
 	void stop() {
@@ -111,22 +113,6 @@ public:
 			this->output_buffer = cvCreateImage(size, src->depth, src->nChannels);
 		}
 		this->notifyUpdate();
-	}
-
-	void setInput(moDataStream* stream, int n=0) {
-		if ( this->input != NULL )
-			this->input->removeObserver(this);
-		this->input = stream;
-		if ( this->input != NULL )
-			this->input->addObserver(this);
-	}
-
-	virtual moDataStream *getInput(int n=0) {
-		return this->input;
-	}
-
-	virtual moDataStream *getOutput(int n=0) {
-		return NULL;
 	}
 
 	bool copy() {

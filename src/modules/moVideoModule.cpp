@@ -24,7 +24,7 @@
 
 MODULE_DECLARE(Video, "native", "Provide a stream from a video file");
 
-moVideoModule::moVideoModule() : moModule(MO_MODULE_OUTPUT, 0, 1) {
+moVideoModule::moVideoModule() : moModule(MO_MODULE_OUTPUT) {
 
 	MODULE_INIT();
 
@@ -32,7 +32,8 @@ moVideoModule::moVideoModule() : moModule(MO_MODULE_OUTPUT, 0, 1) {
 	this->stream = new moDataStream("IplImage");
 
 	// declare outputs
-	this->output_infos[0] = new moDataStreamInfo("video", "IplImage", "Video image stream");
+	this->declareOutput(0, &this->stream, new moDataStreamInfo(
+			"video", "IplImage", "Video image stream"));
 
 	// declare properties
 	this->properties["filename"] = new moProperty("");
@@ -74,22 +75,6 @@ void moVideoModule::update() {
 		this->numframes = (int)cvGetCaptureProperty(static_cast<CvCapture *>(this->video), CV_CAP_PROP_FRAME_COUNT);
 	}
 
-}
-
-void moVideoModule::setInput(moDataStream* input, int n) {
-	this->setError("no input supported");
-}
-
-moDataStream* moVideoModule::getInput(int n) {
-	return NULL;
-}
-
-moDataStream* moVideoModule::getOutput(int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid output index");
-		return NULL;
-	}
-	return this->stream;
 }
 
 void moVideoModule::poll() {

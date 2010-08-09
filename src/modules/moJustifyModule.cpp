@@ -26,7 +26,7 @@
 
 MODULE_DECLARE(Justify, "native", "Justify the x/y data: (X/Y) = ((ma,mb)/(mc,md)) * (x/y) + (dx/dy)");
 
-moJustifyModule::moJustifyModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT, 1, 1) {
+moJustifyModule::moJustifyModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT) {
 
 	MODULE_INIT();
 
@@ -38,14 +38,12 @@ moJustifyModule::moJustifyModule() : moModule(MO_MODULE_INPUT|MO_MODULE_OUTPUT, 
 	this->properties["md"] = new moProperty(1.0);
 
 	this->input = NULL;
-	// declare inputs
-	this->input_infos[0] = new moDataStreamInfo(
-		"data", "moDataGenericList", "Data stream with type of 'touch' or 'fiducial'");
+	this->declareInput(0, &this->input, new moDataStreamInfo(
+			"data", "blob", "Data stream with type of blob"));
 
 	this->output = new moDataStream("GenericTouch");
-	// declare outputs
-	this->output_infos[0] = new moDataStreamInfo(
-			"data", "moDataGenericList", "Result of the justify");
+	this->declareOutput(0, &this->output, new moDataStreamInfo(
+			"data", "blob", "Result of the justify"));
 }
 
 moJustifyModule::~moJustifyModule() {
@@ -56,7 +54,6 @@ moJustifyModule::~moJustifyModule() {
 void moJustifyModule::notifyData(moDataStream *input) {
 	assert(input != NULL);
 	assert(input == this->input);
-	assert((input->getFormat() == "GenericTouch") ||(input->getFormat() == "GenericFiducial"));
 
 	std::string format = input->getFormat();
 	
@@ -68,6 +65,7 @@ void moJustifyModule::notifyData(moDataStream *input) {
 
 	moDataGenericList *list = (moDataGenericList *)this->input->getData();
 	for ( it = list->begin(); it != list->end(); it++ ) {
+		// FIXME !
 		if (format == "GenericFiducial") {
 			assert((*it)->properties["type"]->asString() == "fiducial");
 		} else if (format == "GenericTouch") {
@@ -108,40 +106,5 @@ void moJustifyModule::update() {
 	if ((this->input == NULL) || (this->output == NULL))
 		return;
 
-}
-
-void moJustifyModule::setInput(moDataStream *stream, int n) {
-	assert(n == 0);
-	assert(stream != NULL);
-
-	if (n == 0) {
-		if (this->input != NULL)
-			this->input->removeObserver(this);
-		this->input = stream;
-		if ((stream->getFormat() != "GenericTouch") && (stream->getFormat() != "GenericFiducial")) {
-			this->setError("Input 0 accept only GenericTouch or GenericFiducial");
-			this->input = NULL;
-			return;
-		}
-		this->output->setFormat(stream->getFormat());
-	}
-
-	stream->addObserver(this);
-}
-
-moDataStream *moJustifyModule::getInput(int n) {
-	if (n == 0)
-		return this->input;
-
-	this->setError("Invalid input index");
-	return NULL;
-}
-
-moDataStream *moJustifyModule::getOutput(int n) {
-	if (n != 0) {
-		this->setError("Invalid output index");
-		return NULL;
-	}
-	return this->output;
 }
 

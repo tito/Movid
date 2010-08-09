@@ -30,7 +30,7 @@ MODULE_DECLARE(ImageDisplay, "native", "Display image on a window");
 
 static unsigned int count = 0;
 
-moImageDisplayModule::moImageDisplayModule() : moModule(MO_MODULE_INPUT, 1, 0) {
+moImageDisplayModule::moImageDisplayModule() : moModule(MO_MODULE_INPUT) {
 
 	MODULE_INIT();
 
@@ -38,8 +38,8 @@ moImageDisplayModule::moImageDisplayModule() : moModule(MO_MODULE_INPUT, 1, 0) {
 	this->img = NULL;
 
 	// declare inputs
-	this->input_infos[0] = new moDataStreamInfo(
-			"image", "IplImage", "Show image stream in a window");
+	this->declareInput(0, &this->input, new moDataStreamInfo(
+			"image", "IplImage,IplImage8", "Show image stream in a window"));
 
 	// declare properties
 	std::ostringstream oss;
@@ -75,39 +75,6 @@ void moImageDisplayModule::notifyData(moDataStream *input) {
 	this->input->unlock();
 
 	this->notifyUpdate();
-}
-
-void moImageDisplayModule::setInput(moDataStream *stream, int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return;
-	}
-
-	if ( this->input != NULL )
-		this->input->removeObserver(this);
-	this->input = stream;
-	if ( stream != NULL ) {
-		if ( stream->getFormat() != "IplImage" ) {
-			this->setError("Input 0 accept only IplImage");
-			this->input = NULL;
-			return;
-		}
-	}
-	if ( this->input != NULL )
-		this->input->addObserver(this);
-}
-
-moDataStream* moImageDisplayModule::getInput(int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return NULL;
-	}
-	return this->input;
-}
-
-moDataStream* moImageDisplayModule::getOutput(int n) {
-	this->setError("no output supported");
-	return NULL;
 }
 
 void moImageDisplayModule::update() {

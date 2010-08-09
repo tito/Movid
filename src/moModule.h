@@ -103,23 +103,29 @@ public:
 	/*! \brief Instance a module
 	 *
 	 * \param capabilities combine flags from MO_MODULE_*
-	 * \param input_count number of inputs
-	 * \param output_count number of outputs
 	 *
 	 * \return an instance of moModule()
 	 */
-	moModule(unsigned int capabilities, int input_count, int output_count);
+	moModule(unsigned int capabilities);
 
 	/*! \brief Free the module
 	 */
 	virtual ~moModule();
+
+	/*! \brief Declare an input (only at init time.)
+	 */
+	void declareInput(int n, moDataStream **storage, moDataStreamInfo *info);
+
+	/*! \brief Declare an output (only at init time.)
+	 */
+	void declareOutput(int n, moDataStream **storage, moDataStreamInfo *info);
 	
 	/*! \brief Connect an input from an existing moDataStream
 	 *
 	 * \param stream instance of a moDataStream()
 	 * \param n index of the input to connect
 	 */
-	virtual void setInput(moDataStream* stream, int n=0) = 0;
+	virtual void setInput(moDataStream* stream, int n=0);
 
 	/*! \brief Get a input data stream
 	 *
@@ -127,7 +133,7 @@ public:
 	 *
 	 * \return the selected input.
 	 */
-	virtual moDataStream *getInput(int n=0) = 0;
+	virtual moDataStream *getInput(int n=0);
 
 	/*! \brief Get a output data stream
 	 *
@@ -135,7 +141,7 @@ public:
 	 *
 	 * \return the selected output.
 	 */
-	virtual moDataStream *getOutput(int n=0) = 0;
+	virtual moDataStream *getOutput(int n=0);
 	
 	/*! \brief Get the input index at which the data stream is attached
 	 *
@@ -331,13 +337,13 @@ protected:
 	 */
 	virtual void notifyUpdate();
 
-	/*! \brief Number of input
+	/*! \brief Input mapping
 	 */
-	int	input_count;
+	std::map<int, moDataStream **> input_map;
 
-	/*! \brief Number of output
+	/*! \brief Output mapping
 	 */
-	int	output_count;
+	std::map<int, moDataStream **> output_map;
 
 	/*! \brief Input informations
 	 */

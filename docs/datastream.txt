@@ -1,0 +1,12 @@
+Data stream
+===========
+
+Many datastream exist, to be able to connect different module between them.
+
+List of data stream type
+------------------------
+
+* IplImage: generic image coming from OpenCV
+* IplImage8: generic 8bit image coming from OpenCV
+* blob: generic data container, used for blob/fids/... (check container.txt)
+* trackedblob: generic data container, used for blob/fids/..., and tracked

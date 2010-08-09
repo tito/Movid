@@ -21,19 +21,20 @@
 
 MODULE_DECLARE(GreedyBlobTracker, "native", "Track Blobs based on a simple greedy algorithm");
 
-moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT, 1, 1){
+moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT) {
 
 	MODULE_INIT();
 
 	// initialize input/output
 	this->input = NULL;
-	this->output = new moDataStream("blob");
+	this->output = new moDataStream("trackedblob");
 
 	// declare input/output
-	this->input_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream of type 'blob'");
-	this->output_infos[0] = new moDataStreamInfo("data", "moDataGenericList", "Data stream of type 'blob'");
-	//this->output_infos[1] = new moDataStreamInfo("image", "IplImage", "Image showing the currently tracked blobs in different colors");
-
+	this->declareInput(0, &this->input, new moDataStreamInfo(
+				"data", "blob", "Data stream of type 'blob'"));
+	this->declareOutput(0, &this->output, new moDataStreamInfo(
+				"data", "trackedblob", "Data stream of type 'trackedblob'"));
+	
     // How many frames may a blob survive without finding a successor?
 	this->properties["max_age"] = new moProperty(28);
 	this->properties["max_dist"] = new moProperty(0.1);
@@ -150,37 +151,5 @@ void moGreedyBlobTrackerModule::notifyData(moDataStream *input) {
 	assert( input != NULL );
 	assert( input == this->input );
 	this->notifyUpdate();
-}
-
-
-void moGreedyBlobTrackerModule::setInput(moDataStream *stream, int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return;
-	}
-	if ( this->input != NULL )
-		this->input->removeObserver(this);
-	this->input = stream;
-	if ( stream != NULL ) {
-		if ( stream->getFormat() != "blob" ) {
-			this->setError("Input 0 only accepts blobs but got " + stream->getFormat());
-			this->input = NULL;
-			return;
-		}
-	}
-	if ( this->input != NULL )
-		this->input->addObserver(this);
-}
-
-moDataStream* moGreedyBlobTrackerModule::getInput(int n) {
-	if ( n != 0 ) {
-		this->setError("Invalid input index");
-		return NULL;
-	}
-	return this->input;
-}
-
-moDataStream* moGreedyBlobTrackerModule::getOutput(int n) {
-	return this->output;
 }
 

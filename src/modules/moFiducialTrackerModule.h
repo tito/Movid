@@ -26,7 +26,6 @@ class moFiducialTrackerModule : public moImageFilterModule {
 public:
 	moFiducialTrackerModule();
 	virtual ~moFiducialTrackerModule();
-	virtual moDataStream *getOutput(int n=0);
 	
 protected:
 	moDataGenericList fiducials;

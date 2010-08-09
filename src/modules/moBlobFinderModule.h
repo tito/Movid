@@ -33,7 +33,6 @@ protected:
 	CvMemStorage *storage;
 	moDataGenericList *blobs;
 	moDataStream *output_data;
-	moDataStream* getOutput(int);
 
 	MODULE_INTERNALS();
 };
