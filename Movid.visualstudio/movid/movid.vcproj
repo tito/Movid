@@ -219,10 +219,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\src\modules\moBlobTrackerModule.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\src\modules\moCameraModule.h"
 					>
 				</File>
@@ -388,10 +384,6 @@
 				</File>
 				<File
 					RelativePath="..\..\src\modules\moBackgroundSubtractModule.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\src\modules\moBlobTrackerModule.cpp"
 					>
 				</File>
 				<File
