@@ -40,6 +40,7 @@ private:
 	moDataStream *input;
 	moOSC *osc;
 	int fseq;
+	int type;
 
 	MODULE_INTERNALS();
 };

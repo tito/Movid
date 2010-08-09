@@ -54,6 +54,12 @@
 
 MODULE_DECLARE(Tuio, "native", "Convert stream to TUIO format (touch & fiducial)");
 
+enum {
+	TUIO_UNKNOWN = 0,
+	TUIO_2DCUR,
+	TUIO_2DOBJ,
+};
+
 moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT) {
 
 	MODULE_INIT();
@@ -61,6 +67,7 @@ moTuioModule::moTuioModule() : moModule(MO_MODULE_INPUT) {
 	this->input = NULL;
 	this->osc	= NULL;
 	this->fseq	= 0;
+	this->type	= TUIO_UNKNOWN;
 
 	// declare inputs
 	this->declareInput(0, &this->input, new moDataStreamInfo(
@@ -93,6 +100,8 @@ void moTuioModule::stop() {
 
 void moTuioModule::notifyData(moDataStream *input) {
 	WOscBundle *bundle = NULL;
+	moDataGenericList::iterator it;
+	moDataGenericList *list;
 
 	assert( input != NULL );
 	assert( input == this->input );
@@ -101,67 +110,69 @@ void moTuioModule::notifyData(moDataStream *input) {
 	LOGM(MO_TRACE, "Updating Tuio stream");
 	this->input->lock();
 
-	// TODO also adapt fiducial tracker to new blob protocol
-	if ( input->getFormat() == "fiducial" ) {
+	list = static_cast<moDataGenericList *>(this->input->getData());
 
-		bundle = new WOscBundle();
-		WOscMessage *msg = new WOscMessage("/tuio/2Dobj");
-		msg->Add("alive");
-
-		moDataGenericList::iterator it;
-		moDataGenericList *list = (moDataGenericList *)this->input->getData();
-		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert(moUtils::inList("fiducial", (*it)->properties["implements"]->asString()));
-			assert(moUtils::inList("pos", (*it)->properties["implements"]->asString()));
-			assert(moUtils::inList("tracked", (*it)->properties["implements"]->asString()));
-			msg->Add(atoi((*it)->properties["id"]->asString().c_str()));
+	// we must have data to probe the first time which data we got
+	// and extract if it will be fiducial or simple blob
+	if ( this->type == TUIO_UNKNOWN ) {
+		it = list->begin();
+		if ( it == list->end() ) {
+			this->input->unlock();
+			return;
 		}
 
-		bundle->Add(msg);
+		std::string implements = (*it)->properties["implements"]->asString();
+		if ( moUtils::inList("fiducial", implements) )
+			this->type = TUIO_2DOBJ;
+		else
+			this->type = TUIO_2DCUR;
+	}
 
-		for ( it = list->begin(); it != list->end(); it++ ) {
-			msg = new WOscMessage("/tuio/2Dobj");
-			msg->Add("set");
-			msg->Add(9843); // session id
-			msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
-			msg->Add((float)(*it)->properties["x"]->asDouble()); // x
-			msg->Add((float)(*it)->properties["y"]->asDouble()); // y
+	std::string osc_path;
+	if ( this->type == TUIO_2DOBJ )
+		osc_path = "/tuio/2Dobj";
+	else
+		osc_path = "/tuio/2Dcur";
+
+	//
+	// Alive message
+	//
+
+	bundle = new WOscBundle();
+	WOscMessage *msg = new WOscMessage(osc_path.c_str());
+	msg->Add("alive");
+
+	for ( it = list->begin(); it != list->end(); it++ ) {
+		assert(moUtils::inList("tracked", (*it)->properties["implements"]->asString()));
+		assert(moUtils::inList("pos", (*it)->properties["implements"]->asString()));
+		if ( this->type == TUIO_2DOBJ )
+			msg->Add((*it)->properties["id"]->asInteger());
+		else if ( this->type == TUIO_2DCUR )
+			msg->Add((*it)->properties["blob_id"]->asInteger());
+	}
+
+	bundle->Add(msg);
+
+	//
+	// Set message
+	//
+
+	for ( it = list->begin(); it != list->end(); it++ ) {
+		msg = new WOscMessage(osc_path.c_str());
+		msg->Add("set");
+		msg->Add(9843); // session id
+		msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
+		msg->Add((float)(*it)->properties["x"]->asDouble()); // x
+		msg->Add((float)(*it)->properties["y"]->asDouble()); // y
+		if ( this->type == TUIO_2DOBJ ) {
 			msg->Add((float)(*it)->properties["angle"]->asDouble()); // a
 			msg->Add((float)0.); // X
 			msg->Add((float)0.); // Y
 			msg->Add((float)0.); // A
 			msg->Add((float)0.); // m
 			msg->Add((float)0.); // r
-			bundle->Add(msg);
-		}
-
-		msg = new WOscMessage("/tuio/2Dobj");
-		msg->Add("fseq");
-		msg->Add(this->fseq++);
-		bundle->Add(msg);
-
-
-	} else if ( input->getFormat() == "blob" ) {
-		// /tuio/2Dcur set s x y X Y m
-
-		bundle = new WOscBundle();
-		WOscMessage *msg = new WOscMessage("/tuio/2Dcur");
-		msg->Add("alive");
-
-		moDataGenericList::iterator it;
-		moDataGenericList *list = (moDataGenericList *)this->input->getData();
-		for ( it = list->begin(); it != list->end(); it++ ) {
-			assert(moUtils::inList("tracked", (*it)->properties["implements"]->asString()));
-			assert(moUtils::inList("pos", (*it)->properties["implements"]->asString()));
-			// XXX Add an assert that checks if the blob implements x/y
-			msg->Add((*it)->properties["blob_id"]->asInteger());
-		}
-
-		bundle->Add(msg);
-
-		for ( it = list->begin(); it != list->end(); it++ ) {
-			msg = new WOscMessage("/tuio/2Dcur");
-			msg->Add("set");
+		} else if ( this->type == TUIO_2DCUR ) {
+			// /tuio/2Dcur set s x y X Y m
 			msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
 			msg->Add((float)(*it)->properties["x"]->asDouble()); // x
 			msg->Add((float)(*it)->properties["y"]->asDouble()); // y
@@ -174,19 +185,18 @@ void moTuioModule::notifyData(moDataStream *input) {
 				msg->Add((float)(*it)->properties["width"]->asDouble()); // w
 				msg->Add((float)(*it)->properties["height"]->asDouble()); // h
 			}
-			bundle->Add(msg);
 		}
-
-		msg = new WOscMessage("/tuio/2Dcur");
-		msg->Add("fseq");
-		msg->Add(this->fseq++);
 		bundle->Add(msg);
-
-	} else {
-		LOGM(MO_ERROR, "Unsupported input type: " << input->getFormat());
-		this->setError("Unsupported input type");
 	}
 
+	//
+	// Frame sequence message
+	//
+
+	msg = new WOscMessage(osc_path.c_str());
+	msg->Add("fseq");
+	msg->Add(this->fseq++);
+	bundle->Add(msg);
 
     LOGM(MO_TRACE, "Sending OSC bundle");
 	this->osc->send(bundle);

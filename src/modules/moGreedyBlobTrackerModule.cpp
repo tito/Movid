@@ -34,7 +34,7 @@ moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moModule(MO_MODULE_INPU
 				"data", "blob", "Data stream of type 'blob'"));
 	this->declareOutput(0, &this->output, new moDataStreamInfo(
 				"data", "trackedblob", "Data stream of type 'trackedblob'"));
-	
+
     // How many frames may a blob survive without finding a successor?
 	this->properties["max_age"] = new moProperty(28);
 	this->properties["max_dist"] = new moProperty(0.1);
@@ -62,7 +62,7 @@ void moGreedyBlobTrackerModule::trackBlobs() {
         //for each of blobs in teh new frame, find teh closest matching one from before
         moDataGenericContainer* closest_blob = NULL;
         min_dist = this->properties["max_dist"]->asDouble();
-        
+
 		new_x = (*it)->properties["x"]->asDouble();
 		new_y = (*it)->properties["y"]->asDouble();
         moDataGenericList::iterator it_old;
@@ -77,13 +77,13 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 			old_y = (*it_old)->properties["y"]->asDouble();
 			// XXX Make sure that our INPUT is in 0.0 - 1.0. I checked and it seemed to not always be...
 			dist = sqrt(pow(old_x - new_x, 2) + pow(old_y - new_y, 2));
-            
+
             if (dist < min_dist) {
                 closest_blob = (*it_old);
                 min_dist = dist;
             }
         }
-        
+
         //found the closest one out of teh ones that are left, assign id, and invalidate old blob
         if (closest_blob){
             int old_id = closest_blob->properties["blob_id"]->asInteger();
@@ -115,9 +115,9 @@ void moGreedyBlobTrackerModule::update() {
 	std::string implements;
 
     LOG(MO_DEBUG, "update called");
-    
+
     this->new_blobs->clear();
-   
+
     // copy teh new blobs to our new_blobs list, afterwards well assign id's
 	blobs = static_cast<moDataGenericList*>(this->input->getData());
 
@@ -128,7 +128,7 @@ void moGreedyBlobTrackerModule::update() {
 		implements += ",tracked";
 		blob->properties["implements"]->set(implements);
         blob->properties["blob_id"] = new moProperty(0);
-        this->new_blobs->push_back(blob);   
+        this->new_blobs->push_back(blob);
     }
     this->input->unlock();
 
@@ -140,7 +140,7 @@ void moGreedyBlobTrackerModule::update() {
    //this->pruneBlobs();
 
    this->output->push(this->new_blobs);
-   
+
    //make teh new list teh old list
    moDataGenericList* tmp = this->old_blobs;
    this->old_blobs = this->new_blobs;
