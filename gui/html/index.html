@@ -139,7 +139,7 @@ class Widget {
 		_h = headerSize();
 		if ( _x < x + w - 20 || _x > x + w )
 			return -1;
-		if ( _y < h || _y >= _h + outputs.size() * 20 )
+		if ( _y < _h || _y >= _h + outputs.size() * 20 )
 			return -1;
 		_y -= _h;
 		_y = _y / 20;
