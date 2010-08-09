@@ -81,6 +81,22 @@ static std::string config_pidfile = "/var/run/movid.pid";
 static struct evhttp *server = NULL;
 int g_config_delay = 5;
 
+char *strsep(char **stringp, const char *delim) 
+{ 
+        char *s = *stringp; 
+        char *e; 
+
+        if (!s) 
+                return NULL; 
+
+        e = strpbrk(s, delim); 
+        if (e) 
+                *e++ = '\0'; 
+
+        *stringp = e; 
+        return s; 
+}
+
 class otStreamModule : public moModule {
 public:
 	otStreamModule() : moModule(MO_MODULE_INPUT, 1, 0) {
