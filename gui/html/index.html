@@ -117,6 +117,22 @@ class Widget {
 		outputs = new ArrayList();
 	}
 
+	int getInputCount() {
+		return inputs.size();
+	}
+
+	int getOutputCount() {
+		return outputs.size();
+	}
+
+	IOWidget getInput(int idx) {
+		return inputs[idx];
+	}
+
+	IOWidget getOutput(int idx) {
+		return outputs[idx];
+	}
+
 	bool collide(int _x, int _y) {
 		return _x >= x && _x <= x + w && _y >= y && _y <= y + h;
 	}
@@ -156,28 +172,48 @@ class Widget {
 	}
 
 	void drawInputs() {
-		fill(250, 150, 50);
 
 		_x = x;
 		_y = headerSize();
 		for ( int i = 0; i < inputs.size(); i++ ) {
+			fill(250, 150, 50);
+
+			for ( int j = 0; j < widgets_hover.size(); j++ ) {
+				o = widgets_hover[j];
+				if ( this != o[0] || o[1] != 'input' || o[2] != i )
+					continue;
+				fill(0x8b, 0xea, 0x00);
+				break;
+			}
+
 			rect(_x, _y, 15, 15);
 			_y += 20;
 		}
 	}
 
 	void drawOutputs() {
-		fill(250, 150, 50);
 
 		_x = x + w - 15;
-		_y = y + textHeight(name) + 10;
+		_y = headerSize();
 		for ( int i = 0; i < outputs.size(); i++ ) {
+			fill(250, 150, 50);
+
+			for ( int j = 0; j < widgets_hover.size(); j++ ) {
+				o = widgets_hover[j];
+				if ( this != o[0] || o[1] != 'output' || o[2] != i )
+					continue;
+				fill(0x8b, 0xea, 0x00);
+				break;
+			}
+
 			rect(_x, _y, 15, 15);
 			_y += 20;
 		}
 	}
 
 	void drawBox() {
+		bool do_draw = false;
+
 		// box
 		fill(204, 102, 0);
 		rect(x, y, w, h);
@@ -189,8 +225,29 @@ class Widget {
 		fill(255, 255, 255);
 		text(name, x + (w - textWidth(name)) / 2, y + textHeight(name) + 2);
 
+		// is widget is selected ?
 		if ( mo_widget_selected == name ) {
 			stroke(230, 230, 230);
+			do_draw = true;
+
+		// or is widget is currently selected for connectivity ?
+		} else if ( connectivity_widget == this ) {
+			stroke(0x6b, 0xca, 0x00);
+			do_draw = true;
+
+		// or is widget is currently in hover state ?
+		} else {
+			for ( int i = 0; i < widgets_hover.size(); i++ ) {
+				o = widgets_hover[i];
+				if ( this != o[0] )
+					continue;
+				stroke(0xd0, 0xd0, 0xd0);
+				do_draw = true;
+				break;
+			}
+		}
+
+		if ( do_draw ) {
 			noFill();
 			rect(x-1, y-1, w+2, h+2);
 			noStroke();
@@ -253,16 +310,16 @@ widgetPosition = function(String _name, int _x, int _y) {
 	w.y = parseInt(_y);
 }
 
-widgetAddInput = function(String _name, String _type) {
-	Widget w = widgetGet(_name);
+widgetAddInput = function(String _key, String _name, String _type) {
+	Widget w = widgetGet(_key);
 	if ( w == null )
 		return;
 	IOWidget io = new IOWidget(_name, _type);
 	w.inputs.add(io);
 }
 
-widgetAddOutput = function(String _name, String _type) {
-	Widget w = widgetGet(_name);
+widgetAddOutput = function(String _key, String _name, String _type) {
+	Widget w = widgetGet(_key);
 	if ( w == null )
 		return;
 	IOWidget io = new IOWidget(_name, _type);
@@ -311,9 +368,11 @@ int connectivity_ok = 0;
 int config_show = 0;
 int screen_w = 800;
 int screen_h = 600;
-color cok = color(50, 200, 50);
-color cko = color(200, 50, 50);
-color cwait = color(200, 200, 50);
+color cok = color(0, 0xcc, 0);
+color cko = color(0xcc, 0, 0);
+color cidle = color(0xc5, 0x00, 0x80);
+color cselected = color(0x8b, 0xea, 0x00);
+ArrayList widgets_hover;
 
 widgetConfigure = function(guicommand, is_update) {
 	if ( is_update == 0 && config_show == 1 ) {
@@ -410,6 +469,7 @@ void setup() {
 	noStroke();
 	textFont(fontA, fontsize);
 	widgets = new ArrayList();
+	widgets_hover = new ArrayList();
 	setTimeout('update()', 500);
 }
 
@@ -424,6 +484,8 @@ void draw() {
 
 	} else {
 
+		searchConnectivity();
+
 		for ( int i = 0; i < widgets.size(); i ++ ) {
 			w = widgets.get(i);
 			if ( selected_widget == i ) {
@@ -433,7 +495,6 @@ void draw() {
 			w.draw();
 		}
 
-		searchConnectivity();
 		checkConnectivity();
 		drawConnectivity();
 
@@ -467,7 +528,6 @@ void drawConnectivity() {
 		);
 	}
 
-	stroke(cwait);
 	Widget w, w2;
 	IOWidget io;
 	int idx;
@@ -478,6 +538,10 @@ void drawConnectivity() {
 			for ( var k = 0; k < io.observers.size(); k++ ) {
 				w2 = io.observers.get(k);
 				idx = io.observers_idx.get(k);
+				if ( connectivity_widget == w2 || connectivity_widget == w )
+					stroke(cselected);
+				else
+					stroke(cidle);
 				coolLine(w.getOutputX(j), w.getOutputY(j),
 					 w2.getInputX(idx), w2.getInputY(idx));
 			}
@@ -489,15 +553,18 @@ void drawConnectivity() {
 
 void searchConnectivity() {
 	Widget w;
+	connectivity_widget = null;
+
 	for (var i = 0;  i < widgets.size(); i++ ) {
 		w = widgets.get(i);
 		if ( !w.collide(mouseX, mouseY) )
 			continue;
 
+		connectivity_widget = w;
+
 		// selected an input ?
 		idx = w.collideInput(mouseX, mouseY);
 		if ( idx != -1 ) {
-			connectivity_widget = w;
 			connectivity_idx = idx;
 			connectivity_io = 'input';
 			return;
@@ -506,7 +573,6 @@ void searchConnectivity() {
 		// selected an output ?
 		idx = w.collideOutput(mouseX, mouseY);
 		if ( idx != -1 ) {
-			connectivity_widget = w;
 			connectivity_idx = idx;
 			connectivity_io = 'output';
 			return;
@@ -524,7 +590,7 @@ void checkConnectivity() {
 	strokeWeight(2);
 
 	if ( connectivity_idx == -1 ) {
-		stroke(cwait);
+		stroke(cidle);
 		return;
 	}
 
@@ -553,13 +619,16 @@ void checkConnectivity() {
 }
 
 void mousePressed() {
-	Widget w;
+	Widget w, w2;
+	IOWidget iow, iow2;
 	int idx;
 
 	if ( config_show == 1 ) {
 		configSendFeedback('down', mouseX, mouseY);
 		return;
 	}
+
+	widgets_hover.clear();
 
 	for ( int i = widgets.size() - 1; i >= 0; i-- ) {
 		w = widgets.get(i);
@@ -569,6 +638,19 @@ void mousePressed() {
 			if ( idx != -1 ) {
 				selected_input_widget = w;
 				selected_input_idx = idx;
+				iow = w.getInput(idx);
+
+				for ( int i = 0; i < widgets.size(); i++ ) {
+					w2 = widgets[i];
+					if ( w == w2 )
+						continue;
+					for ( int j = 0; j < w2.getOutputCount(); j++ ) {
+						iow2 = w2.getOutput(j);
+						if ( iow2.type != iow.type )
+							continue
+						widgets_hover.add([w2, 'output', j]);
+					}
+				}
 				return;
 			}
 
@@ -577,6 +659,19 @@ void mousePressed() {
 			if ( idx != -1 ) {
 				selected_output_widget = w;
 				selected_output_idx = idx;
+				iow = w.getOutput(idx);
+
+				for ( int i = 0; i < widgets.size(); i++ ) {
+					w2 = widgets[i];
+					if ( w == w2 )
+						continue;
+					for ( int j = 0; j < w2.getInputCount(); j++ ) {
+						iow2 = w2.getInput(j);
+						if ( !inList(iow.type, iow2.type, ',') )
+							continue;
+						widgets_hover.add([w2, 'input', j]);
+					}
+				}
 				return;
 			}
 
@@ -595,7 +690,17 @@ void mousePressed() {
 	mo_select('');
 }
 
+bool inList(String pattern, String list, String separator) {
+	list = list.split(separator);
+	for ( int i = 0; i < list.length; i++ )
+		if ( list[i] == pattern )
+			return true;
+	return false;
+}
+
 void mouseReleased() {
+
+	widgets_hover.clear();
 
 	if ( config_show == 1 ) {
 		configSendFeedback('up', mouseX, mouseY);
