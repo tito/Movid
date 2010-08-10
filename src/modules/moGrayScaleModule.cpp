@@ -25,6 +25,7 @@ MODULE_DECLARE(GrayScale, "native", "Converts input image to a one bit channel i
 
 moGrayScaleModule::moGrayScaleModule() : moImageFilterModule(){
 	MODULE_INIT();
+	this->setOutputType(0, "IplImage8");
 }
 
 moGrayScaleModule::~moGrayScaleModule() {

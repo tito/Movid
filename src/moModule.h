@@ -167,6 +167,14 @@ public:
 	 */
 	virtual int getOutputCount();
 
+	/*! \brief Update the type of an output
+	 */
+	virtual void setInputType(int n, const std::string& type);
+
+	/*! \brief Update the type of an output
+	 */
+	virtual void setOutputType(int n, const std::string& type);
+
 	/*! \brief Get informations about input stream
 	 *
 	 * \param n index of the input to get

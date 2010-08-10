@@ -33,6 +33,9 @@ moBlobFinderModule::moBlobFinderModule() : moImageFilterModule(){
 	this->declareOutput(1, &this->output_data, new moDataStreamInfo(
 			"data", "blob", "Data stream with Blob info"));
 	this->blobs = new moDataGenericList();
+
+	// since cvFindContour accept only one channel image, just change the input
+	this->setInputType(0, "IplImage8");
 }
 
 moBlobFinderModule::~moBlobFinderModule() {

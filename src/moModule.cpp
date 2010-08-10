@@ -507,6 +507,24 @@ moDataStream *moModule::getOutput(int n) {
 	return *it->second;
 }
 
+void moModule::setOutputType(int n, const std::string& type) {
+	moDataStream *stream = this->getOutput(n);
+	moDataStreamInfo *info = this->getOutputInfos(n);
+	if ( stream )
+		stream->setFormat(type);
+	if ( info )
+		info->setType(type);
+}
+
+void moModule::setInputType(int n, const std::string& type) {
+	moDataStream *stream = this->getInput(n);
+	moDataStreamInfo *info = this->getInputInfos(n);
+	if ( stream )
+		stream->setFormat(type);
+	if ( info )
+		info->setType(type);
+}
+
 void moModule::setInput(moDataStream *stream, int n) {
 	std::ostringstream oss;
 	std::map<int, moDataStream**>::iterator it;
@@ -537,6 +555,7 @@ void moModule::setInput(moDataStream *stream, int n) {
 		if ( !info->isStreamValid(stream) ) {
 			oss << "Input " << n << " accept <" << info->getType() << \
 				"> but got <" << stream->getFormat() << ">";
+			LOG(MO_ERROR, oss.str());
 			this->setError(oss.str());
 			*input = NULL;
 			return;

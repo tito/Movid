@@ -49,6 +49,10 @@ public:
 		return this->description;
 	}
 
+	void setType(const std::string &type) {
+		this->type = type;
+	}
+
 	bool isStreamValid(moDataStream *stream);
 
 protected:

@@ -40,6 +40,9 @@ moThresholdModule::moThresholdModule() : moImageFilterModule(){
 	this->properties["type"] = new moProperty("binary");
 	this->properties["type"]->setChoices("binary;binary_inv;trunc;tozero;tozero_inv");
 
+	// change the input/output type
+	this->setInputType(0, "IplImage8");
+	this->setOutputType(0, "IplImage8");
 }
 
 moThresholdModule::~moThresholdModule() 

@@ -50,6 +50,9 @@ moFiducialTrackerModule::moFiducialTrackerModule() : moImageFilterModule() {
 			"data", "blob", "Data stream with fiducial info"));
 
 	this->internal = malloc(sizeof(fiducials_data_t));
+
+	// change input type
+	this->setInputType(0, "IplImage8");
 }
 
 moFiducialTrackerModule::~moFiducialTrackerModule() {
