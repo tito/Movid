@@ -17,6 +17,7 @@
 
 // guess ourself the base url, needed for xhr
 var mo_baseurl = location.href.split('/', 3).join('/');
+var mo_available_modules = {};
 var mo_available_inputs = [];
 var mo_available_outputs = [];
 var mo_streamscale = 2;
@@ -26,6 +27,12 @@ var mo_uniqidx = 0;
 var mo_data = null;
 var mo_host = null;
 var mo_port = '7500';
+
+function moModule(name) {
+	this.name = name;
+	this.inputs = [];
+	this.outputs = [];
+}
 
 function mo_uniq() {
 	mo_uniqidx += 1;
@@ -121,8 +128,20 @@ function mo_modules() {
 				$('<a></a>')
 				.html(elem)
 				.addClass('module')
+				.attr('id', 'module_' + elem)
 				.attr('href', 'javascript:mo_create("' + elem + '")')
 			);
+		});
+
+		$.each(data['details'], function (name, infos) {
+			var module = new moModule(name);
+			$(infos['inputs']).each(function (index, elem) {
+				module.inputs.push(elem);
+			});
+			$(infos['outputs']).each(function (index, elem) {
+				module.outputs.push(elem);
+			});
+			mo_available_modules[name] = module;
 		});
 	});
 }

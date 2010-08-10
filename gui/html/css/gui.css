@@ -169,10 +169,16 @@ button.fg-button {
 	text-decoration: none;
 	display: block;
 	padding: 2px 0.5em;
+	color: #dddddd;
 }
 
 #modules a:hover {
 	background-color: rgb(204, 102, 0);
+}
+
+#modules a.highlight {
+	color: #ffffff;
+	background-color: rgb(50, 90, 2);
 }
 
 /* properties (properties screen)

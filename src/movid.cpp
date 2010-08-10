@@ -502,7 +502,10 @@ void web_pipeline_status(struct evhttp_request *req, void *arg) {
 void web_factory_list(struct evhttp_request *req, void *arg) {
 	std::vector<std::string>::iterator it;
 	std::vector<std::string> list = moFactory::getInstance()->list();
-	cJSON *root, *data;
+	int i;
+	cJSON *root, *data, *mod, *io, *array, *details;
+	moModule *module;
+	moDataStream *ds;
 
 	root = cJSON_CreateObject();
 	cJSON_AddNumberToObject(root, "success", 1);
@@ -511,6 +514,41 @@ void web_factory_list(struct evhttp_request *req, void *arg) {
 
 	for ( it = list.begin(); it != list.end(); it++ )
 		cJSON_AddItemToArray(data, cJSON_CreateString(it->c_str()));
+
+	cJSON_AddItemToObject(root, "details", details=cJSON_CreateObject());
+	for ( it = list.begin(); it != list.end(); it++ ) {
+		module = moFactory::getInstance()->create(*it);
+
+		cJSON_AddItemToObject(details, module->getName().c_str(), mod=cJSON_CreateObject());
+		cJSON_AddStringToObject(mod, "name", module->getName().c_str());
+		cJSON_AddStringToObject(mod, "description", module->getDescription().c_str());
+		cJSON_AddStringToObject(mod, "author", module->getAuthor().c_str());
+		cJSON_AddNumberToObject(mod, "gui", (module->getCapabilities() & MO_MODULE_GUI) ? 1 : 0);
+
+		if ( module->getInputCount() ) {
+			cJSON_AddItemToObject(mod, "inputs", array=cJSON_CreateArray());
+			for ( i = 0; i < module->getInputCount(); i++ ) {
+				ds = module->getInput(i);
+				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
+				cJSON_AddNumberToObject(io, "index", i);
+				cJSON_AddStringToObject(io, "name", module->getInputInfos(i)->getName().c_str());
+				cJSON_AddStringToObject(io, "type", module->getInputInfos(i)->getType().c_str());
+			}
+		}
+
+		if ( module->getOutputCount() ) {
+			cJSON_AddItemToObject(mod, "outputs", array=cJSON_CreateArray());
+			for ( i = 0; i < module->getOutputCount(); i++ ) {
+				ds = module->getOutput(i);
+				cJSON_AddItemToArray(array, io=cJSON_CreateObject());
+				cJSON_AddNumberToObject(io, "index", i);
+				cJSON_AddStringToObject(io, "name", module->getOutputInfos(i)->getName().c_str());
+				cJSON_AddStringToObject(io, "type", module->getOutputInfos(i)->getType().c_str());
+			}
+		}
+
+		delete module;
+	}
 
 	web_json(req, root);
 }
