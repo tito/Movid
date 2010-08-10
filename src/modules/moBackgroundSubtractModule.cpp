@@ -34,6 +34,8 @@ moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule()
 	this->properties["recapture"] = new moProperty(true);
 	this->properties["toggle"] = new moProperty(false);
 	this->properties["absolute"] = new moProperty(false);
+
+	this->setInputType(0, "IplImage,IplImage8");
 }
 
 moBackgroundSubtractModule::~moBackgroundSubtractModule() {
