@@ -23,7 +23,7 @@
 
 MODULE_DECLARE(Smooth, "native", "Smooth an image with one of several filters");
 
-moSmoothModule::moSmoothModule() : moImageFilterModule(){
+moSmoothModule::moSmoothModule() : moImageFilterModule8() {
 
 	MODULE_INIT();
 
@@ -61,5 +61,4 @@ void moSmoothModule::applyFilter(IplImage *src) {
 		this->property("size").asInteger()*2+1 //make sure its odd
 	);
 }
-
 

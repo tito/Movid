@@ -145,4 +145,3 @@ void moThresholdModule::applyFilter(IplImage *)
 
 }
 
-

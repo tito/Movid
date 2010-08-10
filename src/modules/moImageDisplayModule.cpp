@@ -61,7 +61,7 @@ void moImageDisplayModule::notifyData(moDataStream *input) {
 	// ensure that input data is IfiImage
 	assert( input != NULL );
 	assert( input == this->input );
-	assert( input->getFormat() == "IplImage" );
+	assert( input->getFormat() == "IplImage" || input->getFormat() == "IplImage8" );
 
 
 	// out input have been updated !

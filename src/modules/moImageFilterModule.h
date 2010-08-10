@@ -28,7 +28,7 @@ class moImageFilterModule : public moModule {
 	
 public:	
 	moImageFilterModule();
-	~moImageFilterModule();
+	virtual ~moImageFilterModule();
 
 	virtual void notifyData(moDataStream *source);
 	virtual void update();
@@ -37,12 +37,26 @@ public:
 protected:
 	moDataStream* input;
 	moDataStream* output;
+	moDataStream* output_dispatcher;
 	IplImage* output_buffer;
 	
 	virtual void applyFilter(IplImage *)=0;
 	virtual void allocateBuffers();
+	virtual bool needBufferAllocation();
 	
 	bool need_update;
-
 };
+
+class moImageFilterModule8 : public moImageFilterModule {
+public:
+	moImageFilterModule8();
+	virtual ~moImageFilterModule8();
+
+	virtual void allocateBuffers();
+	virtual bool needBufferAllocation();
+
+protected:
+	moDataStream* output8;
+};
+
 #endif

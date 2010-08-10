@@ -28,12 +28,13 @@ moImageFilterModule::moImageFilterModule() :
 {
 	this->input = NULL;
 	this->output = new moDataStream("IplImage");
+	this->output_dispatcher = this->output;
 	this->output_buffer = NULL;
 
 	// declare input/output
 	this->declareInput(0, &this->input, new moDataStreamInfo(
 			"image", "IplImage", "Input image stream"));
-	this->declareOutput(0, &this->output,  new moDataStreamInfo(
+	this->declareOutput(0, &this->output_dispatcher,  new moDataStreamInfo(
 			"image", "IplImage", "Output image stream"));
 }
 
@@ -55,10 +56,12 @@ void moImageFilterModule::notifyData(moDataStream *input) {
 	// ensure that input data is IplImage
 	assert( input != NULL );
 	assert( input == this->input );
-	assert( input->getFormat() == "IplImage" );
+	assert( input->getFormat() == "IplImage" || input->getFormat() == "IplImage8" );
 
-	// FIXME  also do if size, nChannles or depth has changed
-	if ( this->output_buffer == NULL ) {
+	IplImage* src = static_cast<IplImage*>(this->input->getData());
+
+	// FIXME  also do if size, nChannels or depth has changed
+	if ( this->needBufferAllocation() ) {
 		input->lock();
 		this->allocateBuffers();
 		input->unlock();
@@ -67,12 +70,17 @@ void moImageFilterModule::notifyData(moDataStream *input) {
 	this->notifyUpdate();
 }
 
+bool moImageFilterModule::needBufferAllocation() {
+	return (this->output_buffer == NULL) ? true : false;
+}
 
 void moImageFilterModule::allocateBuffers() {
 	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	if ( src == NULL )
 		return;
-	LOGM(MO_DEBUG, "First time, allocating output buffer for image filter");
+	LOGM(MO_DEBUG, "Allocating output buffer for image filter");
+	if ( this->output_buffer != NULL )
+		cvReleaseImage(&this->output_buffer);
 	this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
 }
 
@@ -97,9 +105,46 @@ void moImageFilterModule::update() {
 		cvReleaseImage(&dup);
 
 		// push the new data
-		this->output->push(this->output_buffer);
+		this->output_dispatcher->push(this->output_buffer);
 	} else {
 		this->input->unlock();
 	}
 
 }
+
+//
+// ImageFilter that handle IplImage and IplImage8
+//
+moImageFilterModule8::moImageFilterModule8() : moImageFilterModule() {
+	this->output8 = new moDataStream("IplImage8");
+	this->setInputType(0, "IplImage,IplImage8");
+	this->declareOutput(1, &this->output8,  new moDataStreamInfo(
+			"image", "IplImage8", "Output image stream (1 channel)"));
+}
+
+moImageFilterModule8::~moImageFilterModule8() {
+	delete this->output8;
+}
+
+void moImageFilterModule8::allocateBuffers() {
+	moImageFilterModule::allocateBuffers();
+	if ( this->output_buffer == NULL )
+		return;
+
+	// if we are using a 8 bits image (1 channel)
+	// move the data to another output port
+	if ( this->output_buffer->nChannels == 1 )
+		this->output_dispatcher = this->output8;
+	else
+		this->output_dispatcher = this->output;
+}
+
+bool moImageFilterModule8::needBufferAllocation() {
+	IplImage* src = static_cast<IplImage*>(this->input->getData());
+	if ( moImageFilterModule::needBufferAllocation() )
+		return true;
+	if ( this->output_buffer->nChannels != src->nChannels )
+		return true;
+	return false;
+}
+

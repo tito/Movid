@@ -21,7 +21,7 @@
 
 #include "moImageFilterModule.h"
 
-class moBackgroundSubtractModule : public moImageFilterModule{
+class moBackgroundSubtractModule : public moImageFilterModule8 {
 public:
 	moBackgroundSubtractModule();
 	virtual ~moBackgroundSubtractModule();

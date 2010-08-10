@@ -26,7 +26,7 @@ MODULE_DECLARE(BackgroundSubtract, "native",
 	"If 'toggle' is set to true, subtract each second frame.\n" \
 	"Otherwise stores next frame as background once when 'recapture is set to true.'");
 
-moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule() {
+moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule8() {
 
 	MODULE_INIT();
 
@@ -34,8 +34,6 @@ moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule()
 	this->properties["recapture"] = new moProperty(true);
 	this->properties["toggle"] = new moProperty(false);
 	this->properties["absolute"] = new moProperty(false);
-
-	this->setInputType(0, "IplImage,IplImage8");
 }
 
 moBackgroundSubtractModule::~moBackgroundSubtractModule() {

@@ -21,7 +21,7 @@
 
 #include "moImageFilterModule.h"
 
-class moSmoothModule : public moImageFilterModule{
+class moSmoothModule : public moImageFilterModule8 {
 public:
 	moSmoothModule();
 	virtual ~moSmoothModule();
