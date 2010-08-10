@@ -823,6 +823,7 @@ void selectWidget(int index) {
 
 	var data = [
 		'<h1>Details of ', name, '</h1>',
+		'<button id="deletemodule">Delete</button>',
 	];
 
 	void pushIO(data, index, io) {
@@ -856,6 +857,11 @@ void selectWidget(int index) {
 	}
 
 	$('#module').html(data.join(''));
+
+	$('#deletemodule').button().mousedown(function() {
+		mo_remove(name);
+		widgets.remove(widgets.indexOf(w));
+	});
 }
 
 bool inList(String pattern, String list, String separator) {

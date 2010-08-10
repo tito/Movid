@@ -101,10 +101,17 @@ moModule *moDataStream::getObserver(unsigned int index) {
 
 void moDataStream::removeObservers() {
 	std::vector<moModule *>::iterator it;
+
+restartremove:;
 	for ( it = this->observers.begin(); it != this->observers.end(); it++ ) {
-		for ( int i = 0; i < (*it)->getInputCount(); i++ )
-			if ( (*it)->getInput(i) == this )
+		for ( int i = 0; i < (*it)->getInputCount(); i++ ) {
+			if ( (*it)->getInput(i) == this ) {
 				(*it)->setInput(NULL, i);
+				// the list have been altered, must restart from scratch
+				goto restartremove;
+			}
+		}
 	}
+
 	this->observers.clear();
 }

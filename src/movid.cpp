@@ -560,7 +560,7 @@ void web_factory_list(struct evhttp_request *req, void *arg) {
 	web_json(req, root);
 }
 
-void web_factory_desribe(struct evhttp_request *req, void *arg) {
+void web_factory_describe(struct evhttp_request *req, void *arg) {
 	std::map<std::string, moProperty*>::iterator it;
 	cJSON *root, *mod, *properties, *io, *array;
 	moDataStream *ds;
@@ -1130,7 +1130,7 @@ int main(int argc, char **argv) {
 
 		evhttp_set_cb(server, "/", web_index, NULL);
 		evhttp_set_cb(server, "/factory/list", web_factory_list, NULL);
-		evhttp_set_cb(server, "/factory/describe", web_factory_desribe, NULL);
+		evhttp_set_cb(server, "/factory/describe", web_factory_describe, NULL);
 		evhttp_set_cb(server, "/pipeline/create", web_pipeline_create, NULL);
 		evhttp_set_cb(server, "/pipeline/remove", web_pipeline_remove, NULL);
 		evhttp_set_cb(server, "/pipeline/status", web_pipeline_status, NULL);
