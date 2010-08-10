@@ -861,6 +861,8 @@ void selectWidget(int index) {
 	$('#deletemodule').button().mousedown(function() {
 		mo_remove(name);
 		widgets.remove(widgets.indexOf(w));
+		selected_widget = null;
+		selectWidget(-1);
 	});
 }
 
