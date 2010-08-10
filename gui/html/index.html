@@ -836,7 +836,7 @@ void mouseReleased() {
 			} else if ( selected_input_idx != -1 ) {
 				connectivity_widget.outputs.get(connectivity_idx).connect(
 					selected_input_widget, selected_input_idx);
-				mo_connect(selected_input_widget, selected_input_idx, connectivity_widget, connectivity_idx);
+				mo_connect(selected_input_widget.name, selected_input_idx, connectivity_widget.name, connectivity_idx);
 			}
 		}
 		connectivity_ok = 0;
