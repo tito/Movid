@@ -66,7 +66,8 @@ function mo_bootstrap() {
 	}
 
 	$('#container-preview').hide();
-	$('#container-properties').hide();
+	$('#btn-module').addClass('ui-state-active');
+	$('#btn-properties').addClass('ui-state-active');
 	$('#btn-create').addClass('ui-state-active');
 
 	$(window).resize(mo_resize);
@@ -91,6 +92,7 @@ function mo_bootstrap() {
 					else
 						mo_start();
 					break;
+				case 'btn-module':
 				case 'btn-create':
 				case 'btn-properties':
 				case 'btn-preview':
@@ -413,7 +415,7 @@ function mo_select(elem) {
 	mo_widget_selected = elem;
 	mo_properties(elem);
 	mo_stream(elem);
-	mo_gui_cancel()
+	mo_gui_cancel();
 }
 
 function mo_gui_cancel() {

@@ -50,6 +50,7 @@
 	<div class="fg-buttonset">
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-preview">Preview</a>
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-create">Create</a>
+		<a class="fg-button ui-state-default ui-corner-all" id="btn-module">Module</a>
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-properties">Properties</a>
 	</div>
 	<div class="fg-buttonset">
@@ -798,7 +799,7 @@ void mousePressed() {
 			selected_widget = i;
 			selected_widget_x = mouseX - w.x;
 			selected_widget_y = mouseY - w.y;
-			mo_select(widgets.get(selected_widget).name);
+			selectWidget(selected_widget);
 			return;
 		}
 	}
@@ -806,7 +807,55 @@ void mousePressed() {
 	selected_input_idx = -1;
 	selected_output_idx = -1;
 	selected_widget = -1;
-	mo_select('');
+	selectWidget(-1);
+}
+
+void selectWidget(int index) {
+	if ( index == -1 ) {
+		$('#module').html('');
+		mo_select('');
+		return;
+	}
+
+	Widget w = widgets.get(index);
+	var name = w.name;
+	mo_select(name);
+
+	var data = [
+		'<h1>Details of ', name, '</h1>',
+	];
+
+	void pushIO(data, index, io) {
+		data.push('<li>');
+		data.push('<span class="ioindex">');
+		data.push(index);
+		data.push('</span>: <span class="ioname">');
+		data.push(io.name);
+		data.push('</span> <span class="iotype">(');
+		data.push(io.type);
+		data.push(')</span>');
+		data.push('</li>');
+	}
+
+	if ( w.getInputCount() ) {
+		data.push('<h2>Inputs</h2><ul>');
+		for ( int i = 0; i < w.getInputCount(); i++ ) {
+			IOWidget io = w.getInput(i);
+			pushIO(data, i, io);
+		}
+		data.push('</ul>');
+	}
+
+	if ( w.getOutputCount() ) {
+		data.push('<h2>Outputs</h2><ul>');
+		for ( int i = 0; i < w.getOutputCount(); i++ ) {
+			IOWidget io = w.getOutput(i);
+			pushIO(data, i, io);
+		}
+		data.push('</ul>');
+	}
+
+	$('#module').html(data.join(''));
 }
 
 bool inList(String pattern, String list, String separator) {
@@ -873,6 +922,11 @@ void mouseDragged() {
 		<div id="video" class="ui-widget-content ui-corner-bottom">
 			<p id="streamid">No video</p>
 			<img src="/gui/nostream.png" id="streamimg"/>
+		</div>
+	</div>
+	<div class="ui-widget ui-widget-sidebar" id="container-module">
+		<div class="ui-widget-header ui-state-default ui-corner-top"><a onclick="$('#module').slideToggle('fast')">Module</a></div>
+		<div id="module" class="ui-widget-content ui-corner-bottom">
 		</div>
 	</div>
 	<div class="ui-widget ui-widget-sidebar" id="container-properties">

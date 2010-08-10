@@ -222,3 +222,30 @@ button.fg-button {
 #video img {
 	width: 100%;
 }
+
+
+/* module
+ */
+
+#module h1 {
+	margin: 0;
+	padding: 1em 5px;
+	font-size: 100%;
+	background-color: #242424;
+}
+
+#module h2 {
+	margin: 1px 0;
+	padding: 5px;
+	font-size: 100%;
+	font-weight: normal;
+	background-color: #242424;
+}
+
+#module .ioindex {
+	color: #999999;
+}
+
+#module .iotype {
+	color: #999999;
+}
