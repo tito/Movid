@@ -143,6 +143,8 @@ bool moImageFilterModule8::needBufferAllocation() {
 	IplImage* src = static_cast<IplImage*>(this->input->getData());
 	if ( moImageFilterModule::needBufferAllocation() )
 		return true;
+	if ( src == NULL )
+		return false;
 	if ( this->output_buffer->nChannels != src->nChannels )
 		return true;
 	return false;

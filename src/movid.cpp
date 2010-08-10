@@ -122,7 +122,10 @@ public:
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL )
 			return;
-		if ( this->output_buffer == NULL ) {
+		if ( this->output_buffer == NULL || 
+			 this->output_buffer->nChannels != src->nChannels ) {
+			if ( this->output_buffer != NULL )
+				cvReleaseImage(&this->output_buffer);
 			CvSize size = cvGetSize(src);
 			size.width /= this->property("scale").asInteger();
 			size.height /= this->property("scale").asInteger();
@@ -138,6 +141,10 @@ public:
 		this->input->lock();
 		src = (IplImage*)(this->input->getData());
 		if ( src == NULL || src->imageData == NULL ) {
+			this->input->unlock();
+			return false;
+		}
+		if ( this->output_buffer->nChannels != src->nChannels ) {
 			this->input->unlock();
 			return false;
 		}
