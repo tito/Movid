@@ -137,6 +137,7 @@ void moFiducialTrackerModule::applyFilter(IplImage *src) {
 
 		fiducial = new moDataGenericContainer();
 		fiducial->properties["implements"] = new moProperty("fiducial,pos,tracked");
+		fiducial->properties["fiducial_id"] = new moProperty(fdx->id);
 		fiducial->properties["blob_id"] = new moProperty(fdx->id);
 		fiducial->properties["x"] = new moProperty(fdx->x / size.width);
 		fiducial->properties["y"] = new moProperty(fdx->y / size.height);

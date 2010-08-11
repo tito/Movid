@@ -16,7 +16,7 @@ List of implements
 * tracked: property blob_id
 * handcenter: -
 * fingertip: -
-* fiducial: properties angle,leaf_size,root_size
+* fiducial: properties angle,leaf_size,root_size,fiducial_id
 
 List of properties
 ------------------
@@ -28,3 +28,4 @@ List of properties
 * node_id: temporary id for the current item (-1 mean root)
 * parent_node_id: temporary id of his parent
 * blob_id: uniq id that represent the blob during his whole life
+* fiducial_id: id of the object (from fiducial tree)

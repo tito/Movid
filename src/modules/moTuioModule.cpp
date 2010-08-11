@@ -160,11 +160,12 @@ void moTuioModule::notifyData(moDataStream *input) {
 	for ( it = list->begin(); it != list->end(); it++ ) {
 		msg = new WOscMessage(osc_path.c_str());
 		msg->Add("set");
-		msg->Add(9843); // session id
-		msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
-		msg->Add((float)(*it)->properties["x"]->asDouble()); // x
-		msg->Add((float)(*it)->properties["y"]->asDouble()); // y
 		if ( this->type == TUIO_2DOBJ ) {
+			// /tuio/2Dobj set s i x y a X Y A m r
+			msg->Add((*it)->properties["blob_id"]->asInteger()); // class id
+			msg->Add((*it)->properties["fiducial_id"]->asInteger()); // class id
+			msg->Add((float)(*it)->properties["x"]->asDouble()); // x
+			msg->Add((float)(*it)->properties["y"]->asDouble()); // y
 			msg->Add((float)(*it)->properties["angle"]->asDouble()); // a
 			msg->Add((float)0.); // X
 			msg->Add((float)0.); // Y
