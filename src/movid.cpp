@@ -105,7 +105,9 @@ public:
 		this->properties["id"] = new moProperty(moModule::createId("WebStream"));
 		this->properties["scale"] = new moProperty(1);
 		this->declareInput(0, &this->input, new moDataStreamInfo(
-			"stream", "IplImage", "Image to stream on webbrowser"));
+			"stream", "IplImage,IplImage8", "Image to stream on webbrowser"));
+		// FIXME: silence error message that's printed when a module in the web gui
+		//		  is clicked that doesn't output IplImages
 	}
 
 	void stop() {
@@ -117,8 +119,6 @@ public:
 	}
 
 	void notifyData(moDataStream *source) {
-		if (source->getFormat() != "IplImage")
-			return;
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL )
 			return;

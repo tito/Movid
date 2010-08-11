@@ -553,7 +553,7 @@ void moModule::setInput(moDataStream *stream, int n) {
 	*input = stream;
 	if ( stream != NULL ) {
 		if ( !info->isStreamValid(stream) ) {
-			oss << "Input " << n << " accept <" << info->getType() << \
+			oss << "Input " << n << " accepts <" << info->getType() << \
 				"> but got <" << stream->getFormat() << ">";
 			LOG(MO_ERROR, oss.str());
 			this->setError(oss.str());
