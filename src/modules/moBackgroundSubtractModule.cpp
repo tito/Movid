@@ -56,10 +56,14 @@ void moBackgroundSubtractModule::stop() {
 }
 
 void moBackgroundSubtractModule::allocateBuffers() {
-	IplImage* src = static_cast<IplImage*>(this->input->getData());
-	this->output_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
-	this->bg_buffer = cvCreateImage(cvGetSize(src),src->depth, src->nChannels);
-	LOGM(MO_TRACE, "allocated output and background buffers");
+	moImageFilterModule8::allocateBuffers();
+	if ( this->output_buffer == NULL )
+		return;
+	LOGM(MO_DEBUG, "Allocating background buffer for background substraction");
+	if ( this->bg_buffer != NULL )
+		cvReleaseImage(&this->bg_buffer);
+	this->bg_buffer = cvCreateImage(cvGetSize(this->output_buffer),
+			this->output_buffer->depth, this->output_buffer->nChannels);
 }
 
 void moBackgroundSubtractModule::applyFilter(IplImage *src) {
