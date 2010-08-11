@@ -71,11 +71,11 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	// declare input/output
 
 	this->input = NULL;
-	this->output = new moDataStream("blob");
+	this->output = new moDataStream("trackedblob");
 	this->declareInput(0, &this->input, new moDataStreamInfo(
-			"data", "blob", "Data stream with type of 'blob'"));
+			"data", "trackedblob", "Data stream with type of 'trackedblob'"));
 	this->declareOutput(0, &this->output, new moDataStreamInfo(
-			"data", "blob", "Data stream with type of 'blob'"));
+			"data", "trackedblob", "Data stream with type of 'trackedblob'"));
 
 	this->properties["rows"] = new moProperty(3);
 	this->properties["rows"]->setMin(2);
@@ -273,8 +273,6 @@ void moCalibrationModule::calibrate() {
 	moPointList screenPoints;
 	moPoint surfacePoint, p;
 
-	//LOG(MO_DEBUG) << "#Blobs in frame: " << blobs->size();
-
 	// We only calibrate the current point if there is an unambiguous amount of touches
 	if (blobs->size() != 1)
 		return;
@@ -383,41 +381,17 @@ void moCalibrationModule::transformPoints() {
 		CvSubdiv2DPointLocation loc;
 		loc = cvSubdiv2DLocate(this->subdiv, P, &edge, &vertex);
 		if (loc == CV_PTLOC_VERTEX) {
-			std::cout << "ON_VERTEX" << std::endl;
 			moPoint screen_point = this->delaunayToScreen[vertex];
 			moDataGenericContainer *blob = new moDataGenericContainer();
-			blob->properties["type"] = new moProperty("blob");
+			blob->properties["type"] = new moProperty("trackedblob");
 			blob->properties["blob_id"] = new moProperty((*it)->properties["blob_id"]->asInteger());
+			blob->properties["implements"] = new moProperty((*it)->properties["implements"]->asString());
+			// FIXME copy all the properties, not just x/y
 			blob->properties["x"] = new moProperty(screen_point.x);
 			blob->properties["y"] = new moProperty(screen_point.y);
 			this->blobs.push_back(blob);
 			continue;
 		}
-		//switch (loc) {
-		//	case CV_PTLOC_INSIDE:
-		//		std::cout << "INSIDE" << std::endl;
-		//		break;
-		//	case CV_PTLOC_ON_EDGE:
-		//		std::cout << "ON_EDGE" << std::endl;
-		//		moPoint screen_point = this->delaunayToScreen[vertex];
-		//		moDataGenericContainer *blob = new moDataGenericContainer();
-		//		blob->properties["type"] = new moProperty("blob");
-		//		blob->properties["blob_id"] = new moProperty((*it)->properties["blob_id"]->asInteger());
-		//		blob->properties["x"] = new moProperty(screen_point.x);
-		//		blob->properties["y"] = new moProperty(screen_point.y);
-		//		this->blobs.push_back(blob);
-		//		continue;
-		//		break;
-		//	case CV_PTLOC_VERTEX:
-		//		std::cout << "VERTEX" << std::endl;
-		//		break;
-		//	case CV_PTLOC_OUTSIDE_RECT:
-		//		std::cout << "OUTSIDE_RECT" << std::endl;
-		//		break;
-		//	case CV_PTLOC_ERROR:
-		//		std::cout << "ERROR" << std::endl;
-		//		break;
-		//}
 		// P is inside the triangle, so we must compute barycentric coords for P with
 		// respect to the triangle. To find the triangle, we traverse the edges
 		// around the right facet, to get the vertices that make up the triangle containing P.
@@ -463,8 +437,9 @@ void moCalibrationModule::transformPoints() {
 		// Copy the blob, but adjust x/y
 		// XXX Do we need to adjust w/h too?
 		moDataGenericContainer *blob = new moDataGenericContainer();
-		blob->properties["type"] = new moProperty("blob");
+		blob->properties["type"] = new moProperty("trackedblob");
 		blob->properties["blob_id"] = new moProperty((*it)->properties["blob_id"]->asInteger());
+		blob->properties["implements"] = new moProperty((*it)->properties["implements"]->asString());
 		//blob->properties["w"] = new moProperty((*it)->properties["w"]->asDouble());
 		//blob->properties["h"] = new moProperty((*it)->properties["h"]->asDouble());
 		blob->properties["x"] = new moProperty(P_transformed.x);
@@ -475,8 +450,6 @@ void moCalibrationModule::transformPoints() {
 					  << " out: " << P_transformed.x << "," << P_transformed.y);
 	}
 
-	//if (this->output != NULL) delete this->output;
-	//this->output = new moDataStream("blob");
 	this->output->push(&this->blobs);
 	this->notifyGui();
 }
