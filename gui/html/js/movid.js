@@ -92,6 +92,9 @@ function mo_bootstrap() {
 					else
 						mo_start();
 					break;
+				case 'btn-autolayout':
+					mo_layout();
+					break;
 				case 'btn-module':
 				case 'btn-create':
 				case 'btn-properties':
@@ -501,6 +504,10 @@ function mo_stats() {
 		$('#toolbareport').html(report);
 		setTimeout(mo_stats, 2000);
 	});
+}
+
+function mo_layout() {
+	widgetAutoLayout();
 }
 
 // once our document is loaded, load our software.

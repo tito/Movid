@@ -28,7 +28,8 @@
 		widgetClearConnectivity = null,
 		widgetConnect = null,
 		widgetConfigure = null,
-		widgetCanvasResize = null;
+		widgetCanvasResize = null,
+		widgetAutoLayout = null;
 	</script>
 	<script type="text/javascript" src="js/processing.js"></script>
 	<script type="text/javascript" src="js/jquery-1.4.2.min.js"></script>
@@ -52,6 +53,9 @@
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-create">Create</a>
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-module">Module</a>
 		<a class="fg-button ui-state-default ui-corner-all" id="btn-properties">Properties</a>
+	</div>
+	<div class="fg-buttonset">
+		<a class="fg-button ui-state-default ui-corner-all" id="btn-autolayout">Autolayout</a>
 	</div>
 	<div class="fg-buttonset">
 		<div class="fg-button ui-fake" id="toolbareport"></div>
@@ -360,6 +364,32 @@ widgetCanvasResize = function(w, h) {
 	try {
 		size(w, h);
 	} catch (e) { }
+}
+
+widgetAutoLayout = function() {
+	int margin = 50,
+		padding = 50,
+		widget_width = 120,
+		widget_height = 75,
+		x = margin,
+		y = margin,
+		j = 0;
+
+	for ( int i = 0; i < widgets.size(); i++ ) {
+		Widget widget = widgets.get(i);
+		widget.x = x;
+		widget.y = y + (j % 2) * 20;
+
+		x += widget_width + padding;
+		if ( x > width - margin - widget_width ) {
+			y += widget_height + padding;
+			x = margin;
+			if ( (j % 2) == 0 )
+				j++;
+		}
+		j++;
+	}
+
 }
 
 //
