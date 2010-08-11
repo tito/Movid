@@ -735,24 +735,26 @@ void web_pipeline_set(struct evhttp_request *req, void *arg) {
 		return web_error(req, "missing objectname");
 	}
 
-	if ( evhttp_find_header(&headers, "name") == NULL ) {
-		evhttp_clear_headers(&headers);
-		return web_error(req, "missing name");
-	}
-
-	if ( evhttp_find_header(&headers, "value") == NULL ) {
-		evhttp_clear_headers(&headers);
-		return web_error(req, "missing value");
-	}
-
 	module = pipeline->getModuleById(evhttp_find_header(&headers, "objectname"));
 	if ( module == NULL ) {
 		evhttp_clear_headers(&headers);
 		return web_error(req, "object not found");
 	}
 
-	module->property(evhttp_find_header(&headers, "name")).set(
-		(const std::string &)evhttp_find_header(&headers, "value"));
+	while ( true ) {
+
+		if ( evhttp_find_header(&headers, "name") == NULL )
+			break;
+
+		if ( evhttp_find_header(&headers, "value") == NULL )
+			break;
+
+		module->property(evhttp_find_header(&headers, "name")).set(
+			(const std::string &)evhttp_find_header(&headers, "value"));
+
+		evhttp_remove_header(&headers, "name");
+		evhttp_remove_header(&headers, "value");
+	}
 
 	evhttp_clear_headers(&headers);
 	web_message(req, "ok");
@@ -860,11 +862,28 @@ void web_pipeline_dump(struct evhttp_request *req, void *arg) {
 	struct evbuffer *evb = evbuffer_new();
 	std::string sout = pipeline->serializeCreation();
 	const char *out = sout.c_str();
+	struct evkeyvalq headers;
+	const char *uri;
+
+	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
+	evhttp_parse_query(uri, &headers);
+
+	if ( evhttp_find_header(&headers, "download") != NULL ) {
+		evhttp_add_header(req->output_headers, "Content-Type", "application/force-download; name=\"movid-pipeline.txt\"");
+		evhttp_add_header(req->output_headers, "Content-Disposition", "attachment; filename=\"movid-pipeline.txt\"");
+	} else
+		evhttp_add_header(req->output_headers, "Content-Type", "text/plain");
 
 	evbuffer_add(evb, out, strlen(out));
-	evhttp_add_header(req->output_headers, "Content-Type", "text/plain");
 	evhttp_send_reply(req, HTTP_OK, "OK", evb);
 	evbuffer_free(evb);
+
+	evhttp_clear_headers(&headers);
 }
 
 void web_pipeline_quit(struct evhttp_request *req, void *arg) {

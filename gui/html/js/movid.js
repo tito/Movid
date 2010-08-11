@@ -1,19 +1,26 @@
-/***********************************************************************
- ** Copyright (C) 2010 Movid Authors.  All rights reserved.
- **
- ** This file is part of the Movid Software.
- **
- ** This file may be distributed under the terms of the Q Public License
- ** as defined by Trolltech AS of Norway and appearing in the file
- ** LICENSE included in the packaging of this file.
- **
- ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
- ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- **
- ** Contact info@movid.org if any conditions of this licensing are
- ** not clear to you.
- **
- **********************************************************************/
+//////////////////////////////////////////////////////////////////////////////
+//                                                                          //
+// Copyright (C) 2010 Movid Authors.  All rights reserved.                  //
+//                                                                          //
+// This file is part of the Movid Software.                                 //
+//                                                                          //
+// This file may be distributed under the terms of the Q Public License     //
+// as defined by Trolltech AS of Norway and appearing in the file           //
+// LICENSE included in the packaging of this file.                          //
+//                                                                          //
+// This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE  //
+// WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.//
+//                                                                          //
+// Contact info@movid.org if any conditions of this licensing are           //
+// not clear to you.                                                        //
+//                                                                          //
+//////////////////////////////////////////////////////////////////////////////
+
+// Cookie expiration in 60 days
+// days = 60;
+// CookieExpires = new Date();
+// CookieExpires.setTime( CookieExpires.getTime() + ( 60 * 60 * 1000 * 24 * days ) );
+// $.cookies.setOptions({ expiresAt: CookieExpires });
 
 // guess ourself the base url, needed for xhr
 var mo_baseurl = location.href.split('/', 3).join('/');
@@ -27,6 +34,7 @@ var mo_uniqidx = 0;
 var mo_data = null;
 var mo_host = null;
 var mo_port = '7500';
+var pjs = null;
 
 function moModule(name) {
 	this.name = name;
@@ -69,6 +77,7 @@ function mo_bootstrap() {
 	$('#btn-module').addClass('ui-state-active');
 	$('#btn-properties').addClass('ui-state-active');
 	$('#btn-create').addClass('ui-state-active');
+	$('#pipeline-content-text').hide();
 
 	$(window).resize(mo_resize);
 
@@ -95,6 +104,25 @@ function mo_bootstrap() {
 				case 'btn-autolayout':
 					mo_layout();
 					break;
+				case 'pipeline-text':
+					if ( $(this).hasClass('ui-state-active') ) {
+						$(this).removeClass('ui-state-active');
+						$('#pipeline-content-text').hide();
+						$('#pipeline-content-canvas').show();
+					} else {
+						$(this).addClass('ui-state-active');
+						$('#pipeline-content-textarea').width($('#pipeline-content-canvas').width());
+						$('#pipeline-content-textarea').height($('#pipeline-content-canvas').height());
+						$('#pipeline-content-canvas').hide();
+						$('#pipeline-content-text').show();
+						$.get(mo_baseurl + '/pipeline/dump', function(data) {
+								$('#pipeline-content-textarea').html(data);
+								});
+					}
+					break;
+				case 'pipeline-download':
+					window.location = mo_baseurl + '/pipeline/dump?download=1';
+					break;
 				case 'btn-module':
 				case 'btn-create':
 				case 'btn-properties':
@@ -117,7 +145,8 @@ function mo_bootstrap() {
 
 	});
 
-	Processing($('#movidcanvas')[0], $('#movidpjs')[0].text);
+	pjs = Processing($('#movidcanvas')[0], $('#movidpjs')[0].text);
+	mo_pjs();
 
 	setTimeout(mo_resize, 50);
 	mo_modules();
@@ -215,7 +244,6 @@ function mo_create(elem) {
 
 function mo_remove(elem) {
 	$.get(mo_baseurl + '/pipeline/remove?objectname=' + elem, function(data) {
-		mo_status();
 		mo_select('');
 	});
 }
@@ -372,9 +400,20 @@ function _mo_update_state() {
 	$('#properties input[type=\"checkbox\"]').button();
 }
 
-function mo_set(id, k, v, callback) {
-	$.get(mo_baseurl + '/pipeline/set?objectname=' + id + '&name=' + k + '&value=' + v, function(data) {
-		if ( typeof(callback) != 'undefined' )
+function mo_set(id) {
+	var callback = null;
+	var url = mo_baseurl + '/pipeline/set?objectname=' + id;
+
+	if ( typeof(arguments[arguments.length - 1]) == "function" )
+		callback = arguments[arguments.length - 1];
+
+	for ( var i = 1; i < arguments.length; i += 2 ) {
+		url += '&name=' + arguments[i];
+		url += '&value=' + arguments[i+1];
+	}
+
+	$.get(url, function(data) {
+		if ( callback != null )
 			callback();
 	});
 }
