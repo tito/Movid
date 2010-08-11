@@ -25,6 +25,9 @@ MODULE_DECLARE(Erode, "native", "Erodes the image (make bright regions smaller)"
 moErodeModule::moErodeModule() {
 	MODULE_INIT();
 	this->properties["iterations"] = new moProperty(1);
+
+	this->setInputType(0, "IplImage8");
+	this->setOutputType(0, "IplImage8");
 }
 
 moErodeModule::~moErodeModule() {
@@ -34,5 +37,4 @@ void moErodeModule::applyFilter(IplImage *src) {
 	int iter = this->property("iterations").asInteger();
 	cvErode(src, this->output_buffer, NULL, iter);
 }
-
 

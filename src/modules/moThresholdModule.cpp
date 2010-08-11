@@ -58,8 +58,6 @@ void moThresholdModule::stop() {
 	}
 }
 
-
-
 int moThresholdModule::getCvType(const std::string &filter) 
 {
 	if ( filter == "binary" )

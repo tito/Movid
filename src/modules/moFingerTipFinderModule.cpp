@@ -79,6 +79,9 @@ moFingerTipFinderModule::moFingerTipFinderModule() : moImageFilterModule(){
 	this->properties["merge_distance"]->setMin(0.0);
 	this->properties["merge_distance"]->setMax(100.0);
 	this->properties["adaptive_merge"] = new moProperty(true);
+
+	this->setInputType(0, "IplImage8");
+	this->setOutputType(0, "IplImage8");
 }
 
 moFingerTipFinderModule::~moFingerTipFinderModule() {

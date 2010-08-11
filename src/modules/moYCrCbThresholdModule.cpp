@@ -46,6 +46,8 @@ moYCrCbThresholdModule::moYCrCbThresholdModule() : moImageFilterModule(){
 	this->properties["Cb_max"] = new moProperty(130);
 	this->properties["Cb_max"]->setMin(0);
 	this->properties["Cb_max"]->setMax(255);
+
+	this->setOutputType(0, "IplImage8");
 }
 
 moYCrCbThresholdModule::~moYCrCbThresholdModule() {

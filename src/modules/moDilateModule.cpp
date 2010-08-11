@@ -25,6 +25,9 @@ MODULE_DECLARE(Dilate, "native", "Dilates the image (make bright regions bigger)
 moDilateModule::moDilateModule() {
 	MODULE_INIT();
 	this->properties["iterations"] = new moProperty(1);
+
+	this->setInputType(0, "IplImage8");
+	this->setOutputType(0, "IplImage8");
 }
 
 moDilateModule::~moDilateModule() {

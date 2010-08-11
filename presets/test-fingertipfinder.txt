@@ -2,7 +2,7 @@ pipeline create Camera cam
 pipeline create YCrCbThreshold thresh
 pipeline create Smooth smooth
 pipeline create FingerTipFinder fingertips
-pipeline create Combine comb
+#pipeline create Combine comb
 pipeline create ImageDisplay win
 pipeline create GreedyBlobTracker tracker
 pipeline create Tuio tuio
@@ -23,9 +23,9 @@ pipeline set tuio use_thread 1
 
 pipeline connect cam 0 thresh 0
 pipeline connect thresh 0 smooth 0
-pipeline connect smooth 0 fingertips 0
-pipeline connect fingertips 0 comb 0
+pipeline connect smooth 1 fingertips 0
+#pipeline connect fingertips 0 comb 0
 pipeline connect fingertips 1 tracker 0
 pipeline connect tracker 0 tuio 0
-pipeline connect comb 0 win 0
+#pipeline connect comb 0 win 0
 
