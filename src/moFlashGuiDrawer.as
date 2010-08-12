@@ -106,6 +106,16 @@
 			for each (var command:String in commands) {
 				var args:Array = command.split(" ");
 				switch (args[0]) {
+					case "line":
+						var x1:Number = Number(args[1]);
+						var y1:Number = Number(args[2]);
+						var start:Point = transform_coords(x1, y1);
+						var x2:Number = Number(args[3]);
+						var y2:Number = Number(args[4]);
+						var end:Point = transform_coords(x2, y2);
+						drawing.graphics.moveTo(start.x, start.y);
+						drawing.graphics.lineTo(end.x, end.y);
+						break;
 					case "circle":
 						var x:Number = Number(args[1]);
 						var y:Number = Number(args[2]);
@@ -117,7 +127,9 @@
 						var r:int = int(args[1]);
 						var g:int = int(args[2]);
 						var b:int = int(args[3]);
-						drawing.graphics.beginFill(rgbToHex(r, g, b), 1)
+						var hex:int = rgbToHex(r, g, b);
+						drawing.graphics.beginFill(hex, 1)
+						drawing.graphics.lineStyle(1, hex, 1.0);
 						break;
 					case "viewport":
 						viewport_width = int(args[1]);
