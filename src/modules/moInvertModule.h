@@ -22,7 +22,7 @@
 #include <string>
 #include "moImageFilterModule.h"
 
-class moInvertModule : public moImageFilterModule {
+class moInvertModule : public moImageFilterModule8 {
 public:
 	moInvertModule();
 	virtual ~moInvertModule();
