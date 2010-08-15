@@ -28,10 +28,10 @@ moSmoothModule::moSmoothModule() : moImageFilterModule8() {
 	MODULE_INIT();
 
 	// declare properties
-	this->properties["size"] = new moProperty(1.);
-	this->properties["size"]->setMin(0);
-	this->properties["size"]->setMax(50);
-	this->properties["filter"] = new moProperty("gaussian");
+	this->properties["size"] = new moProperty(1);
+	this->properties["size"]->setMin(1);
+	this->properties["size"]->setMax(6);
+	this->properties["filter"] = new moProperty("median");
 	this->properties["filter"]->setChoices("median;gaussian;blur;blur_no_scale");
 }
 
