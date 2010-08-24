@@ -1,7 +1,7 @@
 
 #build rules for libs in contrib, returns env with 
 #include and lib paths set as well as libs to link
-env = SConscript('contrib/Sconscript')
+env = SConscript('contrib/SConscript')
 
 #add contirb dir to look for inclide files 
 #(for when we include liek e.g. libfitrack/fidtrack120.h)
