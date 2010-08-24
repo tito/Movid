@@ -1,0 +1,110 @@
+import os, sys, subprocess, shlex
+
+class ContribLib(object):
+	#Class to hold info about the contirb libs for movid, we can pass info for teh
+	#lib when instatiating teh class.  if we pass build, and build-win32, it will 
+	#figure out which one to use based on which platform build is running
+	def __init__(self, name, **kwargs):
+		#some default values
+		self.lib_info = {
+			'name'    : name,        #name of lib
+			'root'    : name,        #directory of library, used as build dir
+			'inc_dir' : '.',         #path for include files, reltive to root
+			'lib_dir' : '.',         #path for library files, reltive to root
+			'build'   : 'make',      #command used to build (executed in root)
+			'clean'   : 'make clean' #command used to clean (executed in root)
+		}
+		#overwrite defaults with configured kwargs
+		self.lib_info.update(kwargs)
+		
+	def __getattr__(self, attr):
+		#get value form lib_info constructed form kwargs in init
+		val = self.lib_info[attr]
+		#check if attr-sys is defined (e.g. build-win32, or build-darwin)
+		#if it is use the platform specific one, instead of default		  
+		sys_attr = attr + '_' + sys.platform
+		if sys_attr in self.lib_info:
+			val = self.lib_info[sys_attr]
+		#if its a directory, we get relative path from contrib build dir
+		if 'dir' in attr:
+			val = os.path.join(self.root, val)
+			val = os.path.relpath(val, '..') 
+		return val
+			
+	def perform(self, action):
+		#'perform either 'build' or 'clean' action by executing the rigth commands
+		if action == 'build':
+			cmds = self.build.split("&&")
+		if action == 'clean':
+			cmds = self.clean.split("&&")
+		for cmd in cmds:
+			subprocess.call(shlex.split(cmd), cwd=self.root)
+
+
+
+
+##############################################################
+# Configuration of external builds for libs in contrib
+##############################################################
+
+ptypes = ContribLib( 'ptypes',
+	root    = 'ptypes-2.1.1',
+	inc_dir = 'include',
+	lib_dir = 'lib'
+)
+
+fidtrack = ContribLib( 'fidtrack',
+	root    = 'libfidtrack'
+)
+
+wosclib = ContribLib( 'wosclib',
+	root  = 'WOscLib-00.09',
+	build = 'sh ./configure && make libwosclib.a'
+)
+
+event = ContribLib( 'event',
+	root    = 'libevent-1.4.13-stable',
+	lib_dir = '.libs',
+	build   = 'sh ./configure --disable-shared && make',
+	clean   = 'make distclean',
+
+	build_win32 = '%VS90COMNTOOLS%\..\..\VC\vcvarsall.bat && msbuild.exe /build Win32-Prj\libevent.vcproj',
+	clean_win32 = '%VS90COMNTOOLS%\..\..\VC\vcvarsall.bat && vcbuild.exe /clean Win32-Prj\libevent.vcproj',
+	lib_dir_win32 = 'Win32-Prj\Release'  
+)
+
+
+
+##############################################################
+#libs in this list will be build, and configured for linking
+##############################################################
+contribs = [ptypes, fidtrack, wosclib, event]
+
+
+
+##############################################################
+# building/cleaning and env configuration
+##############################################################
+env = Environment()
+
+if GetOption('clean'):
+#clean contribb
+	for lib in contribs:
+		lib.perform('clean')
+		print "Done cleaning contrib."
+else:
+#perform action on all contrib libs and setup env for movid build
+	for lib in contribs:
+		lib.perform('build')
+		env.Append(LIBS = [lib.name])
+		env.Append(CPPPATH = [lib.inc_dir])
+		env.Append(LIBPATH = [lib.lib_dir])
+
+#return the configured environment
+Return('env')
+
+
+
+	
+	
+	

@@ -1,0 +1,66 @@
+
+#build rules for libs in contrib, returns env with 
+#include and lib paths set as well as libs to link
+env = SConscript('contrib/SConscript')
+
+#add contirb dir to look for inclide files 
+#(for when we include liek e.g. libfitrack/fidtrack120.h)
+env.Append(CPPPATH = ['contrib'])
+env.Append(CPPPATH = ['contrib/cJSON'])
+
+#use pkg-config to get OpenGL flags for compiling
+env.ParseConfig('pkg-config --cflags --libs opencv')
+
+#add root dir to libpath, so we can link movid with libmovid
+env.Append(LIBPATH = ['.'])
+
+#build movidcore static library
+env.Library('libmovid', [
+	'src/moDaemon.cpp',
+	'src/moDataGenericContainer.cpp',
+	'src/moDataStream.cpp',
+	'src/moFactory.cpp',
+	'src/moLog.cpp',
+	'src/moModule.cpp',
+	'src/moOSC.cpp',
+	'src/moPipeline.cpp',
+	'src/moProperty.cpp',
+	'src/moThread.cpp',
+	'src/moUtils.cpp',
+	'src/modules/moAmplifyModule.cpp',
+	'src/modules/moBackgroundSubtractModule.cpp',
+	'src/modules/moBlobFinderModule.cpp',
+	'src/modules/moCalibrationModule.cpp',
+	'src/modules/moCameraModule.cpp',
+	'src/modules/moCannyModule.cpp',
+	'src/modules/moCombineModule.cpp',
+	'src/modules/moDilateModule.cpp',
+	'src/modules/moDistanceTransformModule.cpp',
+	'src/modules/moDumpModule.cpp',
+	'src/modules/moErodeModule.cpp',
+	'src/modules/moFiducialTrackerModule.cpp',
+	'src/modules/moFingerTipFinderModule.cpp',
+	'src/modules/moGreedyBlobTrackerModule.cpp',
+	'src/modules/moGrayScaleModule.cpp',
+	'src/modules/moHighpassModule.cpp',
+	'src/modules/moHsvModule.cpp',
+	'src/modules/moImageDisplayModule.cpp',
+	'src/modules/moImageFilterModule.cpp',
+	'src/modules/moImageModule.cpp',
+	'src/modules/moInvertModule.cpp',
+	'src/modules/moJustifyModule.cpp',
+	'src/modules/moMaskModule.cpp',
+	'src/modules/moMirrorImageModule.cpp',
+	'src/modules/moPeakFinderModule.cpp',
+	'src/modules/moRoiModule.cpp',
+	'src/modules/moSmoothModule.cpp',
+	'src/modules/moThresholdModule.cpp',
+	'src/modules/moTuioModule.cpp',
+	'src/modules/moTuio2Module.cpp',
+	'src/modules/moVideoModule.cpp',
+	'src/modules/moYCrCbThresholdModule.cpp' ],
+)
+
+
+env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c', 'libmovid.a'])
+
