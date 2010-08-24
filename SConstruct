@@ -1,18 +1,12 @@
+import sys
 
 #build rules for libs in contrib, returns env with 
 #include and lib paths set as well as libs to link
-env = SConscript('contrib/SConscript')
+env = SConscript('contrib/Sconscript')
 
-#add contirb dir to look for inclide files 
-#(for when we include liek e.g. libfitrack/fidtrack120.h)
-env.Append(CPPPATH = ['contrib'])
-env.Append(CPPPATH = ['contrib/cJSON'])
-
-#use pkg-config to get OpenGL flags for compiling
-env.ParseConfig('pkg-config --cflags --libs opencv')
-
-#add root dir to libpath, so we can link movid with libmovid
-env.Append(LIBPATH = ['.'])
+if sys.platform == 'darwin':
+	env.PrependUnique(CCFLAGS='-m32')
+	env.PrependUnique(LINKFLAGS='-m32')
 
 #build movidcore static library
 env.Library('libmovid', [
@@ -61,6 +55,11 @@ env.Library('libmovid', [
 	'src/modules/moYCrCbThresholdModule.cpp' ],
 )
 
+#add libmovid to libs being linked, for movid build
+env.Append(LIBPATH = '.')
+env.Append(LIBS = 'libmovid')
 
-env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c', 'libmovid.a'])
+#build movid
+env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c'], CCFLAGS='-m32')
 
+env.Dump()

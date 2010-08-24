@@ -32,6 +32,11 @@ class ContribLib(object):
 		return val
 			
 	def perform(self, action):
+		print "##############################################################"
+		print action+"ing "+self.name
+		print "--------------------------------------------------------------"
+		print self.__getattr__(action)
+		print "##############################################################"
 		#'perform either 'build' or 'clean' action by executing the rigth commands
 		if action == 'build':
 			cmds = self.build.split("&&")
@@ -50,16 +55,19 @@ class ContribLib(object):
 ptypes = ContribLib( 'ptypes',
 	root    = 'ptypes-2.1.1',
 	inc_dir = 'include',
-	lib_dir = 'lib'
+	lib_dir = 'lib',
+	build_darwin = 'make -C src -f Makefile.Darwin CXX="g++ -m32"'
 )
 
 fidtrack = ContribLib( 'fidtrack',
-	root    = 'libfidtrack'
+	root    = 'libfidtrack',
+	build_darwin = 'make CXXFLAGS="-Wall -O2 -finline-functions -ffast-math -funroll-all-loops -fomit-frame-pointer -m32"'
 )
 
 wosclib = ContribLib( 'wosclib',
 	root  = 'WOscLib-00.09',
-	build = 'sh ./configure && make libwosclib.a'
+	build = 'sh ./configure && make libwosclib.a',
+	build_darwin = 'sh ./configure CFLAGS=-m32 && make'
 )
 
 event = ContribLib( 'event',
@@ -67,6 +75,8 @@ event = ContribLib( 'event',
 	lib_dir = '.libs',
 	build   = 'sh ./configure --disable-shared && make',
 	clean   = 'make distclean',
+	
+	build_darwin = 'sh configure CFLAGS=-m32 && make',
 
 	build_win32 = '%VS90COMNTOOLS%\..\..\VC\vcvarsall.bat && msbuild.exe /build Win32-Prj\libevent.vcproj',
 	clean_win32 = '%VS90COMNTOOLS%\..\..\VC\vcvarsall.bat && vcbuild.exe /clean Win32-Prj\libevent.vcproj',
@@ -80,25 +90,36 @@ event = ContribLib( 'event',
 ##############################################################
 contribs = [ptypes, fidtrack, wosclib, event]
 
-
-
-##############################################################
-# building/cleaning and env configuration
-##############################################################
-env = Environment()
-
-if GetOption('clean'):
-#clean contribb
+if GetOption('clean'): #clean contribb
 	for lib in contribs:
 		lib.perform('clean')
 		print "Done cleaning contrib."
-else:
-#perform action on all contrib libs and setup env for movid build
+else: #build all contrib libs TODO:check if necesarry, or only on build-contrib
 	for lib in contribs:
 		lib.perform('build')
-		env.Append(LIBS = [lib.name])
-		env.Append(CPPPATH = [lib.inc_dir])
-		env.Append(LIBPATH = [lib.lib_dir])
+
+
+##############################################################
+# Configure scons env for movid build
+##############################################################
+env = Environment()
+
+#use pkg-config to get OpenGV flags for compiling
+env.ParseConfig('pkg-config --cflags --libs opencv')
+
+#add contrib libs to scons env
+for lib in contribs:
+	env.Append(LIBS = [lib.name])
+	env.Append(CPPPATH = [lib.inc_dir])
+	env.Append(LIBPATH = [lib.lib_dir])
+
+#add cJSON include for directory
+env.Append(CPPPATH = ['contrib/cJSON'])
+
+#add contirb dir to look for inclide files 
+#(for when we include liek e.g. libfitrack/fidtrack120.h)
+env.Append(CPPPATH = ['contrib'])
+
 
 #return the configured environment
 Return('env')
