@@ -1,12 +1,24 @@
 import sys
 
+AddOption( '--platform',
+  default=sys.platform,
+  dest='platform',
+  type='string',
+  nargs=1,
+  action='store',
+  metavar=sys.platform,
+  help='platform to build for (win32, darwin, darwin32, etc..)'
+)
+
+
+
 #build rules for libs in contrib, returns env with 
 #include and lib paths set as well as libs to link
 env = SConscript('contrib/Sconscript')
 
-if sys.platform == 'darwin':
-	env.PrependUnique(CCFLAGS='-m32')
-	env.PrependUnique(LINKFLAGS='-m32')
+if GetOption('platform') == 'darwin32':
+	env.PrependUnique(CCFLAGS   = '-m32')
+	env.PrependUnique(LINKFLAGS = '-m32')
 
 #build movidcore static library
 env.Library('libmovid', [
@@ -60,6 +72,6 @@ env.Append(LIBPATH = '.')
 env.Append(LIBS = 'libmovid')
 
 #build movid
-env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c'], CCFLAGS='-m32')
+env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c'])
 
 env.Dump()

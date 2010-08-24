@@ -1,4 +1,5 @@
-import os, sys, subprocess, shlex
+import os, subprocess, shlex
+
 
 class ContribLib(object):
 	#Class to hold info about the contirb libs for movid, we can pass info for teh
@@ -22,7 +23,7 @@ class ContribLib(object):
 		val = self.lib_info[attr]
 		#check if attr-sys is defined (e.g. build-win32, or build-darwin)
 		#if it is use the platform specific one, instead of default		  
-		sys_attr = attr + '_' + sys.platform
+		sys_attr = attr + '_' + GetOption('platform')
 		if sys_attr in self.lib_info:
 			val = self.lib_info[sys_attr]
 		#if its a directory, we get relative path from contrib build dir
@@ -56,18 +57,18 @@ ptypes = ContribLib( 'ptypes',
 	root    = 'ptypes-2.1.1',
 	inc_dir = 'include',
 	lib_dir = 'lib',
-	build_darwin = 'make -C src -f Makefile.Darwin CXX="g++ -m32"'
+	build_darwin32 = 'make -C src -f Makefile.Darwin CXX="g++ -m32"'
 )
 
 fidtrack = ContribLib( 'fidtrack',
 	root    = 'libfidtrack',
-	build_darwin = 'make CXXFLAGS="-Wall -O2 -finline-functions -ffast-math -funroll-all-loops -fomit-frame-pointer -m32"'
+	build_darwin32 = 'make CXXFLAGS="-Wall -O2 -finline-functions -ffast-math -funroll-all-loops -fomit-frame-pointer -m32"'
 )
 
 wosclib = ContribLib( 'wosclib',
 	root  = 'WOscLib-00.09',
 	build = 'sh ./configure && make libwosclib.a',
-	build_darwin = 'sh ./configure CFLAGS=-m32 && make'
+	build_darwin32 = 'sh ./configure CFLAGS=-m32 && make'
 )
 
 event = ContribLib( 'event',
@@ -76,7 +77,7 @@ event = ContribLib( 'event',
 	build   = 'sh ./configure --disable-shared && make',
 	clean   = 'make distclean',
 	
-	build_darwin = 'sh configure CFLAGS=-m32 && make',
+	build_darwin32 = 'sh configure CFLAGS=-m32 && make',
 
 	build_win32 = '%VS90COMNTOOLS%\..\..\VC\vcvarsall.bat && msbuild.exe /build Win32-Prj\libevent.vcproj',
 	clean_win32 = '%VS90COMNTOOLS%\..\..\VC\vcvarsall.bat && vcbuild.exe /clean Win32-Prj\libevent.vcproj',
