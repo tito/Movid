@@ -10,18 +10,26 @@ AddOption( '--platform',
   help='platform to build for (win32, darwin, darwin32, etc..)'
 )
 
-
-
-#build rules for libs in contrib, returns env with 
-#include and lib paths set as well as libs to link
+#################################################################
+# Build contirb and configure env for linking against those libs
+#################################################################
 env = SConscript('contrib/Sconscript')
 
-if GetOption('platform') == 'darwin32':
-	env.PrependUnique(CCFLAGS   = '-m32')
-	env.PrependUnique(LINKFLAGS = '-m32')
 
-#build movidcore static library
-env.Library('libmovid', [
+#################################################################
+# Platform specific build settings for movid 
+#################################################################
+if GetOption('platform') == 'darwin32':
+	print "Forcing 32bit build for platform=darwin32"
+	env.PrependUnique(CCFLAGS   = ['-m32'])
+	env.PrependUnique(LINKFLAGS = ['-m32'])
+
+
+
+#################################################################
+# Build Rule for libmovid
+#################################################################
+libmovid = env.Library('libmovid', [
 	'src/moDaemon.cpp',
 	'src/moDataGenericContainer.cpp',
 	'src/moDataStream.cpp',
@@ -67,11 +75,10 @@ env.Library('libmovid', [
 	'src/modules/moYCrCbThresholdModule.cpp' ],
 )
 
-#add libmovid to libs being linked, for movid build
-env.Append(LIBPATH = '.')
-env.Append(LIBS = 'libmovid')
 
-#build movid
-env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c'])
 
-env.Dump()
+#################################################################
+# Build Rule for movid daemon
+#################################################################
+env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c', libmovid])
+
