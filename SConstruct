@@ -13,11 +13,11 @@ AddOption( '--platform',
 #################################################################
 # Build contirb and configure env for linking against those libs
 #################################################################
-env = SConscript('contrib/Sconscript')
+env = SConscript('contrib/SConscript')
 
 
 #################################################################
-# Platform specific build settings for movid 
+# Platform specific build settings for movid
 #################################################################
 if GetOption('platform') == 'darwin32':
 	print "Forcing 32bit build for platform=darwin32"
@@ -81,4 +81,3 @@ libmovid = env.Library('libmovid', [
 # Build Rule for movid daemon
 #################################################################
 env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c', libmovid])
-
