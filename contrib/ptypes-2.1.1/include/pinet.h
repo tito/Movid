@@ -46,7 +46,7 @@ PTYPES_BEGIN
 // BSD-compatible socket error codes for Win32
 //
 
-#if defined(WSAENOTSOCK) && !defined(ENOTSOCK)
+#if defined(WSAENOTSOCK)
 
 #define EWOULDBLOCK             WSAEWOULDBLOCK
 #define EINPROGRESS             WSAEINPROGRESS

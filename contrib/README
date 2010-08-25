@@ -2,3 +2,8 @@ Movid's make file will automatically build the dependencies in this directory.  
 
 changes to prevent warning:
 cJSON/cJSON.c:330 : add (char*) cast
+
+changes to ptypes, to fix bug intorduced by VC++ 2010:
+movid/contrib/ptypes-2.1.1/include/pinet.h line 48
+-#if defined(WSAENOTSOCK) && !defined(ENOTSOCK)
++#if defined(WSAENOTSOCK)
