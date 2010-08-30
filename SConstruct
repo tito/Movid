@@ -7,7 +7,6 @@ AddOption( '--clean-contrib',
 )
 
 
-
 #################################################################
 # Source files list for each target we are building
 #################################################################
@@ -76,7 +75,7 @@ env = SConscript('contrib/SConscript')
 #################################################################
 # Platform sepcific settings for build env and OpenCV flags
 #################################################################
-import sys
+import sys, os
 
 # WIN32 #########################################################
 if sys.platform == 'win32':
@@ -103,7 +102,12 @@ if sys.platform == 'win32':
 
 # UNIX #######################################################
 else:
-  env.ParseConfig('pkg-config --opencv --libs gtk+-2.0') #gotta love unix :P
+  #add OpenCV flags and libs
+  env.ParseConfig('pkg-config --cflags --libs opencv') #gotta love unix :P
+  
+  #set the compiler if set in ENV, used e.g. to force 32bit by setting to g++ -m32
+  if os.environ.get('CC'): env.Replace(CC=os.environ['CC'])
+  if os.environ.get('CXX'): env.Replace(CXX=os.environ['CXX'])
 
 
 

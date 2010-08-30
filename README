@@ -162,6 +162,9 @@ You're ready to build, just run:
 scons
 
 
+Note: If you need to build moved as 32bit, you can do so by forcing the -m32 flag on the compilers for both moved and all libs in contrib by running:
+CC='gcc -m32' CXX='g++ -m32' scons
+
 Now you should be able to use movid already. Try the simple-video preset:
 ./movid -l presets/simple-video.txt
 

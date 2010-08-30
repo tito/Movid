@@ -16,14 +16,14 @@ all: $(LIBEVENT_LIB) $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB)
 	cp $? ./lib
 
 $(LIBEVENT_LIB):
-	-cd $(LIBEVENT_PATH); test -f config.status && sh ./configure --disable-shared
-	$(MAKE) -C (LIBEVENT_PATH)
+	-cd $(LIBEVENT_PATH); test ! -f config.status && sh ./configure --disable-shared
+	$(MAKE) -C $(LIBEVENT_PATH)
 
 $(LIBFIDTRACK_LIB):
 	$(MAKE) -C $(LIBFIDTRACK_PATH)
 
 $(WOSCLIB_LIB):
-	-cd $(WOSCLIB_PATH); test -f config.status && sh ./configure
+	-cd $(WOSCLIB_PATH); test ! -f config.status && sh ./configure
 	$(MAKE) -C $(WOSCLIB_PATH)
 
 $(PTYPES_LIB):
