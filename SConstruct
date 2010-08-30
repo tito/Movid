@@ -1,83 +1,115 @@
-import sys
-
-AddOption( '--platform',
-  default=sys.platform,
-  dest='platform',
-  type='string',
-  nargs=1,
-  action='store',
-  metavar=sys.platform,
-  help='platform to build for (win32, darwin, darwin32, etc..)'
+#################################################################
+# Command line options to controll build
+#################################################################
+AddOption( '--clean-contrib',
+  help='force rebuilding of contrib libraries',
+  dest='clean-contrib', action="store_true"
 )
 
+
+
 #################################################################
-# Build contirb and configure env for linking against those libs
+# Source files list for each target we are building
+#################################################################
+
+#source files for the daemon ####################################
+daemon_src = [
+  'src/movid.cpp',
+  'contrib/cJSON/cJSON.c'
+]
+
+#source files for libmovid, core+modules ########################
+libmovid_src = [
+  'src/moDaemon.cpp',
+  'src/moDataGenericContainer.cpp',
+  'src/moDataStream.cpp',
+  'src/moFactory.cpp',
+  'src/moLog.cpp',
+  'src/moModule.cpp',
+  'src/moOSC.cpp',
+  'src/moPipeline.cpp',
+  'src/moProperty.cpp',
+  'src/moThread.cpp',
+  'src/moUtils.cpp',
+  'src/modules/moAmplifyModule.cpp',
+  'src/modules/moBackgroundSubtractModule.cpp',
+  'src/modules/moBlobFinderModule.cpp',
+  'src/modules/moCalibrationModule.cpp',
+  'src/modules/moCameraModule.cpp',
+  'src/modules/moCannyModule.cpp',
+  'src/modules/moCombineModule.cpp',
+  'src/modules/moDilateModule.cpp',
+  'src/modules/moDistanceTransformModule.cpp',
+  'src/modules/moDumpModule.cpp',
+  'src/modules/moErodeModule.cpp',
+  'src/modules/moFiducialTrackerModule.cpp',
+  'src/modules/moFingerTipFinderModule.cpp',
+  'src/modules/moGreedyBlobTrackerModule.cpp',
+  'src/modules/moGrayScaleModule.cpp',
+  'src/modules/moHighpassModule.cpp',
+  'src/modules/moHsvModule.cpp',
+  'src/modules/moImageDisplayModule.cpp',
+  'src/modules/moImageFilterModule.cpp',
+  'src/modules/moImageModule.cpp',
+  'src/modules/moInvertModule.cpp',
+  'src/modules/moJustifyModule.cpp',
+  'src/modules/moMaskModule.cpp',
+  'src/modules/moMirrorImageModule.cpp',
+  'src/modules/moPeakFinderModule.cpp',
+  'src/modules/moRoiModule.cpp',
+  'src/modules/moSmoothModule.cpp',
+  'src/modules/moThresholdModule.cpp',
+  'src/modules/moTuioModule.cpp',
+  'src/modules/moTuio2Module.cpp',
+  'src/modules/moVideoModule.cpp',
+  'src/modules/moYCrCbThresholdModule.cpp'
+]
+
+
+#################################################################
+# Build contirb and configure env for linking against deps
 #################################################################
 env = SConscript('contrib/SConscript')
 
 
+
 #################################################################
-# Platform specific build settings for movid
+# Platform sepcific settings for build env and OpenCV flags
 #################################################################
-if GetOption('platform') == 'darwin32':
-	print "Forcing 32bit build for platform=darwin32"
-	env.PrependUnique(CCFLAGS   = ['-m32'])
-	env.PrependUnique(LINKFLAGS = ['-m32'])
+import sys
+
+# WIN32 #########################################################
+if sys.platform == 'win32':
+  #on widnows daemon also needs XgetOpt source file
+  daemon_src.append('contrib/XgetOpt/XgetOpt.cxx')
+
+  #OpenCV, must config manually on windowze :/
+  opencv_dir = ARGUMENTS.get('OPENCV_DIR', 'C:\OpenCV2.1')
+  env.Append(
+    LIBS = ['cv210', 'cxcore210', 'highgui210', 'cvaux210'],
+    LIBPATH = [opencv_dir+'\lib'],
+    CPPPATH = [opencv_dir+'\include\opencv'])
+
+  #gotta set up msvc compiler and linker for list of options see:
+  #see http://msdn.microsoft.com/en-us/library/fwkeyyhe(v=VS.71).aspx
+  #and http://msdn.microsoft.com/en-us/library/y0zzbyt4(VS.80).aspx
+  env.Append(
+    CPPDEFINES = ['WIN32'],
+    CCFLAGS = ['/O2', '/Oi', '/GL', '/EHsc', '/MD'], #mainly optimization
+    LIBS = ['ws2_32.lib', 'user32.lib'], #ws_32.lib is needed buy libevent
+    LINKFLAGS = ['/LTCG', '/OPT:REF', '/OPT:ICF']) #mainly optimization
 
 
 
-#################################################################
-# Build Rule for libmovid
-#################################################################
-libmovid = env.Library('libmovid', [
-	'src/moDaemon.cpp',
-	'src/moDataGenericContainer.cpp',
-	'src/moDataStream.cpp',
-	'src/moFactory.cpp',
-	'src/moLog.cpp',
-	'src/moModule.cpp',
-	'src/moOSC.cpp',
-	'src/moPipeline.cpp',
-	'src/moProperty.cpp',
-	'src/moThread.cpp',
-	'src/moUtils.cpp',
-	'src/modules/moAmplifyModule.cpp',
-	'src/modules/moBackgroundSubtractModule.cpp',
-	'src/modules/moBlobFinderModule.cpp',
-	'src/modules/moCalibrationModule.cpp',
-	'src/modules/moCameraModule.cpp',
-	'src/modules/moCannyModule.cpp',
-	'src/modules/moCombineModule.cpp',
-	'src/modules/moDilateModule.cpp',
-	'src/modules/moDistanceTransformModule.cpp',
-	'src/modules/moDumpModule.cpp',
-	'src/modules/moErodeModule.cpp',
-	'src/modules/moFiducialTrackerModule.cpp',
-	'src/modules/moFingerTipFinderModule.cpp',
-	'src/modules/moGreedyBlobTrackerModule.cpp',
-	'src/modules/moGrayScaleModule.cpp',
-	'src/modules/moHighpassModule.cpp',
-	'src/modules/moHsvModule.cpp',
-	'src/modules/moImageDisplayModule.cpp',
-	'src/modules/moImageFilterModule.cpp',
-	'src/modules/moImageModule.cpp',
-	'src/modules/moInvertModule.cpp',
-	'src/modules/moJustifyModule.cpp',
-	'src/modules/moMaskModule.cpp',
-	'src/modules/moMirrorImageModule.cpp',
-	'src/modules/moPeakFinderModule.cpp',
-	'src/modules/moRoiModule.cpp',
-	'src/modules/moSmoothModule.cpp',
-	'src/modules/moThresholdModule.cpp',
-	'src/modules/moTuioModule.cpp',
-	'src/modules/moTuio2Module.cpp',
-	'src/modules/moVideoModule.cpp',
-	'src/modules/moYCrCbThresholdModule.cpp' ],
-)
+# UNIX #######################################################
+else:
+  env.ParseConfig('pkg-config --opencv --libs gtk+-2.0') #gotta love unix :P
+
 
 
 
 #################################################################
-# Build Rule for movid daemon
+# Build Rules for libmovid and movid daemon
 #################################################################
-env.Program('movid', ['src/movid.cpp', 'contrib/cJSON/cJSON.c', libmovid])
+libmovid = env.Library('libmovid', libmovid_src )
+env.Program('movid', daemon_src + [libmovid])

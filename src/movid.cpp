@@ -18,9 +18,12 @@
 #include <stdio.h>
 
 #ifdef WIN32
+#include <Ws2tcpip.h> 
+#include <Wspiapi.h>
 #include <winsock2.h>
 #include <windows.h>
 #include <Xgetopt.h>
+
 #else
 #include <getopt.h>
 #endif

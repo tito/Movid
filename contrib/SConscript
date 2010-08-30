@@ -1,152 +1,75 @@
-import os, subprocess, shlex
 
-##############################################################
-# Helper class to manage build of libs in contrib
-##############################################################
-class ContribLib(object):
-	#Class to hold info about the contirb libs for movid, we can pass info for teh
-	#lib when instatiating teh class.  if we pass build, and build-win32, it will
-	#figure out which one to use based on which platform build is running
-	def __init__(self, name, **kwargs):
-		#some default values
-		self.lib_info = {
-			'name'    : name,        #name of lib
-			'root'    : name,        #directory of library, used as build dir
-			'inc_dir' : '.',         #path for include files, reltive to root
-			'lib_dir' : '.',         #path for library files, reltive to root
-			'build'   : 'make',      #command used to build (executed in root)
-			'clean'   : 'make clean' #command used to clean (executed in root)
-		}
-		#overwrite defaults with configured kwargs
-		self.lib_info.update(kwargs)
+##########################################################
+#configure scons env with contrib needed to compile movid
+##########################################################
 
-	def __getattr__(self, attr):
-		#get value form lib_info constructed form kwargs in init
-		val = self.lib_info[attr]
-		#check if attr-sys is defined (e.g. build-win32, or build-darwin)
-		#if it is use the platform specific one, instead of default
-		sys_attr = attr + '_' + GetOption('platform')
-		if sys_attr in self.lib_info:
-			val = self.lib_info[sys_attr]
-		#if its a directory, we get relative path from contrib build dir
-		if 'dir' in attr:
-			val = os.path.join(self.root, val)
-			val = os.path.relpath(val, '..')
-		return val
-
-	def perform(self, action):
-		print "\n\n\n"
-		print "##############################################################"
-		print action+"ing "+self.name
-		print "--------------------------------------------------------------"
-		print self.__getattr__(action)
-		print "##############################################################"
-		#'perform either 'build' or 'clean' action by executing the rigth commands
-		if action == 'build':
-			cmds = self.build.split("&&")
-		if action == 'clean':
-			cmds = self.clean.split("&&")
-		for cmd in cmds:
-			args = shlex.split(cmd)
-			subprocess.call(args, cwd=self.root, shell=True)
+#this env holds build config for movid ###################
+# TARGET_ARCH is used only on windows, but must be x86 here
+# no effect other OS, according to scons doc see:
+# http://www.scons.org/doc/production/HTML/scons-user.html
+env = Environment(TARGET_ARCH='x86')
 
 
+#add include paths and libraries #########################
+env.Append(
+   CPPPATH = ['contrib',
+              'contrib/cJSON',
+		        'contrib/libevent-1.4.13-stable',
+		        'contrib/WOscLib-00.09',
+		        'contrib/ptypes-2.1.1/include',
+              'contrib/XgetOpt'],
 
+   LIBS = ['event', 'ptypes', 'wosclib', 'fidtrack'],
 
-##############################################################
-# Configuration of external builds for libs in contrib
-##############################################################
-
-ptypes = ContribLib( 'ptypes',
-	root    = 'ptypes-2.1.1',
-	inc_dir = 'include',
-	lib_dir = 'lib',
-
-	build_darwin32 = 'make -C src -f Makefile.Darwin CXX="g++ -m32"',
-
-	root_win32 = 'contrib-vcxproj',
-	build_win32 = 'build.bat /t:build /v:m /m:4 /p:Configuration=Release',
-	clean_win32 = 'build.bat /t:clean /v:m /p:Configuration=Release',
-	lib_dir_win32 = 'Release'
-)
-
-fidtrack = ContribLib( 'fidtrack',
-	root    = 'libfidtrack',
-
-	build_darwin32 = 'make CXXFLAGS="-Wall -O2 -finline-functions -ffast-math -funroll-all-loops -fomit-frame-pointer -m32"',
-
-	root_win32 = 'contrib-vcxproj',
-	build_win32 = 'echo nothing to be done',
-	clean_win32 = 'echo nothing to be done',
-	lib_dir_win32 = 'Release'
-)
-
-wosclib = ContribLib( 'wosclib',
-	root  = 'WOscLib-00.09',
-	build = 'sh ./configure && make libwosclib.a',
-
-	build_darwin32 = 'sh ./configure CFLAGS=-m32 && make CXX="g++ -m32"',
-
-	root_win32 = 'contrib-vcxproj',
-	build_win32 = 'echo nothing to be done',
-	clean_win32 = 'echo nothing to be done',
-	lib_dir_win32 = 'Release'
-)
-
-event = ContribLib( 'event',
-	root    = 'libevent-1.4.13-stable',
-	lib_dir = '.libs',
-	build   = 'sh ./configure --disable-shared && make',
-	clean   = 'make distclean',
-
-	build_darwin32 = 'sh configure --disable-shared CFLAGS=-m32 && make',
-
-	root_win32 = 'contrib-vcxproj',
-	build_win32 = 'echo nothing to be done',
-	clean_win32 = 'echo nothing to be done',
-	lib_dir_win32 = 'Release'
+   LIBPATH = ['contrib/lib']
 )
 
 
-
-##############################################################
-#libs in this list will be build, and configured for linking
-##############################################################
-contribs = [ptypes, fidtrack, wosclib, event]
-
-if GetOption('clean'): #clean contribb
-	for lib in contribs:
-		lib.perform('clean')
-	print "done celaning contrib"
-else: #build all contrib libs TODO:check if necesarry, or only on build-contrib
-	for lib in contribs:
-		lib.perform('build')
+## add additional libevent include directories for win32
+if sys.platform == 'win32':
+   env.Append( CPPPATH = [
+      'contrib/libevent-1.4.13-stable/compat',
+      'contrib/libevent-1.4.13-stable/WIN32-Code'
+   ])
 
 
-##############################################################
-# Configure scons env for movid build
-##############################################################
-env = Environment()
 
-if GetOption('platform') == 'win32':
-	pass
-else:
-	#use pkg-config to get OpenGV flags for compiling
-	env.ParseConfig('pkg-config --cflags --libs opencv')
+##########################################################
+# Building of things in contrib
+#  using extenral build tools:
+#  * windows build controlled by vc++ solution in .msvc
+#  * other systems, build by make using  Makefile
+##########################################################
+import sys, os, subprocess
 
-#add contrib libs to scons env
-for lib in contribs:
-	env.Append(LIBS = [lib.name])
-	env.Append(CPPPATH = [lib.inc_dir])
-	env.Append(LIBPATH = [lib.lib_dir])
+# function to perform external build of dependencies #####
+def build_contrib():
+   if sys.platform == 'win32':
+      cmd = 'build.bat /t:build /m:4 /p:Configuration=Release'
+      subprocess.call(cmd.split(), cwd='.msvc', shell=True)
+   else:
+      subprocess.call('make')
 
-#add cJSON include for directory
-env.Append(CPPPATH = ['contrib/cJSON'])
+# function to perform external clean of dependencies #####
+def clean_contrib():
+   if sys.platform == 'win32':
+      cmd = 'build.bat /t:clean /p:Configuration=Release'
+      subprocess.call(cmd.split(), cwd='.msvc', shell=True)
+   else:
+      subprocess.call(['make', 'clean'])
 
-#add contirb dir to look for inclide files
-#(for when we include liek e.g. libfitrack/fidtrack120.h)
-env.Append(CPPPATH = ['contrib'])
+##########################################################
+#build or clean contrib based on command line flags ######
+if GetOption('clean-contrib'):
+   clean_contrib()
+if not GetOption('clean'):
+   if not os.path.exists('lib'): # not needed if lib already there
+      build_contrib()
 
 
-#return the configured environment
+
+
+##########################################################
+#all done...return the configured env to SConstruct
+##########################################################
 Return('env')

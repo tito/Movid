@@ -1,9 +1,23 @@
-Movid's make file will automatically build the dependencies in this directory.  To clean teh dependencies, do "make distclean" in teh Movid directory
+############################################################
+## Movid Dependencies build information                   ##
+############################################################
+This directory contains all the dependencies for movid.  Movid itself is built using scons.  The file Sconscript will be executed from the main SConstruct file to build the dependencies in this driectory, however, it relies on external build tools to build them (see makefile for UNIX and .msvc/.msvc.sln for Windows)
 
+What Sconscript does:
+It sets up the scons environment internally with the right include and lib paths as well as flags, so that movid can compile against teh dependencies in this directory
+
+It uses external build tools to build the dependencies.  
+On UNIX:
+Since we dont want to maintain the build of every dependency ourselves, the Sconscript fiel will simply call make and use the Makefile in this directory to build all teh dependencies (since they all use Makefiles as well by default).  
+
+On Windows
+Since the makefiles are notall compatible with mingw.  The folder .msvc contains a visual C++ 2010 solution that will build all the dependencies in this (contrib) firectory as needed to build movid on windows.  to build either open in in visual studio.  It's created and tested with visual C++ express 2010, which can be downloaded for free here: http://www.microsoft.com/express/Downloads/#2010-Visual-CPP
+
+
+############################################################
+## Changes to any of the code in contrib by Movid authors ##
+############################################################
 changes to prevent warning:
 cJSON/cJSON.c:330 : add (char*) cast
 
-changes to ptypes, to fix bug intorduced by VC++ 2010:
-movid/contrib/ptypes-2.1.1/include/pinet.h line 48
--#if defined(WSAENOTSOCK) && !defined(ENOTSOCK)
-+#if defined(WSAENOTSOCK)
+

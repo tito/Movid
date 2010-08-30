@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{94AF7499-4DCF-4D90-BE84-94CCA3116166}</ProjectGuid>
+    <ProjectGuid>{CCA79A3A-FB12-4DE9-B93C-50BF4A925E2D}</ProjectGuid>
     <RootNamespace>wosclib</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -37,10 +37,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>wosclib</TargetName>
+    <OutDir>$(SolutionDir)\lib</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>wosclib</TargetName>
+    <OutDir>$(SolutionDir)\lib</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -83,10 +83,6 @@
     <ClInclude Include="..\..\WOscLib-00.09\WOscString.h" />
     <ClInclude Include="..\..\WOscLib-00.09\WOscTimeTag.h" />
     <ClInclude Include="..\..\WOscLib-00.09\WOscUtil.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\WOscLib-00.09\lgpl.txt" />
-    <None Include="..\..\WOscLib-00.09\README.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\WOscLib-00.09\WOscBlob.cpp" />
