@@ -1,3 +1,5 @@
+import sys, os, subprocess
+
 
 ##########################################################
 #configure scons env with contrib needed to compile movid
@@ -40,7 +42,6 @@ if sys.platform == 'win32':
 #  * windows build controlled by vc++ solution in .msvc
 #  * other systems, build by make using  Makefile
 ##########################################################
-import sys, os, subprocess
 
 # function to perform external build of dependencies #####
 def build_contrib():
