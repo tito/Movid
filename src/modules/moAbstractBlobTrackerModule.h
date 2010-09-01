@@ -25,27 +25,27 @@
 #include "cv.h"
 
 class moAbstractBlobTrackerModule : public moModule {
-	public:
-		moAbstractBlobTrackerModule();
-		virtual ~moAbstractBlobTrackerModule();
+public:
+	moAbstractBlobTrackerModule();
+	virtual ~moAbstractBlobTrackerModule();
 
-		void notifyData(moDataStream *stream);
-		void update();
+	void notifyData(moDataStream *stream);
+	void update();
 
-	private:
-		int id_counter;
-		moDataGenericList* new_blobs;
-		moDataGenericList* old_blobs;
+protected:
+	int id_counter;
+	moDataGenericList* new_blobs;
+	moDataGenericList* old_blobs;
 
-		moDataStream *input;
-		moDataStream *output;
+	moDataStream *input;
+	moDataStream *output;
 
-		void pruneBlobs();
-		void trackBlobs();
-		void calcWeight(moDataGenericContainer* old_blob,
-				moDataGenericContainer* new_blob);
+	void pruneBlobs();
+	virtual void trackBlobs();
+	virtual double calcWeight(moDataGenericContainer* old_blob,
+			        		  moDataGenericContainer* new_blob);
 
-		MODULE_INTERNALS();
+	MODULE_INTERNALS();
 };
 
 #endif

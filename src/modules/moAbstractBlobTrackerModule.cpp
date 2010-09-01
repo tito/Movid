@@ -56,8 +56,8 @@ void moAbstractBlobTrackerModule::trackBlobs() {
 	// Uses this->calcWeight() to determine which blob belongs to which old blob.
 }
 
-void moAbstractBlobTrackerModule::calcWeight(moDataGenericContainer* old_blob,
-		moDataGenericContainer* new_blob) {
+double moAbstractBlobTrackerModule::calcWeight(moDataGenericContainer* old_blob,
+											   moDataGenericContainer* new_blob) {
 	// Computes the 'weight' or 'probability' that old_blob
 	// (from frame n) is the same as new_blob (in frame n+1).
 	// The function may just consider the euclidean distance
@@ -68,6 +68,7 @@ void moAbstractBlobTrackerModule::calcWeight(moDataGenericContainer* old_blob,
 	// blob2 is zero (or the weight is infinite).
 	//
 	// Returns a double. Lower value is better weight. 0.0 is best.
+	return -1.;
 }
 
 void moAbstractBlobTrackerModule::update() {

@@ -19,30 +19,16 @@
 #ifndef MO_GREEDYBLOBTRACKER_MODULE_H
 #define MO_GREEDYBLOBTRACKER_MODULE_H
 
-#include "../moModule.h"
+#include "moAbstractBlobTrackerModule.h"
 #include "../moDataStream.h"
 #include "../moDataGenericContainer.h"
 #include "cv.h"
 
-class moGreedyBlobTrackerModule : public moModule {
-public:
-	moGreedyBlobTrackerModule();
-	virtual ~moGreedyBlobTrackerModule();
-	
-	void notifyData(moDataStream *stream);
-	void update();
-	
-private:
-	int id_counter;
-	moDataGenericList* new_blobs;
-	moDataGenericList* old_blobs;
-
-    moDataStream *input;
-	moDataStream *output;
-	
-    void pruneBlobs();
-	void trackBlobs();
-	
+class moGreedyBlobTrackerModule : public moAbstractBlobTrackerModule {
+protected:
+	virtual void trackBlobs();
+	virtual double calcWeight(moDataGenericContainer* old_blob,
+			        		  moDataGenericContainer* new_blob);
 	MODULE_INTERNALS();
 };
 
