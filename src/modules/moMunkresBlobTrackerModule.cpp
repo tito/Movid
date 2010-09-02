@@ -42,43 +42,44 @@ void moMunkresBlobTrackerModule::trackBlobs() {
 	assert(nn < DIM_FINGER);
 
 	int sid[DIM_FINGER];
-	int nid[DIM_FINGER];
 	int nx[DIM_FINGER];
 	int ny[DIM_FINGER];
 	int sx[DIM_FINGER];
 	int sy[DIM_FINGER];
 
+	std::cout << "\n\n============ OLD BLOBS ==============" << std::endl;
 	for (i = 0; i < sn; i++) {
 		sid[i] = (*this->old_blobs)[i]->properties["blob_id"]->asInteger();
-		sx[i] = (*this->old_blobs)[i]->properties["x"]->asInteger();
-		sy[i] = (*this->old_blobs)[i]->properties["y"]->asInteger();
+		sx[i] = (*this->old_blobs)[i]->properties["x"]->asDouble();
+		sy[i] = (*this->old_blobs)[i]->properties["y"]->asDouble();
+		std::cout << "j: " << i << " ID " << sid[i] << " x " << sx[i] << " y " << sy[i] << std::endl;
 	}
+	std::cout << "\n============ NEW BLOBS ==============" << std::endl;
 	for (i = 0; i < nn; i++) {
-		nx[i] = (*this->new_blobs)[i]->properties["x"]->asInteger();
-		ny[i] = (*this->new_blobs)[i]->properties["y"]->asInteger();
+		std::cout << "i: " << i << " x " << nx[i] << " y " << ny[i] << std::endl;
+		nx[i] = (*this->new_blobs)[i]->properties["x"]->asDouble();
+		ny[i] = (*this->new_blobs)[i]->properties["y"]->asDouble();
 	}
 	
 	// setup distance matrix for contact matching
+	std::cout << "\n============ DISTANCES ==============" << std::endl;
 	for (j = 0; j < sn; j++) {
 		row = A + nn * j;
-		for (i = 0; i < nn; i++)
+		for (i = 0; i < nn; i++) {
 			row[i] = dist2(nx[i] - sx[j], ny[i] - sy[j]);
+			std::cout << j << " to " << i << ": " << row[i] << std::endl;
+		}
 	}
 
 	mtdev_match(n2s, A, nn, sn);
 
+	std::cout << "\n============ MATCHING ==============" << std::endl;
 	for (i = 0; i < nn; i++) {
-		nx[i] = (*this->new_blobs)[i]->properties["x"]->asInteger();
-		ny[i] = (*this->new_blobs)[i]->properties["y"]->asInteger();
+		j = n2s[i];
+		id = j >= 0 ? sid[j] : -10;
+		if (id == -10)
+			id = this->id_counter++;
+		(*this->new_blobs)[i]->properties["blob_id"]->set(id);
 	}
-
-	/* update matched contacts and create new ones */
-//	foreach_bit(i, touch) {
-//		j = n2s[i];
-//		id = j >= 0 ? sid[j] : MT_ID_NULL;
-//		if (id == MT_ID_NULL)
-//			id = state->lastid++ & MT_ID_MAX;
-//		nid[i] = id;
-//	}
 }
 

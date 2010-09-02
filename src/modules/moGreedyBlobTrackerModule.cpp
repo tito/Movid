@@ -41,16 +41,13 @@ double moGreedyBlobTrackerModule::calcWeight(moDataGenericContainer* old_blob,
 void moGreedyBlobTrackerModule::trackBlobs() {
     moDataGenericList::iterator it;
 	double weight, min_weight;
-	std::cout << "greedy track called..." << std::endl;
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
-		std::cout << "Checking new blob..." << std::endl;
         // For each blob from the new frame, find the closest one from the old frame(s)
         moDataGenericContainer* closest_blob = NULL;
         min_weight = this->properties["max_weight"]->asDouble();
 
         moDataGenericList::iterator it_old;
 	    for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
-			std::cout << "Checking old blob..." << std::endl;
             if ((*it_old)->properties["blob_id"]->asInteger() < 0) {
 				// Blob was already assigned, i.e. the ID was already reused.
                 continue;
@@ -67,15 +64,12 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 
         //found the closest one out of teh ones that are left, assign id, and invalidate old blob
         if (closest_blob){
-			std::cout << "REUSING" << std::endl;
             int old_id = closest_blob->properties["blob_id"]->asInteger();
             (*it)->properties["blob_id"]->set( old_id );
             closest_blob->properties["blob_id"]->set( -1 * old_id );  //we mark matched blob by negative id's
 			}
         //this must be a new blob, so assign new ID
         else{
-			std::cout << "INCREMENTING" << std::endl;
-			//std::cout << "NEW BLOB " << dist << " < " << min_dist << std::endl;
             (*it)->properties["blob_id"]->set(++this->id_counter);
         }
     }
