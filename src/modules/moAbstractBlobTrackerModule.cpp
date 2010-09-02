@@ -35,7 +35,7 @@ moAbstractBlobTrackerModule::moAbstractBlobTrackerModule() : moModule(MO_MODULE_
 	this->declareOutput(0, &this->output, new moDataStreamInfo(
 				"data", "trackedblob", "Data stream of type 'trackedblob'"));
 
-	this->id_counter = 1;
+	this->id_counter = 1337;
 	this->new_blobs = new moDataGenericList();
 	this->old_blobs = new moDataGenericList();
 }
@@ -54,6 +54,7 @@ void moAbstractBlobTrackerModule::trackBlobs() {
 	// ID. If no such blob exists, make it a new blob and give it a new ID.
 	//
 	// Uses this->calcWeight() to determine which blob belongs to which old blob.
+	std::cout << "ABSTRACT CALLED!!" << std::endl;
 }
 
 double moAbstractBlobTrackerModule::calcWeight(moDataGenericContainer* old_blob,

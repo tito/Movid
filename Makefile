@@ -31,6 +31,7 @@ LIBCJSON_PATH 		= $(CONTRIB_PATH)/cJSON
 LIBFIDTRACK_PATH 	= $(CONTRIB_PATH)/libfidtrack
 WOSCLIB_PATH 		= $(CONTRIB_PATH)/WOscLib-00.09
 PTYPES_PATH 		= $(CONTRIB_PATH)/ptypes-2.1.1
+BITMAP_MUNKRES_PATH	= $(CONTRIB_PATH)/bitmap_munkres
 
 #
 # Source files
@@ -72,6 +73,7 @@ SOURCES = \
 	src/modules/moJustifyModule.cpp \
 	src/modules/moMaskModule.cpp \
 	src/modules/moMirrorImageModule.cpp \
+	src/modules/moMunkresBlobTrackerModule.cpp \
 	src/modules/moPeakFinderModule.cpp \
 	src/modules/moRoiModule.cpp \
 	src/modules/moSmoothModule.cpp \
@@ -125,10 +127,12 @@ WOSCLIB_CFLAGS		?= -I$(WOSCLIB_PATH)
 WOSCLIB_LIB			?= $(WOSCLIB_PATH)/libwosclib.a
 PTYPES_CFLAGS		?= -I$(PTYPES_PATH)/include
 PTYPES_LIB			?= $(PTYPES_PATH)/lib/libptypes.a
+BITMAP_MUNKRES_CFLAGS	?= -I$(BITMAP_MUNKRES_PATH)
+BITMAP_MUNKRES_LIB	?= $(BITMAP_MUNKRES_PATH)/bitmap_munkres.a
 
-ALL_CFLAGS			= $(CFLAGS) $(OPENCV_CFLAGS) $(WOSCLIB_CFLAGS) $(PTYPES_CFLAGS)
+ALL_CFLAGS			= $(CFLAGS) $(OPENCV_CFLAGS) $(WOSCLIB_CFLAGS) $(PTYPES_CFLAGS) $(BITMAP_MUNKRES_CFLAGS)
 ALL_LIBS			= $(LIBS) $(OPENCV_LIBS)
-ALL_LIBS_CONTRIB	= $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB)
+ALL_LIBS_CONTRIB	= $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB) $(BITMAP_MUNKRES_LIB)
 ALL_LIBS_STATIC		= $(MOVID_LIB) $(ALL_LIBS_CONTRIB)
 
 #
@@ -159,13 +163,14 @@ Makefile.depend: $(SOURCES)
 # Contribs
 #
 
-contrib: $(LIBEVENT_LIB) $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB)
+contrib: $(LIBEVENT_LIB) $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB) $(BITMAP_MUNKRES_LIB)
 
 cleancontrib:
 	-$(MAKE) -C $(LIBEVENT_PATH) distclean
 	-$(MAKE) -C $(WOSCLIB_PATH) clean
 	-$(MAKE) -C $(PTYPES_PATH) clean
 	-$(MAKE) -C $(LIBFIDTRACK_PATH) clean
+	rm $(BITMAP_MUNKRES_LIB)
 
 $(LIBEVENT_LIB):
 	cd $(LIBEVENT_PATH) && sh ./configure --disable-shared && $(MAKE)
@@ -178,6 +183,9 @@ $(WOSCLIB_LIB):
 
 $(PTYPES_LIB):
 	cd $(PTYPES_PATH) && make
+
+$(BITMAP_MUNKRES_LIB):
+	gcc $(CFLAGS_TARGET) -shared $(BITMAP_MUNKRES_PATH)/match.c -o $(BITMAP_MUNKRES_PATH)/bitmap_munkres.a
 
 
 #

@@ -16,17 +16,22 @@
  **********************************************************************/
 
 
-#ifndef MO_GREEDYBLOBTRACKER_MODULE_H
-#define MO_GREEDYBLOBTRACKER_MODULE_H
+#ifndef MO_MUNKRESBLOBTRACKER_MODULE_H
+#define MO_MUNKRESBLOBTRACKER_MODULE_H
 
 #include "moAbstractBlobTrackerModule.h"
 #include "../moDataStream.h"
 #include "../moDataGenericContainer.h"
 #include "cv.h"
+extern "C" {
+	#include "match.h"
+}
 
-class moGreedyBlobTrackerModule : public moAbstractBlobTrackerModule {
+
+class moMunkresBlobTrackerModule : public moAbstractBlobTrackerModule {
 public:
-	moGreedyBlobTrackerModule();
+	moMunkresBlobTrackerModule();
+
 protected:
 	virtual void trackBlobs();
 	virtual double calcWeight(moDataGenericContainer* old_blob,
