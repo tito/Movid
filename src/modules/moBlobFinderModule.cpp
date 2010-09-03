@@ -57,8 +57,6 @@ void moBlobFinderModule::applyFilter(IplImage *src) {
 	
     CvSeq *contours = 0;
 	cvFindContours(this->output_buffer, this->storage, &contours, sizeof(CvContour), CV_RETR_CCOMP);
-//	if (!contours)
-//		return;
 
     cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
 

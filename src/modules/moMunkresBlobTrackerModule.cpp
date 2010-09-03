@@ -19,6 +19,8 @@
 #include "moMunkresBlobTrackerModule.h"
 #include "../moLog.h"
 
+#define NORMALIZATION_FACTOR 10000.
+
 MODULE_DECLARE(MunkresBlobTracker, "native", "Track Blobs based on munkres algorithm.");
 
 moMunkresBlobTrackerModule::moMunkresBlobTrackerModule() : moAbstractBlobTrackerModule() {
@@ -42,43 +44,42 @@ void moMunkresBlobTrackerModule::trackBlobs() {
 	assert(nn < DIM_FINGER);
 
 	int sid[DIM_FINGER];
+	// The munkres algorithm expects integers since it's doing some optimizations.
+	// Hence, we need to convert our internal doubles to ints later on.
 	int nx[DIM_FINGER];
 	int ny[DIM_FINGER];
 	int sx[DIM_FINGER];
 	int sy[DIM_FINGER];
 
-	std::cout << "\n\n============ OLD BLOBS ==============" << std::endl;
 	for (i = 0; i < sn; i++) {
 		sid[i] = (*this->old_blobs)[i]->properties["blob_id"]->asInteger();
-		sx[i] = (*this->old_blobs)[i]->properties["x"]->asDouble();
-		sy[i] = (*this->old_blobs)[i]->properties["y"]->asDouble();
-		std::cout << "j: " << i << " ID " << sid[i] << " x " << sx[i] << " y " << sy[i] << std::endl;
+		// Normalize and put them into the int (!) array
+		sx[i] = (*this->old_blobs)[i]->properties["x"]->asDouble() * NORMALIZATION_FACTOR;
+		sy[i] = (*this->old_blobs)[i]->properties["y"]->asDouble() * NORMALIZATION_FACTOR;
 	}
-	std::cout << "\n============ NEW BLOBS ==============" << std::endl;
 	for (i = 0; i < nn; i++) {
-		std::cout << "i: " << i << " x " << nx[i] << " y " << ny[i] << std::endl;
-		nx[i] = (*this->new_blobs)[i]->properties["x"]->asDouble();
-		ny[i] = (*this->new_blobs)[i]->properties["y"]->asDouble();
+		// Normalize and put them into the int (!) array
+		nx[i] = (*this->new_blobs)[i]->properties["x"]->asDouble() * NORMALIZATION_FACTOR;
+		ny[i] = (*this->new_blobs)[i]->properties["y"]->asDouble() * NORMALIZATION_FACTOR;
 	}
 	
-	// setup distance matrix for contact matching
-	std::cout << "\n============ DISTANCES ==============" << std::endl;
+	// Setup distance matrix for contact matching.
+	// The algorithm uses the integer values.
 	for (j = 0; j < sn; j++) {
 		row = A + nn * j;
 		for (i = 0; i < nn; i++) {
 			row[i] = dist2(nx[i] - sx[j], ny[i] - sy[j]);
-			std::cout << j << " to " << i << ": " << row[i] << std::endl;
 		}
 	}
 
 	mtdev_match(n2s, A, nn, sn);
 
-	std::cout << "\n============ MATCHING ==============" << std::endl;
 	for (i = 0; i < nn; i++) {
 		j = n2s[i];
 		id = j >= 0 ? sid[j] : -10;
 		if (id == -10)
 			id = this->id_counter++;
+		// No need to undo the normalization since we never changed the actual blob.
 		(*this->new_blobs)[i]->properties["blob_id"]->set(id);
 	}
 }
