@@ -52,23 +52,6 @@ void moAbstractBlobTrackerModule::trackBlobs() {
 	// For every blob in this->new_blobs, find the corresponding blob
 	// from the last frame in this->old_blobs and assign it the same
 	// ID. If no such blob exists, make it a new blob and give it a new ID.
-	//
-	// Uses this->calcWeight() to determine which blob belongs to which old blob.
-}
-
-double moAbstractBlobTrackerModule::calcWeight(moDataGenericContainer* old_blob,
-											   moDataGenericContainer* new_blob) {
-	// Computes the 'weight' or 'probability' that old_blob
-	// (from frame n) is the same as new_blob (in frame n+1).
-	// The function may just consider the euclidean distance
-	// between the two blobs, but might take more sophisticated
-	// decisions into account, e.g. if blob1 is a marker that
-	// had the ID 123 and blob2 was identified by the blob finder
-	// to have the ID 999, then the probability that blob1 is
-	// blob2 is zero (or the weight is infinite).
-	//
-	// Returns a double. Lower value is better weight. 0.0 is best.
-	return -1.;
 }
 
 void moAbstractBlobTrackerModule::update() {

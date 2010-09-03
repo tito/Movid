@@ -34,8 +34,6 @@ public:
 
 protected:
 	virtual void trackBlobs();
-	virtual double calcWeight(moDataGenericContainer* old_blob,
-			        		  moDataGenericContainer* new_blob);
 	MODULE_INTERNALS();
 };
 

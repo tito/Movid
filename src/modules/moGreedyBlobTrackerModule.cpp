@@ -24,28 +24,19 @@ MODULE_DECLARE(GreedyBlobTracker, "native", "Track Blobs based on a simple greed
 moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moAbstractBlobTrackerModule() {
 	MODULE_INIT();
 
-	this->properties["max_weight"] = new moProperty(0.1);
-}
-
-double moGreedyBlobTrackerModule::calcWeight(moDataGenericContainer* old_blob,
-											 moDataGenericContainer* new_blob) {
-	// Just take the euclidean distance between the two blobs
-	double old_x, old_y, new_x, new_y;
-	old_x = old_blob->properties["x"]->asDouble();
-	old_y = old_blob->properties["y"]->asDouble();
-	new_x = new_blob->properties["x"]->asDouble();
-	new_y = new_blob->properties["y"]->asDouble();
-	return sqrt(pow(old_x - new_x, 2) + pow(old_y - new_y, 2));
+	this->properties["max_distance"] = new moProperty(0.1);
 }
 
 void moGreedyBlobTrackerModule::trackBlobs() {
     moDataGenericList::iterator it;
-	double weight, min_weight;
+	double distance, min_distance, old_x, old_y, new_x, new_y;
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
         // For each blob from the new frame, find the closest one from the old frame(s)
         moDataGenericContainer* closest_blob = NULL;
-        min_weight = this->properties["max_weight"]->asDouble();
+        min_distance = this->properties["max_distance"]->asDouble();
 
+		new_x = (*it)->properties["x"]->asDouble();
+		new_y = (*it)->properties["y"]->asDouble();
         moDataGenericList::iterator it_old;
 	    for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
             if ((*it_old)->properties["blob_id"]->asInteger() < 0) {
@@ -54,11 +45,13 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 			}
 
 			// FIXME Make sure that our INPUT is in 0.0 - 1.0. I checked and it seemed to not always be...
-			weight = this->calcWeight(*it_old, *it);
+			old_x = (*it_old)->properties["x"]->asDouble();
+			old_y = (*it_old)->properties["y"]->asDouble();
+			distance = sqrt(pow(old_x - new_x, 2) + pow(old_y - new_y, 2));
 
-            if (weight < min_weight) {
+            if (distance < min_distance) {
                 closest_blob = (*it_old);
-                min_weight = weight;
+                min_distance = distance;
             }
         }
 

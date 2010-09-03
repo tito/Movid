@@ -27,11 +27,6 @@ moMunkresBlobTrackerModule::moMunkresBlobTrackerModule() : moAbstractBlobTracker
 	MODULE_INIT();
 }
 
-double moMunkresBlobTrackerModule::calcWeight(moDataGenericContainer* old_blob,
-											 moDataGenericContainer* new_blob) {
-	return 1.0;
-}
-
 void moMunkresBlobTrackerModule::trackBlobs() {
 	int A[DIM2_FINGER], *row;
 	int n2s[DIM_FINGER];
