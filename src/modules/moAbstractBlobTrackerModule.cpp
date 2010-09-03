@@ -46,6 +46,8 @@ moAbstractBlobTrackerModule::~moAbstractBlobTrackerModule() {
 
 void moAbstractBlobTrackerModule::pruneBlobs() {
 	// Kill all the blobs that havn't been associated with a successor for too long
+	// TODO, and also, do suppressYoungBlobs (blobs that have been there less than x
+	// frames)
 }
 
 void moAbstractBlobTrackerModule::trackBlobs() {

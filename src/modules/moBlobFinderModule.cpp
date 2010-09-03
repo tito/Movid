@@ -36,6 +36,9 @@ moBlobFinderModule::moBlobFinderModule() : moImageFilterModule(){
 
 	// since cvFindContour accept only one channel image, just change the input
 	this->setInputType(0, "IplImage8");
+
+	this->properties["min_size"] = new moProperty(2 * 2);
+	this->properties["max_size"] = new moProperty(50 * 50);
 }
 
 moBlobFinderModule::~moBlobFinderModule() {
@@ -61,18 +64,22 @@ void moBlobFinderModule::applyFilter(IplImage *src) {
     cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
 
 	// Consider each contour a blob and extract the blob infos from it.
+	int size;
+	int min_size = this->property("min_size").asInteger();
+	int max_size = this->property("max_size").asInteger();
 	CvSeq *cur_cont = contours;
 	while (cur_cont != 0) {
 		CvRect rect	= cvBoundingRect(cur_cont, 0);
-
-		moDataGenericContainer *blob = new moDataGenericContainer();
-        blob->properties["implements"] = new moProperty("pos,size");
-		blob->properties["x"] = new moProperty((rect.x + rect.width / 2) / (double) src->width);
-		blob->properties["y"] = new moProperty((rect.y + rect.height / 2) / (double) src->height);
-		blob->properties["width"] = new moProperty(rect.width);
-        blob->properties["height"] = new moProperty(rect.height);
-        this->blobs->push_back(blob);
-        LOG(MO_DEBUG, "blob finder: " << blob->properties["x"]->asInteger() );
+		size = rect.width * rect.height;
+		if ((size >= min_size) && (size <= max_size)) {
+			moDataGenericContainer *blob = new moDataGenericContainer();
+			blob->properties["implements"] = new moProperty("pos,size");
+			blob->properties["x"] = new moProperty((rect.x + rect.width / 2) / (double) src->width);
+			blob->properties["y"] = new moProperty((rect.y + rect.height / 2) / (double) src->height);
+			blob->properties["width"] = new moProperty(rect.width);
+			blob->properties["height"] = new moProperty(rect.height);
+			this->blobs->push_back(blob);
+		}
 		cur_cont = cur_cont->h_next;
 	}
 	
