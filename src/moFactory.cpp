@@ -49,6 +49,7 @@ void moFactory::init() {
 	REGISTER_MODULE(GreedyBlobTracker);
 	REGISTER_MODULE(Highpass);
 	REGISTER_MODULE(Hsv);
+	REGISTER_MODULE(HuObjectFinder);
 	REGISTER_MODULE(Image);
 	REGISTER_MODULE(ImageDisplay);
 	REGISTER_MODULE(Invert);
