@@ -34,6 +34,9 @@ moCannyModule::moCannyModule() : moImageFilterModule(){
 	this->properties["upper_threshold"] = new moProperty(200);
 	this->properties["upper_threshold"]->setMin(0);
 	this->properties["upper_threshold"]->setMax(500);
+
+	this->setInputType(0, "IplImage8");
+	this->setOutputType(0, "IplImage8");
 }
 
 moCannyModule::~moCannyModule() {
