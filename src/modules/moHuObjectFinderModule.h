@@ -32,6 +32,8 @@ public:
 protected:
 	void applyFilter(IplImage *);
 	void clearRecognizedObjects();
+	bool boundingBoxCheck(CvSeq *cont1, CvSeq *cont2, CvBox2D &mar);
+	int findMatchingShape(CvSeq *cont, CvBox2D &mar);
 	moDataGenericList recognized_objects;
 	moDataStream *output_data;
 
