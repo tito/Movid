@@ -44,6 +44,8 @@ libmovid_src = [
   'src/modules/moFiducialTrackerModule.cpp',
   'src/modules/moFingerTipFinderModule.cpp',
   'src/modules/moGreedyBlobTrackerModule.cpp',
+  'src/modules/moMunkresBlobTrackerModule.cpp',
+  'src/modules/moAbstractBlobTrackerModule.cpp',
   'src/modules/moGrayScaleModule.cpp',
   'src/modules/moHighpassModule.cpp',
   'src/modules/moHsvModule.cpp',
@@ -61,7 +63,8 @@ libmovid_src = [
   'src/modules/moTuioModule.cpp',
   'src/modules/moTuio2Module.cpp',
   'src/modules/moVideoModule.cpp',
-  'src/modules/moYCrCbThresholdModule.cpp'
+  'src/modules/moYCrCbThresholdModule.cpp',
+  'contrib/bitmap_munkres/match.c'
 ]
 
 
@@ -104,7 +107,7 @@ if sys.platform == 'win32':
 else:
   #add OpenCV flags and libs
   env.ParseConfig('pkg-config --cflags --libs opencv') #gotta love unix :P
-  
+
   #set the compiler if set in ENV, used e.g. to force 32bit by setting to g++ -m32
   if os.environ.get('CC'): env.Replace(CC=os.environ['CC'])
   if os.environ.get('CXX'): env.Replace(CXX=os.environ['CXX'])
