@@ -2,7 +2,7 @@
 # About
 ###################################################
 
-Movid is an acronym for Modular Open Vision Interaction Daemon. 
+Movid is an acronym for Modular Open Vision Interaction Daemon.
 Movid a crossplatform and Open Source tracker, designed to be as modular as possible.
 
 For more information see: http://www.movid.org
@@ -14,16 +14,16 @@ For more information see: http://www.movid.org
 ###################################################
 
 * Crossplatform
-Movid is fully cross-platform. It runs on Windows, Linux, MacOSX and FreeBSD. You can share and use the same "pipeline presets" for every platform. 
+Movid is fully cross-platform. It runs on Windows, Linux, MacOSX and FreeBSD. You can share and use the same "pipeline presets" for every platform.
 
 * Daemon
-As the acronym suggests, Movid runs as a daemon process. That means you can launch it on a headless computer if you want. 
+As the acronym suggests, Movid runs as a daemon process. That means you can launch it on a headless computer if you want.
 
 * Threading
-With Movid, you have the ability to enable threading for any module you want. That means you are finally able to use your Core 2 Duo / Quad Core to its full potential. :) Obviously, you can still use non-threaded mode if all you got is a single-core processor. 
+With Movid, you have the ability to enable threading for any module you want. That means you are finally able to use your Core 2 Duo / Quad Core to its full potential. :) Obviously, you can still use non-threaded mode if all you got is a single-core processor.
 
 *Remote API
-Movid has a JSON remote API to control all the settings and adjust your pipeline in real time! 
+Movid has a JSON remote API to control all the settings and adjust your pipeline in real time!
 
 *HTML5 Administration
 Movid Web administration makes use of the most recent developments in web programming with open standards like HTML5. No heavy flash or Java required, although one sure could create a frontend using those platforms. All that is required is a compatible HTML5 web browser. As of today, Firefox 3.6, Safari and Chromium have successfully run Movid Web Administration.
@@ -42,6 +42,29 @@ Movid may be used and distributed under the terms of the Q Public License as app
 # Compiling Movid
 ###################################################
 
+Movid uses the scons build system (http://www.scons.org/)
+"SCons is an Open Source software construction tool—that is, a next-generation build tool" (from scons website)
+
+This means you have to install scons to be able to compile movid.
+The platform specific compile notes below include instruction on how to install scons.
+once you have scons installed open a command line in the movid directory (the one with this README in it) and run the follwoing command:
+
+To build movid (and dependencies if needed) run:
+scons
+
+To clean movid (remove any intermediate files and output lib and executables):
+scons -c  (or 'scons --clean')
+
+To also clean the dependecies built in contrib:
+scons -c --clean-contrib
+
+
+
+For more info about sons, other options, or how to install it on any system, you can check the scons user guide at:
+http://www.scons.org/doc/production/HTML/scons-user.html
+
+
+
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 + Linux Compile Notes
 +++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -51,7 +74,7 @@ They should be easily transferable to other linux distributions.
 Building from source on these distributions is really easy.
 
 First, you have to install the opencv headers, git and the build-tools:
-sudo apt-get install libcv-dev libcvaux-dev libhighgui-dev git-core build-essential
+sudo apt-get install libcv-dev libcvaux-dev libhighgui-dev git-core build-essential scons
 
 Then, you get the current development version of Movid:
 git clone git://github.com/tito/Movid.git
@@ -59,8 +82,8 @@ git clone git://github.com/tito/Movid.git
 Afterwards, we change to the Movid repo you just cloned:
 cd Movid
 
-It is time to compile, let's run make!
-make
+It is time to compile, let's run scons!
+scons
 
 Now you should be able to use movid already. Try the simple-video preset:
 ./movid -l presets/simple-video.txt
@@ -75,53 +98,77 @@ http://127.0.0.1:7500/
 + Windows Compile Notes
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
-There is a visual studio solution in the Movid.visualstudio folder.
+To build movid, you will have to install a couple of things first.
+You will need OpenCV, Visual C++ 2010, and scons (which also requires python)
 
-Before you can open it and compile without errors, you need to install OpenCV.  You can compile openCV 2.0 yourself.  The official binary distribution will not work because teh libs and dlls are build with mingw, dont work with visual studio, and dont include the blob tracking stuff in cvaux.
+1. Install OpenCV-2.1
+download and run the following file:
+http://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.1/OpenCV-2.1.0-win32-vs2008.exe/download
 
-If you dont want to compiel yourself, do teh following:
+2. install Visual C++ Express 2010 (not needed if you have Visual Studio 2010)
+not: must be 2010 version!  you can download a free version here (select language to start download):
+http://www.microsoft.com/express/Downloads/#2010-Visual-CPP
 
-*download http://tehansen.de/OpenCV.zip
-*unzip to C:\OpenCV  
+3. install Python and scons
+download and run the following files:
+http://python.org/ftp/python/2.7/python-2.7.msi
+http://prdownloads.sourceforge.net/scons/scons-2.0.1.win32.exe
 
-it must go in C:\OpenCV, otherwise you need to change the library include directory in teh Movid Visual Studio project, also teh VS studio set teh PATH environment variable to include c:\OpenCV\bin.  If you dont know what this paragraph is talking about, just make sure you unzip it into C:\OpenCV, so that the dll files are in C:\OpenCV\bin, and the lib files in C:\OpenCV\lib
+OK, you're ready to build.  If you installed everything to default locations just run:
+scons
+
+If you installed OpenCV to a non standard location:
+scons OPENCV_DIR=C:\Somewhere\Else\OpenCV
+
+
+Note:  movid will build, with references to teh OpenCV dll's.
+If they are not on your path, you must copy them to the directory where you are trying to run movid.
+By default, tehy are in C:\OpenCV2.1\bin just copy the follwoing files into the movid directory:
+cv210.dll cvaux210.dll cxcore210.dll highgui210.dll
+
+
+Now you should be able to use movid already. just double click movid.exe or run it from teh command line to use a preset:
+movid -l presets/simple-video.txt
+
+Now that the daemon is running, you can simply open your webbrowser
+(needs to be Firefox 3.6 or some other browser with HTML5 and support for
+the canvas object. Javascript has to be enabled.) and navigate to the admin interface:
+http://127.0.0.1:7500/
 
 
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 + OSX Compile Notes
 +++++++++++++++++++++++++++++++++++++++++++++++++++
 
-You will need OpenCV to build movid. To learn how to best
-install OpenCV, please refer to the according section below.
 
-Movid comes with an XCode project that you can just open & build.
-Note, however, that this project file is NOT guaranteed to be always
-up to date.
-We therefore recommend that you use the actual Makefile on the console
-(which is also used by XCode) which we always keep updated.
-
-
-==================================================
-To build OpenCV on OSX:
-==================================================
-
-On OSX, you must build OpenCV before building Movid.
-To do this, simply download and compile it using your
-favorite tool or do it yourself.
+1. On OSX, you must build OpenCV  yourself.
 We *strongly* suggest you use homebrew for this.
 See http://mxcl.github.com/homebrew/ for more details.
 After you have installed homebrew, simply type this at
 the command prompt:
 	brew install opencv
-
 Depending on your configuration, this maybe has to be
 run as root with `sudo` before the command.
 
-If OpenCV installed properly, you can proceed with the
-compilation of Movid as usual.
+2. installl scons
+download the follwoing file:
+http://prdownloads.sourceforge.net/scons/scons-2.0.1.zip
+
+3. unzip teh file, open a terminal and navigate to that directory:
+cd scons-2.0.1
+python setup.py instal
+
+You're ready to build, just run:
+scons
 
 
+Note: If you need to build moved as 32bit, you can do so by forcing the -m32 flag on the compilers for both moved and all libs in contrib by running:
+CC='gcc -m32' CXX='g++ -m32' scons
 
+Now you should be able to use movid already. Try the simple-video preset:
+./movid -l presets/simple-video.txt
 
-That's it! You can now play with Movid! If you have questions, feature requests, find bugs or want to help, please see the following page: http://movid.org/Documentation/HowToContribute
-
+Now that the daemon is running, you can simply open your webbrowser
+(needs to be Firefox 3.6 or some other browser with HTML5 and support for
+the canvas object. Javascript has to be enabled.) and navigate to the admin interface:
+http://127.0.0.1:7500/

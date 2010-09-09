@@ -1,0 +1,76 @@
+import sys, os, subprocess
+
+
+##########################################################
+#configure scons env with contrib needed to compile movid
+##########################################################
+
+#this env holds build config for movid ###################
+# TARGET_ARCH is used only on windows, but must be x86 here
+# no effect other OS, according to scons doc see:
+# http://www.scons.org/doc/production/HTML/scons-user.html
+env = Environment(TARGET_ARCH='x86')
+
+
+#add include paths and libraries #########################
+env.Append(
+   CPPPATH = ['contrib',
+              'contrib/cJSON',
+		        'contrib/libevent-1.4.13-stable',
+		        'contrib/WOscLib-00.09',
+		        'contrib/ptypes-2.1.1/include',
+              'contrib/XgetOpt'],
+
+   LIBS = ['event', 'ptypes', 'wosclib', 'fidtrack'],
+
+   LIBPATH = ['contrib/lib']
+)
+
+
+## add additional libevent include directories for win32
+if sys.platform == 'win32':
+   env.Append( CPPPATH = [
+      'contrib/libevent-1.4.13-stable/compat',
+      'contrib/libevent-1.4.13-stable/WIN32-Code'
+   ])
+
+
+
+##########################################################
+# Building of things in contrib
+#  using extenral build tools:
+#  * windows build controlled by vc++ solution in .msvc
+#  * other systems, build by make using  Makefile
+##########################################################
+
+# function to perform external build of dependencies #####
+def build_contrib():
+   if sys.platform == 'win32':
+      cmd = 'build.bat /t:build /m:4 /p:Configuration=Release'
+      subprocess.call(cmd.split(), cwd='.msvc', shell=True)
+   else:
+      subprocess.call('make')
+
+# function to perform external clean of dependencies #####
+def clean_contrib():
+   if sys.platform == 'win32':
+      cmd = 'build.bat /t:clean /p:Configuration=Release'
+      subprocess.call(cmd.split(), cwd='.msvc', shell=True)
+   else:
+      subprocess.call(['make', 'clean'])
+
+##########################################################
+#build or clean contrib based on command line flags ######
+if GetOption('clean-contrib'):
+   clean_contrib()
+if not GetOption('clean'):
+   if not os.path.exists('lib'): # not needed if lib already there
+      build_contrib()
+
+
+
+
+##########################################################
+#all done...return the configured env to SConstruct
+##########################################################
+Return('env')
