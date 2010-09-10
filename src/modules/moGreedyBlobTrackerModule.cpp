@@ -28,43 +28,42 @@ moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moAbstractBlobTrackerMo
 }
 
 void moGreedyBlobTrackerModule::trackBlobs() {
-    moDataGenericList::iterator it;
+	moDataGenericList::iterator it;
 	double distance, min_distance, old_x, old_y, new_x, new_y;
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
-        // For each blob from the new frame, find the closest one from the old frame(s)
-        moDataGenericContainer* closest_blob = NULL;
-        min_distance = this->properties["max_distance"]->asDouble();
+		// For each blob from the new frame, find the closest one from the old frame(s)
+		moDataGenericContainer* closest_blob = NULL;
+		min_distance = this->properties["max_distance"]->asDouble();
 
 		new_x = (*it)->properties["x"]->asDouble();
 		new_y = (*it)->properties["y"]->asDouble();
-        moDataGenericList::iterator it_old;
-	    for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
-            if ((*it_old)->properties["blob_id"]->asInteger() < 0) {
+		moDataGenericList::iterator it_old;
+		for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
+			if ((*it_old)->properties["blob_id"]->asInteger() < 0)
 				// Blob was already assigned, i.e. the ID was already reused.
-                continue;
-			}
+				continue;
 
 			// FIXME Make sure that our INPUT is in 0.0 - 1.0. I checked and it seemed to not always be...
 			old_x = (*it_old)->properties["x"]->asDouble();
 			old_y = (*it_old)->properties["y"]->asDouble();
 			distance = sqrt(pow(old_x - new_x, 2) + pow(old_y - new_y, 2));
 
-            if (distance < min_distance) {
-                closest_blob = (*it_old);
-                min_distance = distance;
-            }
-        }
-
-        //found the closest one out of teh ones that are left, assign id, and invalidate old blob
-        if (closest_blob){
-            int old_id = closest_blob->properties["blob_id"]->asInteger();
-            (*it)->properties["blob_id"]->set( old_id );
-            closest_blob->properties["blob_id"]->set( -1 * old_id );  //we mark matched blob by negative id's
+			if (distance < min_distance) {
+				closest_blob = (*it_old);
+				min_distance = distance;
 			}
-        //this must be a new blob, so assign new ID
-        else
+		}
+
+		//found the closest one out of teh ones that are left, assign id, and invalidate old blob
+		if (closest_blob){
+			int old_id = closest_blob->properties["blob_id"]->asInteger();
+			(*it)->properties["blob_id"]->set( old_id );
+			closest_blob->properties["blob_id"]->set( -1 * old_id );  //we mark matched blob by negative id's
+		}
+		//this must be a new blob, so assign new ID
+		else
 			// Atomically increment counter in case we got more than one tracker
-            (*it)->properties["blob_id"]->set(pt::pincrement(&(moAbstractBlobTrackerModule::id_counter)));
-    }
+			(*it)->properties["blob_id"]->set(pt::pincrement(&(moAbstractBlobTrackerModule::id_counter)));
+	}
 }
 
