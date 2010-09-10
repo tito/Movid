@@ -1,66 +1,81 @@
-###################################################
+################################################################################
 # About
-###################################################
+################################################################################
 
-Movid is an acronym for Modular Open Vision Interaction Daemon.
-Movid a crossplatform and Open Source tracker, designed to be as modular as possible.
+Movid is an acronym that stands for Modular Open Vision Interaction Daemon.
+Movid a cross-platform and Open Source vision tracking system, designed to be as
+modular as possible. Our current focus is on detection and tracking of humans and
+their interaction with computers as well as any objects they might use to do so.
+We utilize computer vision, but other sensing techniques could be added as well.
 
-For more information see: http://www.movid.org
+For further reference, see: http://www.movid.org
 
 
 
-###################################################
+################################################################################
 # Features
-###################################################
+################################################################################
 
-* Crossplatform
-Movid is fully cross-platform. It runs on Windows, Linux, MacOSX and FreeBSD. You can share and use the same "pipeline presets" for every platform.
+* Cross-Platform
+Movid is fully cross-platform. It runs on Windows, Linux, MacOSX and FreeBSD.
+You can share and use the same "pipeline presets" for every platform.
 
 * Daemon
-As the acronym suggests, Movid runs as a daemon process. That means you can launch it on a headless computer if you want.
+As the acronym suggests, Movid runs as a daemon process. That means you can
+launch it on a headless computer if you want.
 
 * Threading
-With Movid, you have the ability to enable threading for any module you want. That means you are finally able to use your Core 2 Duo / Quad Core to its full potential. :) Obviously, you can still use non-threaded mode if all you got is a single-core processor.
+With Movid, you have the ability to enable threading for any module you want.
+That means you are finally able to use your Core 2 Duo / Quad Core to its full
+potential. Obviously, you can still use non-threaded mode.
 
-*Remote API
-Movid has a JSON remote API to control all the settings and adjust your pipeline in real time!
+* Remote API
+Movid has a JSON API to control all its settings and adjust your pipeline remotely
+and on the fly.
 
-*HTML5 Administration
-Movid Web administration makes use of the most recent developments in web programming with open standards like HTML5. No heavy flash or Java required, although one sure could create a frontend using those platforms. All that is required is a compatible HTML5 web browser. As of today, Firefox 3.6, Safari and Chromium have successfully run Movid Web Administration.
+* HTML5 Administration
+Movid's web interface makes use of the most recent developments in web
+programming with open standards like HTML5. All that is required is a compatible
+HTML5 web browser. As of today, Firefox 3.6, Safari and Chromium have successfully
+run the web interface.
 
 
 
-###################################################
+################################################################################
 # License
-###################################################
+################################################################################
 Movid Copyright (C) 2010 Movid Authors (see AUTHORS file).  All rights reserved.
-Movid may be used and distributed under the terms of the Q Public License as appearing in the LICENSE file distributed with this software.
+Movid may be used and distributed under the terms of the Q Public License as
+appearing in the LICENSE file distributed with this software.
 
 
 
-###################################################
+################################################################################
 # Compiling Movid
-###################################################
+################################################################################
 
-Movid uses the scons build system (http://www.scons.org/)
-"SCons is an Open Source software construction tool—that is, a next-generation build tool" (from scons website)
+Movid uses the SCons build system (http://www.scons.org/). Quoting the website:
+"""SCons is a software construction tool -- that is, a superior alternative to the
+classic "Make" build tool that we all know and love."""
 
-This means you have to install scons to be able to compile movid.
-The platform specific compile notes below include instruction on how to install scons.
-once you have scons installed open a command line in the movid directory (the one with this README in it) and run the follwoing command:
+This means you have to install SCons to be able to compile movid.
+The platform specific compile notes below include instruction on how to install
+SCons. Once you have SCons installed open a command line in the movid directory
+(the one with this README in it) and run the following command:
 
 To build movid (and dependencies if needed) run:
 scons
 
-To clean movid (remove any intermediate files and output lib and executables):
+To clean movid (remove any intermediate files, output libs and executables):
 scons -c  (or 'scons --clean')
 
-To also clean the dependecies built in contrib:
+To also clean the dependencies built in contrib:
 scons -c --clean-contrib
 
 
 
-For more info about sons, other options, or how to install it on any system, you can check the scons user guide at:
+For more info about SCons, other options, or how to install it on any system,
+you can check the SCons user guide at:
 http://www.scons.org/doc/production/HTML/scons-user.html
 
 
