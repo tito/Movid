@@ -29,6 +29,13 @@
 #ifndef MATCHER_H
 #define MATCHER_H
 
+//visual C++ compiler doesnt allow inline in plain C,
+//inline is only for only C++, in C it must be __inline
+#ifdef WIN32
+#define inline __inline
+#endif
+
+
 // =====================================================
 
 #define DIM_FINGER 32
