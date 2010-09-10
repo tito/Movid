@@ -49,6 +49,7 @@ libmovid_src = [
   'src/modules/moGrayScaleModule.cpp',
   'src/modules/moHighpassModule.cpp',
   'src/modules/moHsvModule.cpp',
+  'src/modules/moHuObjectFinderModule.cpp',
   'src/modules/moImageDisplayModule.cpp',
   'src/modules/moImageFilterModule.cpp',
   'src/modules/moImageModule.cpp',
