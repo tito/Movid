@@ -20,9 +20,6 @@
 #define MO_GREEDYBLOBTRACKER_MODULE_H
 
 #include "moAbstractBlobTrackerModule.h"
-#include "../moDataStream.h"
-#include "../moDataGenericContainer.h"
-#include "cv.h"
 
 class moGreedyBlobTrackerModule : public moAbstractBlobTrackerModule {
 public:

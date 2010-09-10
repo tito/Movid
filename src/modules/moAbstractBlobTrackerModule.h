@@ -23,6 +23,8 @@
 #include "../moDataStream.h"
 #include "../moDataGenericContainer.h"
 #include "cv.h"
+// Needed for thread-safe increment of the static ID if we have more than
+// one tracker.
 
 class moAbstractBlobTrackerModule : public moModule {
 public:
@@ -33,14 +35,13 @@ public:
 	void update();
 
 protected:
-	int id_counter;
+	static int id_counter;
 	moDataGenericList* new_blobs;
 	moDataGenericList* old_blobs;
 
 	moDataStream *input;
 	moDataStream *output;
 
-	void pruneBlobs();
 	virtual void trackBlobs();
 
 	MODULE_INTERNALS();

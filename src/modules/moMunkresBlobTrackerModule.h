@@ -20,9 +20,6 @@
 #define MO_MUNKRESBLOBTRACKER_MODULE_H
 
 #include "moAbstractBlobTrackerModule.h"
-#include "../moDataStream.h"
-#include "../moDataGenericContainer.h"
-#include "cv.h"
 extern "C" {
 	#include "match.h"
 }

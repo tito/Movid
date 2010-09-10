@@ -21,6 +21,8 @@
 
 MODULE_DECLARE(AbstractBlobTracker, "native", "Abstract blob tracking module that makes adding new trackers easy.");
 
+int moAbstractBlobTrackerModule::id_counter = 0;
+
 moAbstractBlobTrackerModule::moAbstractBlobTrackerModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT) {
 
 	MODULE_INIT();
@@ -37,19 +39,12 @@ moAbstractBlobTrackerModule::moAbstractBlobTrackerModule() : moModule(MO_MODULE_
 
 	this->properties["max_age"] = new moProperty(10);
 
-	this->id_counter = 1;
 	this->new_blobs = new moDataGenericList();
 	this->old_blobs = new moDataGenericList();
 }
 
 moAbstractBlobTrackerModule::~moAbstractBlobTrackerModule() {
 	delete this->output;
-}
-
-void moAbstractBlobTrackerModule::pruneBlobs() {
-	// Kill all the blobs that havn't been associated with a successor for too long
-	// TODO, and also, do suppressYoungBlobs (blobs that have been there less than x
-	// frames)
 }
 
 void moAbstractBlobTrackerModule::trackBlobs() {
@@ -70,10 +65,6 @@ void moAbstractBlobTrackerModule::update() {
 	for (it = this->old_blobs->begin(); it != this->old_blobs->end(); it++) {
 		(*it)->properties["age"]->set((*it)->properties["age"]->asInteger() + 1);
 	}
-
-	// Get rid of old blobs that have went missing for too long
-	// (e.g. if they weren't seen in the last $max_age frames.)
-	this->pruneBlobs();
 
 	// Copy the new blobs to our new_blobs list,
 	// afterwards we'll assign ID's

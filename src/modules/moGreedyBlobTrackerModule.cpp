@@ -62,9 +62,9 @@ void moGreedyBlobTrackerModule::trackBlobs() {
             closest_blob->properties["blob_id"]->set( -1 * old_id );  //we mark matched blob by negative id's
 			}
         //this must be a new blob, so assign new ID
-        else{
-            (*it)->properties["blob_id"]->set(++this->id_counter);
-        }
+        else
+			// Atomically increment counter in case we got more than one tracker
+            (*it)->properties["blob_id"]->set(pt::pincrement(&(moAbstractBlobTrackerModule::id_counter)));
     }
 }
 

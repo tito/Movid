@@ -73,7 +73,8 @@ void moMunkresBlobTrackerModule::trackBlobs() {
 		j = n2s[i];
 		id = j >= 0 ? sid[j] : -10;
 		if (id == -10)
-			id = this->id_counter++;
+			// Atomically increment counter in case we got more than one tracker
+			id = pt::pincrement(&moAbstractBlobTrackerModule::id_counter);
 		// No need to undo the normalization since we never changed the actual blob.
 		(*this->new_blobs)[i]->properties["blob_id"]->set(id);
 	}
