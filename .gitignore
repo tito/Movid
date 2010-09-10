@@ -1,3 +1,6 @@
+*.dylib
+*.21
+*.dblite
 *.o
 *.a
 *.swp
@@ -8,6 +11,8 @@
 *.core
 build
 movid
+ptypes_test
+ptypesn_test
 
 # cause of window, try to not show differences...
 # but no help for already commited files...
