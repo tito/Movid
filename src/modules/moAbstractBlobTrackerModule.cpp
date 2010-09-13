@@ -38,9 +38,11 @@ moAbstractBlobTrackerModule::moAbstractBlobTrackerModule() : moModule(MO_MODULE_
 				"data", "trackedblob", "Data stream of type 'trackedblob'"));
 
 	this->properties["max_age"] = new moProperty(10);
+	this->properties["min_age"] = new moProperty(3);
 
 	this->new_blobs = new moDataGenericList();
 	this->old_blobs = new moDataGenericList();
+	this->adolescent = new moDataGenericList();
 }
 
 moAbstractBlobTrackerModule::~moAbstractBlobTrackerModule() {
@@ -58,13 +60,15 @@ void moAbstractBlobTrackerModule::update() {
 	moDataGenericList *blobs;
 	std::string implements;
 	int max_age = this->property("max_age").asInteger();
+	int min_age = this->property("min_age").asInteger();
+	int age;
 
 	// Clear new blob assignments from the last frame
 	this->new_blobs->clear();
+	this->adolescent->clear();
 
-	for (it = this->old_blobs->begin(); it != this->old_blobs->end(); it++) {
+	for (it = this->old_blobs->begin(); it != this->old_blobs->end(); it++)
 		(*it)->properties["age"]->set((*it)->properties["age"]->asInteger() + 1);
-	}
 
 	// Copy the new blobs to our new_blobs list,
 	// afterwards we'll assign ID's
@@ -86,12 +90,6 @@ void moAbstractBlobTrackerModule::update() {
 	// frame and assign IDs accordingly.
 	this->trackBlobs();
 
-	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++)
-		if ((*it)->properties["blob_id"] > 0)
-			// The blob was just found, so it is alive. Reset age to 0.
-			(*it)->properties["age"]->set(0);
-
-	// Remember blobs even if they get lost for a while
 	bool in;
 	int oid, id;
 	for (oit = this->old_blobs->begin(); oit != this->old_blobs->end(); oit++) {
@@ -99,15 +97,31 @@ void moAbstractBlobTrackerModule::update() {
 		oid = (*oit)->properties["blob_id"]->asInteger();
 		for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++) {
 			id = (*it)->properties["blob_id"]->asInteger();
-			if (oid == id)
+			if (oid == id) {
 				in = true;
+				break;
+			}
 		}
-		if (!in && ((*oit)->properties["age"]->asInteger() <= max_age))
-			this->new_blobs->push_back(*oit);
+		// If a blob got lost, but not for too long, assume it's still there,
+		// as long as it *was* there for some time already
+		age = (*oit)->properties["age"]->asInteger();
+		if (!in) {
+			if ((age <= max_age) && (age >= min_age))
+				this->new_blobs->push_back(*oit);
+		}
+		else
+			(*it)->properties["age"]->set(age >= min_age ? min_age : age);
 	}
 
-	// Send the new blobs (possibly empty) down the pipeline
-	this->output->push(this->new_blobs);
+	// Find all the blobs that are old enough
+	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++) {
+		age = (*it)->properties["age"]->asInteger();
+		if (age >= min_age)
+			this->adolescent->push_back(*it);
+	}
+
+	// Send those blobs (possibly empty) down the pipeline
+	this->output->push(this->adolescent);
 
 	// Make the new list the old list for the next frame
 	moDataGenericList* tmp = this->old_blobs;
