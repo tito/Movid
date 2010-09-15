@@ -275,14 +275,17 @@ bool moPipeline::parse(const std::string& filename) {
 				this->addElement(module1);
 
 			} else if ( tokens[1] == "set" ) {
-				if ( tokens.size() != 5 )
+				if ( tokens.size() < 4 || tokens.size() > 5 )
 					PIPELINE_PARSE_ERROR("not enough parameters");
 
 				module1 = this->getModuleById(tokens[2]);
 				if ( module1 == NULL )
 					PIPELINE_PARSE_ERROR("unable to find module with id " << tokens[2]);
 
-				module1->property(tokens[3]).set(tokens[4]);
+				if ( tokens.size() == 5 )
+					module1->property(tokens[3]).set(tokens[4]);
+				else
+					module1->property(tokens[3]).set("");
 
 				if ( module1->haveError() )
 					PIPELINE_PARSE_ERROR("module error:" << module1->getLastError());
