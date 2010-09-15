@@ -18,7 +18,7 @@
 #include <stdio.h>
 
 #ifdef WIN32
-#include <Ws2tcpip.h> 
+#include <Ws2tcpip.h>
 #include <Wspiapi.h>
 #include <winsock2.h>
 #include <windows.h>
@@ -84,20 +84,16 @@ static std::string config_pidfile = "/var/run/movid.pid";
 static struct evhttp *server = NULL;
 int g_config_delay = 5;
 
-char *strsep(char **stringp, const char *delim) 
-{ 
-        char *s = *stringp; 
-        char *e; 
-
-        if (!s) 
-                return NULL; 
-
-        e = strpbrk(s, delim); 
-        if (e) 
-                *e++ = '\0'; 
-
-        *stringp = e; 
-        return s; 
+char *strsep(char **stringp, const char *delim) {
+	char *s = *stringp;
+	char *e;
+	if (!s)
+		return NULL;
+	e = strpbrk(s, delim);
+	if (e)
+		*e++ = '\0';
+	*stringp = e;
+	return s;
 }
 
 class otStreamModule : public moModule {
