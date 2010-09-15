@@ -490,3 +490,12 @@ void moProperty::fireCallback() {
 	for ( it = this->callbacks.begin(); it != this->callbacks.end(); it++ )
 		it->first(this, it->second);
 }
+
+void moProperty::setText(bool is_text) {
+	this->is_text = is_text;
+}
+
+bool moProperty::isText() {
+	return this->is_text;
+}
+
