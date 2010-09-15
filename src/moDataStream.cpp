@@ -25,6 +25,8 @@
 bool moDataStreamInfo::isStreamValid(moDataStream *stream) {
 	if ( stream == NULL )
 		return false;
+	if ( this->type == "*" )
+		return true;
 	return moUtils::inList(stream->getFormat(), this->type, ",");
 }
 
