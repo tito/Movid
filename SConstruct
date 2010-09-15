@@ -41,7 +41,7 @@ libmovid_src = [
   'src/modules/moDistanceTransformModule.cpp',
   'src/modules/moDumpModule.cpp',
   'src/modules/moErodeModule.cpp',
-  'src/modules/moFiducialTrackerModule.cpp',
+  'src/modules/moFiducialFinderModule.cpp',
   'src/modules/moFingerTipFinderModule.cpp',
   'src/modules/moGreedyBlobTrackerModule.cpp',
   'src/modules/moMunkresBlobTrackerModule.cpp',
@@ -67,16 +67,22 @@ libmovid_src = [
   'contrib/bitmap_munkres/match.c'
 ]
 
+#################################################################
+# Check some arguments in command line
+#################################################################
+mode = ARGUMENTS.get('mode', 'normal')
+if mode not in ('normal', 'debug'):
+  print 'Invalid mode <%s>, fallback to normal' % mode
+  mode = 'normal'
+print 'Doing compilation in %s mode' % mode
 
 #################################################################
-# Build contirb and configure env for linking against deps
+# Build contrib and configure env for linking against deps
 #################################################################
 env = SConscript('contrib/SConscript')
 
-
-
 #################################################################
-# Platform sepcific settings for build env and OpenCV flags
+# Platform specific settings for build env and OpenCV flags
 #################################################################
 import sys, os
 
@@ -111,6 +117,9 @@ else:
   #set the compiler if set in ENV, used e.g. to force 32bit by setting to g++ -m32
   if os.environ.get('CC'): env.Replace(CC=os.environ['CC'])
   if os.environ.get('CXX'): env.Replace(CXX=os.environ['CXX'])
+
+  if mode == 'debug':
+    env.Append(CCFLAGS = ['-ggdb', '-O0'])
 
 
 
