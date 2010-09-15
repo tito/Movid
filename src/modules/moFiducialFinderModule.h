@@ -22,6 +22,8 @@
 #include "../moDataGenericContainer.h"
 #include "moImageFilterModule.h"
 
+#define MAX_FIDUCIALS 512
+
 class moFiducialFinderModule : public moImageFilterModule {
 public:
 	moFiducialFinderModule();

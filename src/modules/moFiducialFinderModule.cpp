@@ -31,7 +31,6 @@
 
 MODULE_DECLARE(FiducialFinder, "native", "Find Fiducials");
 
-#define MAX_FIDUCIALS 512
 
 typedef struct {
 	Segmenter segmenter;

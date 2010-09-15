@@ -19,6 +19,8 @@
 #include "moHuObjectFinderModule.h"
 #include "../moLog.h"
 #include "cv.h"
+// Need to get MAX_FIDUCIALS from here:
+#include "moFiducialFinderModule.h"
 
 MODULE_DECLARE(HuObjectFinder, "native", "Find objects based on Hu moments");
 
@@ -70,6 +72,9 @@ moHuObjectFinderModule::moHuObjectFinderModule() : moImageFilterModule() {
 	this->setOutputType(0, "IplImage8");
 
 
+	// In order to prevent a clash with FiducialFinder's IDs, you can ask
+	// HuObjectFinder to start counting objects at a certain ID.
+	this->properties["min_id"] = new moProperty(MAX_FIDUCIALS + 1);
 	this->properties["max_size_difference"] = new moProperty(1500);
 	this->properties["max_match_score"] = new moProperty(0.5);
 	this->properties["min_area"] = new moProperty(150.);
@@ -184,14 +189,16 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 			}
 
 			matched_index = this->findMatchingShape(cur_cont, mar);
+			int min_id = this->property("min_id").asInteger();
 			if (matched_index >= 0) {
 				obj = new moDataGenericContainer();
 				obj->properties["type"] = new moProperty("blob");
 				obj->properties["implements"] = new moProperty("markerlessobject,pos");
 				obj->properties["x"] = new moProperty(mar.center.x / static_cast<float>(size.width));
 				obj->properties["y"] = new moProperty(mar.center.y / static_cast<float>(size.height));
-				// XXX a) 'fiducial_id' is confusing, b) the value will conflict with fiducialfinder
-				obj->properties["fiducial_id"] = new moProperty(matched_index);
+				// TODO
+				obj->properties["angle"] = new moProperty(0.);
+				obj->properties["fiducial_id"] = new moProperty(min_id + matched_index);
 				this->recognized_objects.push_back(obj);
 			}
 		}
