@@ -145,10 +145,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 	for ( it = list->begin(); it != list->end(); it++ ) {
 		assert(moUtils::inList("tracked", (*it)->properties["implements"]->asString()));
 		assert(moUtils::inList("pos", (*it)->properties["implements"]->asString()));
-		if ( this->type == TUIO_2DOBJ )
-			msg->Add((*it)->properties["id"]->asInteger());
-		else if ( this->type == TUIO_2DCUR )
-			msg->Add((*it)->properties["blob_id"]->asInteger());
+		msg->Add((*it)->properties["blob_id"]->asInteger());
 	}
 
 	bundle->Add(msg);

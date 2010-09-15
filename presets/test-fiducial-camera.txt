@@ -7,13 +7,17 @@ pipeline create Camera camera
 pipeline create GrayScale gray
 pipeline create Threshold threshold
 pipeline create Smooth smooth
-pipeline create FiducialTracker tracker
+pipeline create FiducialFinder finder
+pipeline create GreedyBlobTracker tracker
 
 # do connections
 pipeline connect camera 0 smooth 0
 pipeline connect smooth 0 gray 0
 pipeline connect gray 0 threshold 0
-pipeline connect threshold 0 tracker 0
+pipeline connect threshold 0 finder 0
+pipeline connect finder 1 tracker 0
+
+pipeline set camera index 1
 
 # debug
 #pipeline create Dump dump
@@ -24,8 +28,8 @@ pipeline connect threshold 0 tracker 0
 pipeline create ImageDisplay display
 pipeline create Combine combine
 pipeline connect camera 0 combine 0
-pipeline connect tracker 0 combine 1
+pipeline connect tracker 1 combine 1
 pipeline connect combine 0 display 0
 
 pipeline create Tuio tuio
-pipeline connect tracker 1 tuio 0
+pipeline connect tracker 0 tuio 0

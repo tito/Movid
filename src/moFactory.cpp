@@ -43,7 +43,7 @@ void moFactory::init() {
 	REGISTER_MODULE(DistanceTransform);
 	REGISTER_MODULE(Dump);
 	REGISTER_MODULE(Erode);
-	REGISTER_MODULE(FiducialTracker);
+	REGISTER_MODULE(FiducialFinder);
 	REGISTER_MODULE(FingerTipFinder);
 	REGISTER_MODULE(GrayScale);
 	REGISTER_MODULE(GreedyBlobTracker);

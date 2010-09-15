@@ -16,16 +16,16 @@
  **********************************************************************/
 
 
-#ifndef MO_FIDUCIAL_TRACKER_MODULE_H
-#define MO_FIDUCIAL_TRACKER_MODULE_H
+#ifndef MO_FIDUCIAL_FINDER_MODULE_H
+#define MO_FIDUCIAL_FINDER_MODULE_H
 
 #include "../moDataGenericContainer.h"
 #include "moImageFilterModule.h"
 
-class moFiducialTrackerModule : public moImageFilterModule {
+class moFiducialFinderModule : public moImageFilterModule {
 public:
-	moFiducialTrackerModule();
-	virtual ~moFiducialTrackerModule();
+	moFiducialFinderModule();
+	virtual ~moFiducialFinderModule();
 	
 protected:
 	moDataGenericList fiducials;
