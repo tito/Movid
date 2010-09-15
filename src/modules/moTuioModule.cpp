@@ -122,7 +122,7 @@ void moTuioModule::notifyData(moDataStream *input) {
 		}
 
 		std::string implements = (*it)->properties["implements"]->asString();
-		if ( moUtils::inList("fiducial", implements) )
+		if ( moUtils::inList("fiducial", implements) || moUtils::inList("markerlessobject", implements) )
 			this->type = TUIO_2DOBJ;
 		else
 			this->type = TUIO_2DCUR;
