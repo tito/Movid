@@ -20,7 +20,7 @@
 // check http://www.openframeworks.cc/forum/viewtopic.php?t=486&highlight=fiducial
 #include <stdlib.h>
 #include <assert.h>
-#include "moFiducialTrackerModule.h"
+#include "moFiducialFinderModule.h"
 #include "../moLog.h"
 #include "cv.h"
 #include "cvaux.h"
@@ -29,7 +29,7 @@
 #include "libfidtrack/fidtrackX.h"
 
 
-MODULE_DECLARE(FiducialTracker, "native", "Tracks Fiducials");
+MODULE_DECLARE(FiducialFinder, "native", "Find Fiducials");
 
 #define MAX_FIDUCIALS 512
 
@@ -42,7 +42,7 @@ typedef struct {
 	ShortPoint *dmap;
 } fiducials_data_t;
 
-moFiducialTrackerModule::moFiducialTrackerModule() : moImageFilterModule() {
+moFiducialFinderModule::moFiducialFinderModule() : moImageFilterModule() {
 	MODULE_INIT();
 
 	this->output_data = new moDataStream("blob");
@@ -55,20 +55,20 @@ moFiducialTrackerModule::moFiducialTrackerModule() : moImageFilterModule() {
 	this->setInputType(0, "IplImage8");
 }
 
-moFiducialTrackerModule::~moFiducialTrackerModule() {
+moFiducialFinderModule::~moFiducialFinderModule() {
 }
 
-void moFiducialTrackerModule::clearFiducials() {
+void moFiducialFinderModule::clearFiducials() {
 	moDataGenericList::iterator it;
 	for ( it = this->fiducials.begin(); it != this->fiducials.end(); it++ )
 		delete (*it);
 	this->fiducials.clear();
 }
 
-void moFiducialTrackerModule::allocateBuffers() {
+void moFiducialFinderModule::allocateBuffers() {
 	IplImage* src = (IplImage*)(this->input->getData());
 	this->output_buffer = cvCreateImage(cvGetSize(src), src->depth, 3);	// only one channel
-	LOG(MO_DEBUG, "allocated output buffer for FiducialTracker module.");
+	LOG(MO_DEBUG, "allocated output buffer for FiducialFinder module.");
 
 	// first time, initialize fids
 	fiducials_data_t *fids = (fiducials_data_t *)this->internal;
@@ -87,7 +87,7 @@ void moFiducialTrackerModule::allocateBuffers() {
 	initialize_segmenter( &fids->segmenter, src->width, src->height, fids->treeidmap.max_adjacencies );
 }
 
-void moFiducialTrackerModule::applyFilter(IplImage *src) {
+void moFiducialFinderModule::applyFilter(IplImage *src) {
 	fiducials_data_t *fids = static_cast<fiducials_data_t*>(this->internal);
 	moDataGenericContainer *fiducial;
 	FiducialX *fdx;
@@ -104,7 +104,7 @@ void moFiducialTrackerModule::applyFilter(IplImage *src) {
 	assert( src->imageData != NULL );
 
 	if ( src->nChannels != 1 ) {
-		this->setError("FiducialTracker input image must be a single channel binary image.");
+		this->setError("FiducialFinder input image must be a single channel binary image.");
 		this->stop();
 		return;
 	}
