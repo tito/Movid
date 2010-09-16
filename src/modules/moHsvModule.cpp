@@ -46,6 +46,8 @@ moHsvModule::moHsvModule() : moImageFilterModule(){
 	this->properties["vmax"] = new moProperty(255);
 	this->properties["vmax"]->setMin(0);
 	this->properties["vmax"]->setMax(255);
+
+	this->setOutputType(0, "IplImage8");
 }
 
 moHsvModule::~moHsvModule() {
