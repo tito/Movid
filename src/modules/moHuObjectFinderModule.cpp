@@ -16,11 +16,14 @@
  **********************************************************************/
 
 #include <assert.h>
+#include <math.h>
 #include "moHuObjectFinderModule.h"
 #include "../moLog.h"
 #include "cv.h"
 // Need to get MAX_FIDUCIALS from here:
 #include "moFiducialFinderModule.h"
+
+#define PI 3.14159265
 
 MODULE_DECLARE(HuObjectFinder, "native", "Find objects based on Hu moments");
 
@@ -169,7 +172,12 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 	moDataGenericContainer *obj;
 	CvBox2D mar;
 
-	int matched_index;
+	int matched_index, min_id;
+	CvMoments moments;
+	double cogx, cogy, dx, dy, angle, len, deg;
+	double m00, m10, m01;
+	float w = static_cast<float>(size.width);
+	float h = static_cast<float>(size.height);
 
 	// XXX Do we want to be able to use the same object more than once? Currently the code allows that...
 	// Consider all the contours that are in the current frame...
@@ -182,22 +190,38 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 					std::cout << "This object or a too similar object has already been registered. Discarding object." << std::endl;
 					break;
 				}
-				std::cout << "Setting contour with area " << area << " ..................................................." << std::endl;
+				std::cout << "Setting contour with area " << area << " ................................" << std::endl;
 				this->stored_contours.pop_back();
 				this->stored_contours.push_back(cur_cont);
 				break;
 			}
 
 			matched_index = this->findMatchingShape(cur_cont, mar);
-			int min_id = this->property("min_id").asInteger();
+			min_id = this->property("min_id").asInteger();
 			if (matched_index >= 0) {
 				obj = new moDataGenericContainer();
 				obj->properties["type"] = new moProperty("blob");
 				obj->properties["implements"] = new moProperty("markerlessobject,pos");
-				obj->properties["x"] = new moProperty(mar.center.x / static_cast<float>(size.width));
-				obj->properties["y"] = new moProperty(mar.center.y / static_cast<float>(size.height));
-				// TODO
-				obj->properties["angle"] = new moProperty(0.);
+				obj->properties["x"] = new moProperty(mar.center.x / w);
+				obj->properties["y"] = new moProperty(mar.center.y / h);
+
+				// Compute the angle as the angle of the vector from center of gravity to BB center.
+				cvContourMoments(cur_cont, &moments);
+				m00 = cvGetSpatialMoment(&moments, 0, 0);
+				m10 = cvGetSpatialMoment(&moments, 1, 0);
+				m01 = cvGetSpatialMoment(&moments, 0, 1);
+				cogx = m10 / m00;
+				cogy = m01 / m00;
+				dy = mar.center.y - cogy;
+				dx = mar.center.x - cogx;
+				// XXX optim
+				len = sqrt(pow(dx, 2) + pow(dy, 2));
+				angle = abs(dx) <= 0.001 ? atan(dy / dx) : PI/2.;
+				deg = angle * (180 / PI);
+				std::cout << "DX: " << dx << " DY: " << dy << " LEN: " << len << " ANGLE RAD: " << angle << " ANGLE DEG: " << deg << std::endl;
+
+				// Radians, so 0..2PI!
+				obj->properties["angle"] = new moProperty(angle);
 				obj->properties["fiducial_id"] = new moProperty(min_id + matched_index);
 				this->recognized_objects.push_back(obj);
 			}
