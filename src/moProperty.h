@@ -85,6 +85,9 @@ public:
 	void setMax(int val);
 	void setChoices(const std::string &val);
 
+	void setText(bool is_text);
+	bool isText();
+
 	void addCallback(moPropertyCallback callback, void *userdata);
 	void removeCallback(moPropertyCallback callback);
 	
@@ -102,6 +105,7 @@ private:
 	bool have_min;
 	bool have_max;
 	bool have_choices;
+	bool is_text;
 	int val_min;
 	int val_max;
 	std::string val_choices;

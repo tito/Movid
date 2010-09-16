@@ -28,6 +28,8 @@
 #include <fstream>
 #include <algorithm>
 #include <iterator>
+#include <valarray>
+#include <list>
 #include "moPipeline.h"
 #include "moFactory.h"
 #include "moLog.h"
@@ -38,7 +40,6 @@ MODULE_DECLARE_EX(Pipeline,, "native", "Handle object list");
 
 // TODO: move to another file
 extern int g_config_delay;
-
 
 moPipeline::moPipeline() : moModule(MO_MODULE_NONE) {
 	MODULE_INIT();
@@ -223,7 +224,11 @@ bool moPipeline::parse(const std::string& filename) {
 		return false;
 	}
 
-	//
+	bool datamode = false;
+	std::vector< std::valarray<std::string> > data_lateset;
+	std::vector< std::valarray<std::string> >::iterator data_lateset_iterator;
+	std::string data_id;
+	std::ostringstream oss;
 	while ( !f.eof() ) {
 		line_idx++;
 		getline(f, line);
@@ -239,8 +244,58 @@ bool moPipeline::parse(const std::string& filename) {
 				std::istream_iterator<std::string>(),
 				std::back_inserter<std::vector<std::string> >(tokens));
 
-		if ( tokens.size() <= 1 )
+		if ( tokens.size() <= 1 && datamode == false )
 			PIPELINE_PARSE_ERROR("invalid line command");
+
+		if ( tokens[0] == PIPELINE_BOUNDARY ) {
+			// already in data mode, but get another boundary
+			// push the current data in a id
+			if ( datamode == true ) {
+				datamode = false;
+
+				// search each property to set
+				bool have_set = false;
+				do {
+					have_set = false;
+					for ( data_lateset_iterator = data_lateset.begin();
+						  data_lateset_iterator != data_lateset.end();
+						  data_lateset_iterator++ ) {
+
+						if ( (*data_lateset_iterator)[2] == data_id ) {
+
+							module1 = this->getModuleById((*data_lateset_iterator)[0]);
+							if ( module1 == NULL )
+								PIPELINE_PARSE_ERROR("unable to find module with id " << tokens[2]);
+							module1->property((*data_lateset_iterator)[1]).set(oss.str());
+							module1->property((*data_lateset_iterator)[1]).setText(true);
+
+							if ( module1->haveError() )
+								PIPELINE_PARSE_ERROR("module error:" << module1->getLastError());
+
+							// erase current var
+							have_set = true;
+							data_lateset.erase(data_lateset_iterator);
+							break;
+						}
+					}
+				} while ( have_set );
+
+				oss.str("");
+			}
+
+			// if we have more than one token, restart data mode
+			if ( tokens.size() == 2 ) {
+				datamode = true;
+				data_id = tokens[1];
+			}
+			continue;
+		}
+
+		if ( datamode == true ) {
+			// we are in data mode, and we don't have boundary, push data.
+			oss << line << "\n";
+			continue;
+		}
 
 		if ( tokens[0] == "config" ) {
 			if ( tokens.size() < 3 )
@@ -290,6 +345,16 @@ bool moPipeline::parse(const std::string& filename) {
 				if ( module1->haveError() )
 					PIPELINE_PARSE_ERROR("module error:" << module1->getLastError());
 
+			} else if ( tokens[1] == "settext" ) {
+				if ( tokens.size() != 5 )
+					PIPELINE_PARSE_ERROR("not enough parameters");
+
+				std::string vals[3];
+				vals[0] = tokens[2];
+				vals[1] = tokens[3];
+				vals[2] = tokens[4];
+				std::valarray<std::string> value(vals, 3);
+				data_lateset.push_back(value);
 
 			} else if ( tokens[1] == "connect" ) {
 				if ( tokens.size() != 6 )
@@ -337,12 +402,16 @@ std::string moPipeline::serializeCreation() {
 	// export modules and their properties
 	std::vector<moModule *>::iterator it;
 	for ( it = this->modules.begin(); it != this->modules.end(); it++ )
-		(*it)->serializeCreation(oss);
+		(*it)->serializeCreation(oss, false);
 
 	// now do connections, once all modules have been created
 	std::vector<moModule *>::iterator mod;
 	for ( mod = this->modules.begin(); mod != this->modules.end(); mod++ )
 		(*mod)->serializeConnections(oss);
+
+	// export data from module (big properties)
+	for ( it = this->modules.begin(); it != this->modules.end(); it++ )
+		(*it)->serializeCreation(oss, true);
 
 	return oss.str();
 }

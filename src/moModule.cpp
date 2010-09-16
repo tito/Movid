@@ -26,6 +26,7 @@
 #include "pasync.h"
 
 #include "moModule.h"
+#include "moPipeline.h"
 #include "moDataStream.h"
 #include "moLog.h"
 #include "moThread.h"
@@ -394,21 +395,44 @@ bool moModule::needUpdate(bool lock) {
 	return false;
 }
 
-bool moModule::serializeCreation(std::ostringstream &oss) {
+bool moModule::serializeCreation(std::ostringstream &oss, bool do_data) {
 	std::string id = this->property("id").asString();
+	std::map<std::string, moProperty*>::iterator it;
 
-	oss << "pipeline create " << this->getName() << " " << id << std::endl;
+	if ( do_data == false ) {
 
-	if ( this->properties.size() > 0 ) {
-		std::map<std::string, moProperty*>::iterator it;
+		oss << "pipeline create " << this->getName() << " " << id << std::endl;
+
+		if ( this->properties.size() > 0 ) {
+			for ( it = this->properties.begin(); it != this->properties.end(); it++ ) {
+				if ( ((*it).second)->isText() ) {
+					oss << "pipeline settext " << id << " "
+						<< (*it).first << " " << id << "_"
+						<< (*it).first << std::endl;
+				} else {
+					oss << "pipeline set " << id << " "
+						<< (*it).first << " "
+						<< ((*it).second)->asString() << std::endl;
+				}
+			}
+		}
+
+		oss << "" << std::endl;
+
+	} else {
+
+		if ( this->properties.size() <= 0 )
+			return true;
+
 		for ( it = this->properties.begin(); it != this->properties.end(); it++ ) {
-			oss << "pipeline set " << id << " "
-				<< (*it).first << " "
+			if ( !((*it).second)->isText() )
+				continue;
+			oss << PIPELINE_BOUNDARY << " " << id << "_"
+				<< (*it).first << std::endl
 				<< ((*it).second)->asString() << std::endl;
 		}
+		oss << PIPELINE_BOUNDARY << std::endl;
 	}
-
-	oss << "" << std::endl;
 
 	return true;
 }

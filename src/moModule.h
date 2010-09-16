@@ -268,7 +268,7 @@ public:
 
 	/*! \brief Export setup of the module to a file
 	 */
-	virtual bool serializeCreation(std::ostringstream &oss);
+	virtual bool serializeCreation(std::ostringstream &oss, bool do_data);
 
 	/*! \brief Export connections of the module to a file
 	 */
