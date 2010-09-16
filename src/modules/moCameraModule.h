@@ -36,6 +36,7 @@ public:
 private:
 	void *camera;
 	moDataStream *stream;
+	moDataStream *monochrome;
 
 
 	MODULE_INTERNALS();
