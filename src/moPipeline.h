@@ -23,6 +23,8 @@
 #include <string>
 #include "moModule.h"
 
+#define PIPELINE_BOUNDARY "=============================="
+
 class moPipeline : public moModule {
 public:
 
