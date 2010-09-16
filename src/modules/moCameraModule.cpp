@@ -32,10 +32,13 @@ moCameraModule::moCameraModule() : moModule(MO_MODULE_OUTPUT) {
 
 	this->camera = NULL;
 	this->stream = new moDataStream("IplImage");
+	this->monochrome = new moDataStream("IplImage8");
 
 	// declare outputs
 	this->declareOutput(0, &this->stream, new moDataStreamInfo(
 			"camera", "IplImage", "Image stream of the camera"));
+	this->declareOutput(1, &this->monochrome, new moDataStreamInfo(
+			"camera", "IplImage8", "Image stream of the camera"));
 
 	// declare properties
 	this->properties["index"] = new moProperty(0);
@@ -70,7 +73,15 @@ void moCameraModule::update() {
 		// push a new image on the stream
 		LOGM(MO_TRACE, "push a new image on the stream");
 		IplImage *img = cvQueryFrame(static_cast<CvCapture *>(this->camera));
-		this->stream->push(img);
+        if (img->nChannels == 3)
+            this->stream->push(img);
+        else if (img->nChannels == 1)
+            this->monochrome->push(img);
+        else {
+            std::cout << "CAMERA: Unsupported amount of camera image channels " << img->nChannels << std::endl;
+            assert(0);
+        }
+       
 		this->notifyUpdate();
 	}
 }
