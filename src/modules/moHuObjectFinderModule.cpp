@@ -17,6 +17,8 @@
 
 #include <assert.h>
 #include <math.h>
+#include <fstream>
+#include <iostream>
 #include "moHuObjectFinderModule.h"
 #include "../moLog.h"
 #include "cv.h"
@@ -59,6 +61,7 @@ void mohuobjectfindermodule_register_object(moProperty *property, void *userdata
 	moHuObjectFinderModule *module = static_cast<moHuObjectFinderModule *>(userdata);
 	assert(userdata != NULL);
 
+	std::cout << "Callback fired!" << std::endl;
 	module->stored_contours.push_back(NULL);
 }
 
@@ -86,9 +89,38 @@ moHuObjectFinderModule::moHuObjectFinderModule() : moImageFilterModule() {
 	// FIXME How to do a proper button?
 	this->properties["register"] = new moProperty(false);
 	this->properties["register"]->addCallback(mohuobjectfindermodule_register_object, this);
+	this->contours_restored = false;
 }
 
 moHuObjectFinderModule::~moHuObjectFinderModule() {
+}
+
+void moHuObjectFinderModule::serializeContour(CvSeq *cont) {
+	char *tmp = tmpnam(NULL);
+	cvSave(tmp, cont);
+
+	FILE *fp;
+	long len;
+	char *buf;
+	fp = fopen(tmp, "rb");
+	fseek(fp, 0, SEEK_END);
+	len = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+	buf = (char *) malloc(len+1);
+	if (buf == NULL)
+		return;
+	fread(buf, len, 1, fp);
+	buf[len] = '\0';
+	fclose(fp);
+
+	int cur_num = this->property("min_id").asInteger() + this->stored_contours.size();
+	std::ostringstream prop_name;
+	prop_name << "stored_contour_" << cur_num;
+	this->properties[prop_name.str()] = new moProperty("");
+	this->properties[prop_name.str()]->setText(true);
+	this->properties[prop_name.str()]->set(buf);
+
+	free(buf);
 }
 
 void moHuObjectFinderModule::clearRecognizedObjects() {
@@ -133,16 +165,20 @@ inline int moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) 
 	for (it = this->stored_contours.begin(); it != this->stored_contours.end(); it++) {
 		index++;
 
-		if (*it == NULL)
+		if (*it == NULL) {
+			std::cout << "Skipping 0 " << index << std::endl;
 			continue;
+		}
 
 		// Do bounding box check and proceed if the sizes differ too much
 		if (!this->boundingBoxCheck(*it, cont, mar)) {
+			std::cout << "Comparing with " << index << " BB Fail" << std::endl;
 			continue;
 		}
 
 		if (countHolesInContour(*it) != countHolesInContour(cont)) {
-			continue;
+			std::cout << "Comparing with " << index << "Hole Fail" << std::endl;
+			//continue;
 		}
 
 		matchscore = cvMatchShapes(*it, cont, CV_CONTOURS_MATCH_I2);
@@ -151,14 +187,46 @@ inline int moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) 
 			min_index = index;
 		}
 	}
-	if (min_index >= 0) {
+	if (min_index >= 0)
 		std::cout << min_index << " with " << min_score << std::endl;
-	}
+	else
+		std::cout << "Shape Fail" << std::endl;
+
 	return min_index;
 }
 
 void moHuObjectFinderModule::applyFilter(IplImage *src) {
 	this->clearRecognizedObjects();
+
+	// If this is the first time that applyFilter is called, restore contours from preset.
+	if (!this->contours_restored) {
+		// XXX fix +1
+		int cur_id = this->properties["min_id"]->asInteger() + 1;
+		std::cout << "checking for " << cur_id << std::endl;
+		std::ostringstream cur_prop_name;
+		cur_prop_name << "stored_contour_" << cur_id;
+		char *tmp;
+		std::ofstream tmpfile;
+		CvSeq *cur_cont;
+		while (this->properties.count(cur_prop_name.str()) > 0) {
+			std::cout << "Unserializing.." << std::endl;
+			moProperty *cur_prop = this->properties[cur_prop_name.str()];
+			// Unserialize
+			tmp = tmpnam(NULL);
+			tmpfile.open(tmp);
+			std::cout << cur_prop->asString() << '\n' << std::endl;
+			tmpfile << cur_prop->asString() << '\n';
+			tmpfile.close();
+			cur_cont = (CvSeq*) cvLoad(tmp, this->storage);
+			this->stored_contours.push_back(cur_cont);
+
+			cur_id++;
+			cur_prop_name.str("");
+			cur_prop_name << "stored_contour_" << cur_id;
+		}
+		this->contours_restored = true;
+	}
+
 	cvCopy(src, this->output_buffer);
 
 	CvSeq *contours, *cur_cont;
@@ -193,6 +261,7 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 				std::cout << "Setting contour with area " << area << " ................................" << std::endl;
 				this->stored_contours.pop_back();
 				this->stored_contours.push_back(cur_cont);
+				this->serializeContour(cur_cont);
 				break;
 			}
 
