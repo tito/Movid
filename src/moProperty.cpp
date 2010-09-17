@@ -277,6 +277,7 @@ moProperty::moProperty(moPointList value, const std::string &description) {
 }
 
 void moProperty::init(const std::string &description) {
+	this->is_text = false;
 	this->readonly = false;
 	this->val = NULL;
 	this->val_min = 0;
