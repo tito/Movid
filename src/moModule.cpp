@@ -424,14 +424,17 @@ bool moModule::serializeCreation(std::ostringstream &oss, bool do_data) {
 		if ( this->properties.size() <= 0 )
 			return true;
 
+		bool have_text = false;
 		for ( it = this->properties.begin(); it != this->properties.end(); it++ ) {
 			if ( !((*it).second)->isText() )
 				continue;
+			have_text = true;
 			oss << PIPELINE_BOUNDARY << " " << id << "_"
 				<< (*it).first << std::endl
 				<< ((*it).second)->asString() << std::endl;
 		}
-		oss << PIPELINE_BOUNDARY << std::endl;
+		if ( have_text )
+			oss << PIPELINE_BOUNDARY << std::endl;
 	}
 
 	return true;
