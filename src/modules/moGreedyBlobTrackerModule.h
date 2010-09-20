@@ -24,7 +24,9 @@
 class moGreedyBlobTrackerModule : public moAbstractBlobTrackerModule {
 public:
 	moGreedyBlobTrackerModule();
+
 protected:
+	std::vector<int> reused;
 	virtual void trackBlobs();
 	MODULE_INTERNALS();
 };

@@ -28,18 +28,21 @@ moGreedyBlobTrackerModule::moGreedyBlobTrackerModule() : moAbstractBlobTrackerMo
 }
 
 void moGreedyBlobTrackerModule::trackBlobs() {
-	moDataGenericList::iterator it;
+	moDataGenericList::iterator it, it_old;
 	double distance, min_distance, old_x, old_y, new_x, new_y;
+	moDataGenericContainer* closest_blob;
+	this->reused.clear();
+
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
 		// For each blob from the new frame, find the closest one from the old frame(s)
-		moDataGenericContainer* closest_blob = NULL;
+		closest_blob = NULL;
 		min_distance = this->properties["max_distance"]->asDouble();
 
 		new_x = (*it)->properties["x"]->asDouble();
 		new_y = (*it)->properties["y"]->asDouble();
-		moDataGenericList::iterator it_old;
 		for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
-			if ((*it_old)->properties["blob_id"]->asInteger() < 0)
+			old_id = (*it_old)->properties["blob_id"]->asInteger();
+			if (std::count(this->reused.begin(), this->reused.end(), old_id))
 				// Blob was already assigned, i.e. the ID was already reused.
 				continue;
 
@@ -55,10 +58,11 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 		}
 
 		//found the closest one out of teh ones that are left, assign id, and invalidate old blob
-		if (closest_blob){
-			int old_id = closest_blob->properties["blob_id"]->asInteger();
+		if (closest_blob) {
+			old_id = closest_blob->properties["blob_id"]->asInteger();
 			(*it)->properties["blob_id"]->set( old_id );
-			closest_blob->properties["blob_id"]->set( -1 * old_id );  //we mark matched blob by negative id's
+			// Indicate that we reused this blob already and that it shouldn't be considered anymore
+			this->reused.push_back(old_id);
 		}
 		//this must be a new blob, so assign new ID
 		else
