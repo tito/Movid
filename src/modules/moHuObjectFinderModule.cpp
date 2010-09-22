@@ -60,9 +60,10 @@ void mohuobjectfindermodule_register_object(moProperty *property, void *userdata
 {
 	moHuObjectFinderModule *module = static_cast<moHuObjectFinderModule *>(userdata);
 	assert(userdata != NULL);
-
-	std::cout << "Callback fired!" << std::endl;
-	module->stored_contours.push_back(NULL);
+	if (module->contours_restored)
+		// Simple trick. This is true only if applyFilter() has been called once.
+		// We do this to prevent this callback to be fired when starting from dumped preset.
+		module->stored_contours.push_back(NULL);
 }
 
 moHuObjectFinderModule::moHuObjectFinderModule() : moImageFilterModule() {
