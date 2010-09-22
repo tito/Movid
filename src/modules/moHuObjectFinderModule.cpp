@@ -255,14 +255,11 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 		area = cvContourArea(cur_cont);
 		if (area > min_area) {
 			if (this->stored_contours.size() && (this->stored_contours.back() == NULL)) {
-				if (this->findMatchingShape(cur_cont, mar) >= 0) {
-					std::cout << "This object or a too similar object has already been registered. Discarding object." << std::endl;
-					break;
-				}
-				std::cout << "Setting contour with area " << area << " ................................" << std::endl;
 				this->stored_contours.pop_back();
-				this->stored_contours.push_back(cur_cont);
-				this->serializeContour(cur_cont);
+				if (this->findMatchingShape(cur_cont, mar) < 0) {
+					this->stored_contours.push_back(cur_cont);
+					this->serializeContour(cur_cont);
+				}
 				break;
 			}
 
