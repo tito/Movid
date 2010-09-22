@@ -202,19 +202,16 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 	if (!this->contours_restored) {
 		// XXX fix +1
 		int cur_id = this->properties["min_id"]->asInteger() + 1;
-		std::cout << "checking for " << cur_id << std::endl;
 		std::ostringstream cur_prop_name;
 		cur_prop_name << "stored_contour_" << cur_id;
 		char *tmp;
 		std::ofstream tmpfile;
 		CvSeq *cur_cont;
 		while (this->properties.count(cur_prop_name.str()) > 0) {
-			std::cout << "Unserializing.." << std::endl;
 			moProperty *cur_prop = this->properties[cur_prop_name.str()];
 			// Unserialize
 			tmp = tmpnam(NULL);
 			tmpfile.open(tmp);
-			std::cout << cur_prop->asString() << '\n' << std::endl;
 			tmpfile << cur_prop->asString() << '\n';
 			tmpfile.close();
 			cur_cont = (CvSeq*) cvLoad(tmp, this->storage);
@@ -284,7 +281,7 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 				len = sqrt(pow(dx, 2) + pow(dy, 2));
 				angle = abs(dx) <= 0.001 ? atan(dy / dx) : PI/2.;
 				deg = angle * (180 / PI);
-				std::cout << "DX: " << dx << " DY: " << dy << " LEN: " << len << " ANGLE RAD: " << angle << " ANGLE DEG: " << deg << std::endl;
+				//std::cout << "DX: " << dx << " DY: " << dy << " LEN: " << len << " ANGLE RAD: " << angle << " ANGLE DEG: " << deg << std::endl;
 
 				// Radians, so 0..2PI!
 				obj->properties["angle"] = new moProperty(angle);
