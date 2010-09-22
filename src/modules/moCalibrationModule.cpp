@@ -433,15 +433,11 @@ void moCalibrationModule::transformPoints() {
 		P_transformed.x = alpha*A_screen.x + beta*B_screen.x + gamma*C_screen.x;
 		P_transformed.y = alpha*A_screen.y + beta*B_screen.y + gamma*C_screen.y;
 
-		// TODO This should copy ALL blob attributes, even unknown ones (from different detectors)
-		// Copy the blob, but adjust x/y
+		// This must copy ALL blob attributes, even unknown ones (from different detectors)
+		// Only adjust type, pos.
 		// XXX Do we need to adjust w/h too?
-		moDataGenericContainer *blob = new moDataGenericContainer();
+		moDataGenericContainer *blob = (*it)->clone();
 		blob->properties["type"] = new moProperty("trackedblob");
-		blob->properties["blob_id"] = new moProperty((*it)->properties["blob_id"]->asInteger());
-		blob->properties["implements"] = new moProperty((*it)->properties["implements"]->asString());
-		//blob->properties["w"] = new moProperty((*it)->properties["w"]->asDouble());
-		//blob->properties["h"] = new moProperty((*it)->properties["h"]->asDouble());
 		blob->properties["x"] = new moProperty(P_transformed.x);
 		blob->properties["y"] = new moProperty(P_transformed.y);
 		this->blobs.push_back(blob);
