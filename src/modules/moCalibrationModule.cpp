@@ -56,12 +56,17 @@ void mocalibrationmodule_activate_calibration(moProperty *property, void *userda
 		module->resetCalibration();
 }
 
-void mocalibrationmodule_triangulate(moProperty *property, void *userdata)
+void mocalibrationmodule_surfacepoints_changed(moProperty *property, void *userdata)
 {
 	moCalibrationModule *module = static_cast<moCalibrationModule *>(userdata);
 	assert(userdata != NULL);
-	LOG(MO_DEBUG, "Setting triagulate prperty" << property->asBool() << "was: " << module->property("retriangulate").asBool());
-	module->notifyTriangulate();
+	moPointList screenPoints = module->property("screenPoints").asPointList();
+	moPointList surfacePoints = module->property("surfacePoints").asPointList();
+	if (screenPoints.size() == surfacePoints.size()) {
+		module->notifyTriangulate();
+		// The surfacepoints might have been filled in by starting from a preset.
+		module->calibrated = true;
+	}
 }
 
 moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODULE_OUTPUT | MO_MODULE_GUI){
@@ -85,7 +90,7 @@ moCalibrationModule::moCalibrationModule() : moModule(MO_MODULE_INPUT | MO_MODUL
 	this->properties["cols"]->addCallback(mocalibrationmodule_update_size, this);
 	this->properties["screenPoints"] = new moProperty(moPointList());
 	this->properties["surfacePoints"] = new moProperty(moPointList());
-	this->properties["surfacePoints"]->addCallback(mocalibrationmodule_triangulate, this);
+	this->properties["surfacePoints"]->addCallback(mocalibrationmodule_surfacepoints_changed, this);
 	this->properties["calibrate"] = new moProperty(false);
 	this->properties["calibrate"]->addCallback(mocalibrationmodule_activate_calibration, this);
 	// Minimum frames that the user has to press a calibration point
@@ -341,8 +346,7 @@ void moCalibrationModule::calibrate() {
 		this->active_point = 0;
 		this->property("calibrate").set(false);
 		this->calibrated = true;
-		//if (this->retriangulate)
-			this->triangulate();
+		this->triangulate();
 		return;
 	}
 
@@ -464,8 +468,11 @@ void moCalibrationModule::update() {
 	if ( calibrate ) {
 		this->calibrate();
 	} else {
-		if (this->calibrated)
+		if (this->calibrated) {
+			if (this->retriangulate)
+				this->triangulate();
 			this->transformPoints();
+		}
 	}
 	this->input->unlock();
 }
