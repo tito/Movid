@@ -90,6 +90,8 @@ moHuObjectFinderModule::moHuObjectFinderModule() : moImageFilterModule() {
 	// FIXME How to do a proper button?
 	this->properties["register"] = new moProperty(false);
 	this->properties["register"]->addCallback(mohuobjectfindermodule_register_object, this);
+	this->properties["consider_holes"] = new moProperty(false);
+	this->properties["consider_shape"] = new moProperty(true);
 	this->contours_restored = false;
 }
 
@@ -131,17 +133,12 @@ void moHuObjectFinderModule::clearRecognizedObjects() {
 	this->recognized_objects.clear();
 }
 
-inline bool moHuObjectFinderModule::boundingBoxCheck(CvSeq *cont1, CvSeq *cont2, CvBox2D &mar) {
+inline float moHuObjectFinderModule::boundingBoxCheck(CvSeq *cont1, CvSeq *cont2, CvBox2D &mar) {
 	// The Hu moments are unaware of size. We want that, however, so that
 	// we can distinguish differently sized objects of similar shape.
-	CvBox2D mar1;
-	double max_diff = this->property("max_size_difference").asInteger();
-	mar1 = cvMinAreaRect2(cont1, this->storage); 
-	mar = cvMinAreaRect2(cont2, this->storage); 
-	// Do bounding box check and proceed if the sizes differ too much
-	if (fabs(mar1.size.width * mar1.size.height - mar.size.width * mar.size.height) > max_diff)
-		return false;
-	return true;
+	CvBox2D mar1 = cvMinAreaRect2(cont1, this->storage);
+	mar = cvMinAreaRect2(cont2, this->storage);
+	return fabs(mar1.size.width * mar1.size.height - mar.size.width * mar.size.height);
 }
 
 inline int countHolesInContour(CvSeq *contour) {
@@ -163,35 +160,37 @@ inline int moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) 
 	int min_index = -1;
 	double matchscore;
 	double min_score = this->property("max_match_score").asDouble();
+	bool consider_holes = this->properties["consider_holes"]->asBool();
+	bool consider_shape = this->properties["consider_shape"]->asBool();
+	double min_diff = this->property("max_size_difference").asDouble();
+
 	for (it = this->stored_contours.begin(); it != this->stored_contours.end(); it++) {
 		index++;
 
-		if (*it == NULL) {
-			std::cout << "Skipping 0 " << index << std::endl;
+		if (*it == NULL)
 			continue;
-		}
 
-		// Do bounding box check and proceed if the sizes differ too much
-		if (!this->boundingBoxCheck(*it, cont, mar)) {
-			std::cout << "Comparing with " << index << " BB Fail" << std::endl;
+		if (consider_holes && (countHolesInContour(*it) != countHolesInContour(cont)))
 			continue;
-		}
 
-		if (countHolesInContour(*it) != countHolesInContour(cont)) {
-			std::cout << "Comparing with " << index << "Hole Fail" << std::endl;
-			//continue;
-		}
+		// Do early bounding box check and continue if the sizes differ too much
+		// OR if a previous shape was less different.
+		matchscore = this->boundingBoxCheck(*it, cont, mar);
+		if (matchscore >= min_diff)
+			continue;
+		min_diff = matchscore;
+		min_index = index;
 
-		matchscore = cvMatchShapes(*it, cont, CV_CONTOURS_MATCH_I2);
-		if (matchscore < min_score) {
-			min_score = matchscore;
-			min_index = index;
+		if (consider_shape) {
+			// Bounding boxes (and optionally holes) were OK. Use shape features as main
+			// criteria to distinguish between shapes. Override previous BB matchscore/index.
+			matchscore = cvMatchShapes(*it, cont, CV_CONTOURS_MATCH_I2);
+			if (matchscore < min_score) {
+				min_score = matchscore;
+				min_index = index;
+			}
 		}
 	}
-	if (min_index >= 0)
-		std::cout << min_index << " with " << min_score << std::endl;
-	else
-		std::cout << "Shape Fail" << std::endl;
 
 	return min_index;
 }
