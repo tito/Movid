@@ -28,6 +28,7 @@ public:
 	virtual ~moHuObjectFinderModule();
 
 	std::vector<CvSeq*> stored_contours;
+	bool contours_restored;
 	
 protected:
 	void applyFilter(IplImage *);
