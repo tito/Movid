@@ -158,11 +158,14 @@ inline int moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) 
 	std::vector<CvSeq*>::iterator it;
 	int index = -1;
 	int min_index = -1;
-	double matchscore;
+	int min_diff_index = -1;
+
+	double matchscore, diff;
 	double min_score = this->property("max_match_score").asDouble();
 	bool consider_holes = this->properties["consider_holes"]->asBool();
 	bool consider_shape = this->properties["consider_shape"]->asBool();
-	double min_diff = this->property("max_size_difference").asDouble();
+	const double max_diff = this->property("max_size_difference").asDouble();
+	double min_diff = max_diff;
 
 	for (it = this->stored_contours.begin(); it != this->stored_contours.end(); it++) {
 		index++;
@@ -170,29 +173,36 @@ inline int moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) 
 		if (*it == NULL)
 			continue;
 
-		if (consider_holes && (countHolesInContour(*it) != countHolesInContour(cont)))
-			continue;
-
-		// Do early bounding box check and continue if the sizes differ too much
-		// OR if a previous shape was less different.
-		matchscore = this->boundingBoxCheck(*it, cont, mar);
-		if (matchscore >= min_diff)
-			continue;
-		min_diff = matchscore;
-		min_index = index;
-
-		if (consider_shape) {
-			// Bounding boxes (and optionally holes) were OK. Use shape features as main
-			// criteria to distinguish between shapes. Override previous BB matchscore/index.
-			matchscore = cvMatchShapes(*it, cont, CV_CONTOURS_MATCH_I2);
-			if (matchscore < min_score) {
-				min_score = matchscore;
-				min_index = index;
+		diff = this->boundingBoxCheck(*it, cont, mar);
+		// Check for all possible BB's, not only the smallest.
+		if (diff <= max_diff) {
+			// OK, at least the BB check succeeds.
+			if (diff < min_diff) {
+				// Memorize the object whose BB is most similar in case this is
+				// all we consider.
+				min_diff = diff;
+				min_diff_index = index;
 			}
+
+			if (consider_holes && (countHolesInContour(*it) != countHolesInContour(cont)))
+				continue;
+
+			if (consider_shape) {
+				matchscore = cvMatchShapes(*it, cont, CV_CONTOURS_MATCH_I2);
+				if (matchscore < min_score)
+					min_score = matchscore;
+				else
+					continue;
+			}
+			// If we reach this point, we can assume that we have at least a BB match.
+			// So it's safe to set index.
+			min_index = index;
 		}
 	}
 
-	return min_index;
+	// If neither shape nor holes were considered, don't just return the first matching BB's
+	// index, but at least the index of the BB with the smallest difference. All we can do.
+	return consider_shape || consider_holes ? min_index : min_diff_index;
 }
 
 void moHuObjectFinderModule::applyFilter(IplImage *src) {
