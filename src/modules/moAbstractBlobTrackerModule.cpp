@@ -110,13 +110,13 @@ void moAbstractBlobTrackerModule::update() {
 				this->new_blobs->push_back(*oit);
 		}
 		else
-			(*it)->properties["age"]->set(age >= min_age ? min_age : age);
+			(*it)->properties["age"]->set((min_age <= age) && (age <= max_age) ? min_age : age);
 	}
 
 	// Find all the blobs that are old enough
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++) {
 		age = (*it)->properties["age"]->asInteger();
-		if (age >= min_age)
+		if ((age <= max_age) && (age >= min_age))
 			this->adolescent->push_back(*it);
 	}
 

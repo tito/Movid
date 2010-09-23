@@ -22,6 +22,9 @@
 #include "../moDataGenericContainer.h"
 #include "moImageFilterModule.h"
 
+#define PI 3.14159265
+typedef std::pair<int, bool> match;
+
 class moHuObjectFinderModule : public moImageFilterModule {
 public:
 	moHuObjectFinderModule();
@@ -35,7 +38,7 @@ protected:
 	void clearRecognizedObjects();
 	void serializeContour(CvSeq*);
 	float boundingBoxCheck(CvSeq *cont1, CvSeq *cont2, CvBox2D &mar);
-	int findMatchingShape(CvSeq *cont, CvBox2D &mar);
+	match findMatchingShape(CvSeq *cont, CvBox2D &mar);
 	moDataGenericList recognized_objects;
 	moDataStream *output_data;
 

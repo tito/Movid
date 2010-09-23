@@ -34,7 +34,8 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 	int old_fid, fid, old_id;
 	moDataGenericContainer* closest_blob;
 	std::string implements, old_implements;
-	bool old_is_fid, new_is_fid;
+	bool old_is_fid, new_is_fid, new_is_volatile;
+	int max_age = this->property("max_age").asInteger();
 	this->reused.clear();
 
 	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++){
@@ -46,6 +47,7 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 		new_y = (*it)->properties["y"]->asDouble();
 		implements = (*it)->properties["implements"]->asString();
 		new_is_fid = moUtils::inList("fiducial", implements) || moUtils::inList("markerlessobject", implements);
+		new_is_volatile = moUtils::inList("volatile", implements);
 
 		for (it_old = this->old_blobs->begin(); it_old != this->old_blobs->end(); it_old++){
 			old_id = (*it_old)->properties["blob_id"]->asInteger();
@@ -55,7 +57,8 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 
 			old_implements = (*it_old)->properties["implements"]->asString();
 			old_is_fid = moUtils::inList("fiducial", old_implements) || moUtils::inList("markerlessobject", old_implements);
-			if (old_is_fid && new_is_fid) {
+			if (old_is_fid && new_is_fid && !new_is_volatile) {
+				// We got two perfectly matched objects/fiducials.
 				fid = (*it)->properties["fiducial_id"]->asInteger();
 				old_fid = (*it_old)->properties["fiducial_id"]->asInteger();
 				if (fid != old_fid)
@@ -63,8 +66,8 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 					continue;
 			}
 
-			if ((old_is_fid && !new_is_fid) || (!old_is_fid && new_is_fid))
-				// If either is a fiducial while the other isn't, there can't be a possible match.
+			if (!old_is_fid && new_is_fid)
+				// If the old blob wasn't a fiducial but the new one is, there can't be a match.
 				continue;
 
 			// FIXME Make sure that our INPUT is in 0.0 - 1.0. I checked and it seemed to not always be...
@@ -81,7 +84,19 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 		//found the closest one out of teh ones that are left, assign id, and invalidate old blob
 		if (closest_blob) {
 			old_id = closest_blob->properties["blob_id"]->asInteger();
-			(*it)->properties["blob_id"]->set( old_id );
+			(*it)->properties["blob_id"]->set(old_id);
+
+			old_implements = closest_blob->properties["implements"]->asString();
+			old_is_fid = moUtils::inList("fiducial", old_implements) || moUtils::inList("markerlessobject", old_implements);
+			if (old_is_fid && new_is_fid && new_is_volatile) {
+				// If the new blob is volatile and we have an old blob that is an object/fiducial,
+				// detection may very well just have failed.
+				// We just copy over the fiducial info from the old blob and assume
+				// it didn't change. (Which, in *most* cases, should be a safe assumption.)
+				old_fid = closest_blob->properties["fiducial_id"]->asInteger();
+				(*it)->properties["fiducial_id"]->set(old_fid);
+			}
+
 			// Indicate that we reused this blob already and that it shouldn't be considered anymore
 			this->reused.push_back(old_id);
 		}
@@ -89,6 +104,13 @@ void moGreedyBlobTrackerModule::trackBlobs() {
 		else
 			// Atomically increment counter in case we got more than one tracker
 			(*it)->properties["blob_id"]->set(pt::pincrement(&(moAbstractBlobTrackerModule::id_counter)));
+	}
+	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++) {
+		// Make all volatile fiducials/objects forcefully expire if they weren't retained.
+		implements = (*it)->properties["implements"]->asString();
+		new_is_volatile = moUtils::inList("volatile", implements);
+		if (new_is_volatile && (*it)->properties["fiducial_id"]->asInteger() == -1)
+			(*it)->properties["age"]->set(max_age + 1);
 	}
 }
 

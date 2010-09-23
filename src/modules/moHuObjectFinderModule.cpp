@@ -25,8 +25,6 @@
 // Need to get MAX_FIDUCIALS from here:
 #include "moFiducialFinderModule.h"
 
-#define PI 3.14159265
-
 MODULE_DECLARE(HuObjectFinder, "native", "Find objects based on Hu moments");
 
 
@@ -152,7 +150,7 @@ inline int countHolesInContour(CvSeq *contour) {
 	return count;
 }
 
-inline int moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) {
+inline match moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) {
 	// Checks if cont matches any of the stored contours.
 	// Returns index of the most similar contour, or -1 if none was found.
 	std::vector<CvSeq*>::iterator it;
@@ -162,10 +160,11 @@ inline int moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) 
 
 	double matchscore, diff;
 	double min_score = this->property("max_match_score").asDouble();
-	bool consider_holes = this->properties["consider_holes"]->asBool();
-	bool consider_shape = this->properties["consider_shape"]->asBool();
 	const double max_diff = this->property("max_size_difference").asDouble();
 	double min_diff = max_diff;
+	bool consider_holes = this->properties["consider_holes"]->asBool();
+	bool consider_shape = this->properties["consider_shape"]->asBool();
+	bool possible;
 
 	for (it = this->stored_contours.begin(); it != this->stored_contours.end(); it++) {
 		index++;
@@ -199,10 +198,18 @@ inline int moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar) 
 			min_index = index;
 		}
 	}
+	// If we have a BB match but neither hole nor shape match (although considered), this blob
+	// *might* be an object where detection just failed. Indicate that.
+	possible = (min_diff_index >= 0) && ((consider_holes || consider_shape) && !(min_index >= 0));
 
 	// If neither shape nor holes were considered, don't just return the first matching BB's
 	// index, but at least the index of the BB with the smallest difference. All we can do.
-	return consider_shape || consider_holes ? min_index : min_diff_index;
+	index = consider_shape || consider_holes ? min_index : min_diff_index;
+
+	match m;
+	m.first = index;
+	m.second = possible;
+	return m;
 }
 
 void moHuObjectFinderModule::applyFilter(IplImage *src) {
@@ -253,6 +260,9 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 	double m00, m10, m01;
 	float w = static_cast<float>(size.width);
 	float h = static_cast<float>(size.height);
+	bool possible;
+	match m;
+	std::string implements;
 
 	// XXX Do we want to be able to use the same object more than once? Currently the code allows that...
 	// Consider all the contours that are in the current frame...
@@ -260,21 +270,29 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 		cvDrawContours(this->output_buffer, cur_cont, cvScalarAll(255), cvScalarAll(255), 100);
 		area = cvContourArea(cur_cont);
 		if (area > min_area) {
+			m = this->findMatchingShape(cur_cont, mar);
 			if (this->stored_contours.size() && (this->stored_contours.back() == NULL)) {
 				this->stored_contours.pop_back();
-				if (this->findMatchingShape(cur_cont, mar) < 0) {
+				if (m.first < 0) {
 					this->stored_contours.push_back(cur_cont);
 					this->serializeContour(cur_cont);
 				}
 				break;
 			}
 
-			matched_index = this->findMatchingShape(cur_cont, mar);
 			min_id = this->property("min_id").asInteger();
-			if (matched_index >= 0) {
+			possible = m.second;
+			if ((m.first >= 0) || possible) {
 				obj = new moDataGenericContainer();
 				obj->properties["type"] = new moProperty("blob");
-				obj->properties["implements"] = new moProperty("markerlessobject,pos");
+				implements.clear();
+				implements = "markerlessobject,pos";
+				if (possible) {
+					// If we only get a possible match, mark the blob as volatile
+					// to let the tracker know that it's its job to check if it's an object.
+					implements += ",volatile";
+				}
+				obj->properties["implements"] = new moProperty(implements);
 				obj->properties["x"] = new moProperty(mar.center.x / w);
 				obj->properties["y"] = new moProperty(mar.center.y / h);
 
@@ -295,7 +313,7 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 
 				// Radians, so 0..2PI!
 				obj->properties["angle"] = new moProperty(angle);
-				obj->properties["fiducial_id"] = new moProperty(min_id + matched_index);
+				obj->properties["fiducial_id"] = new moProperty(possible ? -1 : min_id + m.first);
 				this->recognized_objects.push_back(obj);
 			}
 		}
