@@ -99,6 +99,7 @@ char *strsep(char **stringp, const char *delim) {
 class otStreamModule : public moModule {
 public:
 	otStreamModule() : moModule(MO_MODULE_INPUT) {
+		this->is_internal = true;
 		this->input = new moDataStream("stream");
 		this->output_buffer = NULL;
 		this->properties["id"] = new moProperty(moModule::createId("WebStream"));
@@ -121,7 +122,7 @@ public:
 		IplImage* src = (IplImage*)(this->input->getData());
 		if ( src == NULL )
 			return;
-		if ( this->output_buffer == NULL || 
+		if ( this->output_buffer == NULL ||
 			 this->output_buffer->nChannels != src->nChannels ) {
 			if ( this->output_buffer != NULL )
 				cvReleaseImage(&this->output_buffer);
