@@ -450,9 +450,10 @@ bool moModule::serializeConnections(std::ostringstream &oss) {
 	std::string id = this->property("id").asString();
 
 	// for every Output Connection that we have
-	for (int i=0; i < this->getOutputCount(); i++) {
+	for ( int i = 0; i < this->getOutputCount(); i++ ) {
 		moDataStream* ds = this->getOutput(i);
-		if ( ds == NULL ) continue;
+		if ( ds == NULL )
+			continue;
 
 		for ( unsigned int j=0; j < ds->getObserverCount(); j++ ) {
 			moModule* observer = ds->getObserver(j);

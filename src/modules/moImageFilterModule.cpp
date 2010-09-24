@@ -34,7 +34,7 @@ moImageFilterModule::moImageFilterModule() :
 	// declare input/output
 	this->declareInput(0, &this->input, new moDataStreamInfo(
 			"image", "IplImage", "Input image stream"));
-	this->declareOutput(0, &this->output_dispatcher,  new moDataStreamInfo(
+	this->declareOutput(0, &this->output,  new moDataStreamInfo(
 			"image", "IplImage", "Output image stream"));
 }
 
@@ -119,7 +119,7 @@ moImageFilterModule8::moImageFilterModule8() : moImageFilterModule() {
 	this->output8 = new moDataStream("IplImage8");
 	this->setInputType(0, "IplImage,IplImage8");
 	this->declareOutput(1, &this->output8,  new moDataStreamInfo(
-			"image", "IplImage8", "Output image stream (1 channel)"));
+			"image8", "IplImage8", "Output image stream (1 channel)"));
 }
 
 moImageFilterModule8::~moImageFilterModule8() {
