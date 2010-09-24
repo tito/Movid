@@ -16,13 +16,15 @@ env = Environment(TARGET_ARCH='x86')
 env.Append(
    CPPPATH = ['contrib',
               'contrib/cJSON',
-		        'contrib/libevent-1.4.13-stable',
-		        'contrib/WOscLib-00.09',
-		        'contrib/ptypes-2.1.1/include',
+		      'contrib/libevent-1.4.13-stable',
+		      'contrib/WOscLib-00.09',
+		      'contrib/ptypes-2.1.1/include',
               'contrib/XgetOpt',
-              'contrib/bitmap_munkres'],
+              'contrib/bitmap_munkres',
+			  'contrib/libvpx-0.9.2'
+			 ],
 
-   LIBS = ['event', 'ptypes', 'wosclib', 'fidtrack'],
+   LIBS = ['event', 'ptypes', 'wosclib', 'fidtrack', 'vpx'],
 
    LIBPATH = ['contrib/lib']
 )

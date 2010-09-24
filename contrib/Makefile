@@ -11,10 +11,10 @@ PTYPES_PATH       = ptypes-2.1.1
 PTYPES_LIB       ?= $(PTYPES_PATH)/lib/libptypes.a
 
 LIBVPX_PATH       = libvpx-0.9.2
-LIBVPX_LIB       ?= $(VPX_PATH)/libvpx.a
+LIBVPX_LIB       ?= $(LIBVPX_PATH)/libvpx.a
 
 
-all: $(LIBEVENT_LIB) $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB) $(LIBVPX
+all: $(LIBEVENT_LIB) $(LIBFIDTRACK_LIB) $(WOSCLIB_LIB) $(PTYPES_LIB) $(LIBVPX_LIB)
 	mkdir -p ./lib
 	cp $? ./lib
 
@@ -34,7 +34,7 @@ $(PTYPES_LIB):
 
 $(LIBVPX_LIB):
 	-cd $(LIBVPX_PATH); test ! -f config.status && sh ./configure --disable-vp8-decoder --disable-examples
-	$(MAKE) -C $(LIBVPX_LIB)
+	$(MAKE) -C $(LIBVPX_PATH)
 
 clean:
 	-$(MAKE) -C $(LIBEVENT_PATH) distclean
