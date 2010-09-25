@@ -30,6 +30,8 @@ moBackgroundSubtractModule::moBackgroundSubtractModule() : moImageFilterModule8(
 
 	MODULE_INIT();
 
+	this->bg_buffer = NULL;
+
 	// declare properties
 	this->properties["recapture"] = new moProperty(true);
 	this->properties["toggle"] = new moProperty(false);

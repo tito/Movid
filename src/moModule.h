@@ -217,9 +217,15 @@ public:
 
 	/*! \brief Check if the module is started
 	 *
-	 * \return true is the module is started, otherwise false
+	 * \return true if the module is started, otherwise false
 	 */
 	virtual bool isStarted();
+
+	/*! \brief Check if the module is an internal module
+	 *
+	 * \return true if the module is an internal one.
+	 */
+	virtual bool isInternal();
 
 	/*! \brief Get a property from the module
 	 * If the property not exist, it will be automaticly created
@@ -340,6 +346,11 @@ protected:
 	/*! \brief Pipeline that own the module
 	 */
 	moModule *owner;
+
+	/*! \brief Indicate if the module is internal to movid
+	 *         and must not be exported.
+	 */
+	bool is_internal;
 
 	/*! \brief Call it if you want to notify to call update()
 	 */

@@ -102,6 +102,7 @@ static void stats_process(mo_module_stats_t *s) {
 moModule::moModule(unsigned int capabilities) {
 	this->capabilities	= capabilities;
 	this->is_started	= false;
+	this->is_internal	= false;
 	this->owner			= NULL;
 	this->is_error		= false;
 	this->error_msg		= "";
@@ -249,6 +250,10 @@ void moModule::unlock() {
 
 bool moModule::isStarted() {
 	return this->is_started;
+}
+
+bool moModule::isInternal() {
+	return this->is_internal;
 }
 
 moDataStreamInfo *moModule::getInputInfos(int n) {
@@ -445,12 +450,15 @@ bool moModule::serializeConnections(std::ostringstream &oss) {
 	std::string id = this->property("id").asString();
 
 	// for every Output Connection that we have
-	for (int i=0; i < this->getOutputCount(); i++) {
+	for ( int i = 0; i < this->getOutputCount(); i++ ) {
 		moDataStream* ds = this->getOutput(i);
-		if ( ds == NULL ) continue;
+		if ( ds == NULL )
+			continue;
 
 		for ( unsigned int j=0; j < ds->getObserverCount(); j++ ) {
 			moModule* observer = ds->getObserver(j);
+			if ( observer->isInternal() )
+				continue;
 			oss << "pipeline connect " << id << " " << i  << " "
 				<< observer->property("id").asString() << " "
 				<< observer->getInputIndex(ds)<< " " << std::endl;
