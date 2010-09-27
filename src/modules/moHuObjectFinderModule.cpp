@@ -15,43 +15,36 @@
  **
  **********************************************************************/
 
-#include <assert.h>
-#include <math.h>
-#include <fstream>
-#include <iostream>
 #include "moHuObjectFinderModule.h"
-#include "../moLog.h"
-#include "cv.h"
-// Need to get MAX_FIDUCIALS from here:
-#include "moFiducialFinderModule.h"
 
 MODULE_DECLARE(HuObjectFinder, "native", "Find objects based on Hu moments");
 
 
-//static void draw_box(IplImage *image, CvBox2D box, double color) {
-//  CvPoint2D32f boxPoints[4];
-//
-//  /* CamShift seems to get this backwards */
-//  //box.angle = -box.angle;
-//
-//  cvBoxPoints(box, boxPoints);
-//  cvLineAA(image,
-//	   cvPoint((int)boxPoints[0].x, (int)boxPoints[0].y),
-//	   cvPoint((int)boxPoints[1].x, (int)boxPoints[1].y),
-//	   color);
-//  cvLineAA(image,
-//	   cvPoint((int)boxPoints[1].x, (int)boxPoints[1].y),
-//	   cvPoint((int)boxPoints[2].x, (int)boxPoints[2].y),
-//	   color);
-//  cvLineAA(image,
-//	   cvPoint((int)boxPoints[2].x, (int)boxPoints[2].y),
-//	   cvPoint((int)boxPoints[3].x, (int)boxPoints[3].y),
-//	   color);
-//  cvLineAA(image,
-//	   cvPoint((int)boxPoints[3].x, (int)boxPoints[3].y),
-//	   cvPoint((int)boxPoints[0].x, (int)boxPoints[0].y),
-//	   color);
-//}
+static void draw_box(IplImage *image, CvBox2D box) {
+  CvPoint2D32f boxPoints[4];
+
+  /* CamShift seems to get this backwards */
+  //box.angle = -box.angle;
+
+  double color = 255.;
+  cvBoxPoints(box, boxPoints);
+  cvLineAA(image,
+	   cvPoint((int)boxPoints[0].x, (int)boxPoints[0].y),
+	   cvPoint((int)boxPoints[1].x, (int)boxPoints[1].y),
+	   color);
+  cvLineAA(image,
+	   cvPoint((int)boxPoints[1].x, (int)boxPoints[1].y),
+	   cvPoint((int)boxPoints[2].x, (int)boxPoints[2].y),
+	   color);
+  cvLineAA(image,
+	   cvPoint((int)boxPoints[2].x, (int)boxPoints[2].y),
+	   cvPoint((int)boxPoints[3].x, (int)boxPoints[3].y),
+	   color);
+  cvLineAA(image,
+	   cvPoint((int)boxPoints[3].x, (int)boxPoints[3].y),
+	   cvPoint((int)boxPoints[0].x, (int)boxPoints[0].y),
+	   color);
+}
 
 
 void mohuobjectfindermodule_register_object(moProperty *property, void *userdata)
@@ -286,7 +279,7 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 				obj = new moDataGenericContainer();
 				obj->properties["type"] = new moProperty("blob");
 				implements.clear();
-				implements = "markerlessobject,pos";
+				implements = "markerlessobject,pos,volatileangle";
 				if (possible) {
 					// If we only get a possible match, mark the blob as volatile
 					// to let the tracker know that it's its job to check if it's an object.
@@ -297,22 +290,24 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 				obj->properties["y"] = new moProperty(mar.center.y / h);
 
 				// Compute the angle as the angle of the vector from center of gravity to BB center.
-				cvContourMoments(cur_cont, &moments);
-				m00 = cvGetSpatialMoment(&moments, 0, 0);
-				m10 = cvGetSpatialMoment(&moments, 1, 0);
-				m01 = cvGetSpatialMoment(&moments, 0, 1);
-				cogx = m10 / m00;
-				cogy = m01 / m00;
-				dy = mar.center.y - cogy;
-				dx = mar.center.x - cogx;
-				// XXX optim
-				len = sqrt(pow(dx, 2) + pow(dy, 2));
-				angle = abs(dx) <= 0.001 ? atan(dy / dx) : PI/2.;
-				deg = angle * (180 / PI);
+				draw_box(this->output_buffer, mar);
+				//std::cout << "BB Angle: " << mar.angle << std::endl;
+				//cvContourMoments(cur_cont, &moments);
+				//m00 = cvGetSpatialMoment(&moments, 0, 0);
+				//m10 = cvGetSpatialMoment(&moments, 1, 0);
+				//m01 = cvGetSpatialMoment(&moments, 0, 1);
+				//cogx = m10 / m00;
+				//cogy = m01 / m00;
+				//dy = mar.center.y - cogy;
+				//dx = mar.center.x - cogx;
+				//// XXX optim
+				//len = sqrt(pow(dx, 2) + pow(dy, 2));
+				//angle = abs(dx) <= 0.001 ? atan(dy / dx) : PI/2.;
+				//deg = angle * (180 / PI);
 				//std::cout << "DX: " << dx << " DY: " << dy << " LEN: " << len << " ANGLE RAD: " << angle << " ANGLE DEG: " << deg << std::endl;
 
 				// Radians, so 0..2PI!
-				obj->properties["angle"] = new moProperty(angle);
+				obj->properties["angle"] = new moProperty(moUtils::degToRad(mar.angle));
 				obj->properties["fiducial_id"] = new moProperty(possible ? -1 : min_id + m.first);
 				this->recognized_objects.push_back(obj);
 			}

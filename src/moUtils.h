@@ -22,11 +22,15 @@
 #include <string>
 #include <vector>
 
+#define PI 3.14159265
+
 class moUtils {
 public:
 	static std::vector<std::string> tokenize(const std::string& str, const std::string& delimiters);
 	static double time();
 	static bool inList(const std::string &pattern, const std::string &str, const std::string &delimiters = ",");
+	static double degToRad(double deg);
+	static double radToDeg(double rad);
 };
 
 #endif

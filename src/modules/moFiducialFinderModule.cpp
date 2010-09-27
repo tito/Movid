@@ -153,7 +153,7 @@ void moFiducialFinderModule::applyFilter(IplImage *src) {
 				cvPoint(fdx->x, fdx->y - 20), &font, cvScalar(20, 255, 20));
 
 			oss.str("");
-			oss << "angle:" << int(fdx->angle * 180 / 3.14159265);
+			oss << "angle:" << int(moUtils::radToDeg(fdx->angle));
 			cvPutText(this->output_buffer, oss.str().c_str(),
 				cvPoint(fdx->x - 30, fdx->y), &font2, cvScalar(20, 255, 20));
 

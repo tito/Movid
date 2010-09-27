@@ -19,10 +19,18 @@
 #ifndef MO_HUOBJECTFINDER_MODULE_H
 #define MO_HUOBJECTFINDER_MODULE_H
 
+#include <assert.h>
+#include <math.h>
+#include <fstream>
+#include <iostream>
+#include "cv.h"
 #include "../moDataGenericContainer.h"
+#include "../moLog.h"
+#include "../moUtils.h"
 #include "moImageFilterModule.h"
+// Need to get MAX_FIDUCIALS from here:
+#include "moFiducialFinderModule.h"
 
-#define PI 3.14159265
 typedef std::pair<int, bool> match;
 
 class moHuObjectFinderModule : public moImageFilterModule {

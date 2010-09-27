@@ -76,3 +76,11 @@ bool moUtils::inList(const std::string &pattern, const std::string &str, const s
 
 	return false;
 }
+
+double moUtils::radToDeg(double rad) {
+	return rad * (180 / PI);
+}
+
+double moUtils::degToRad(double deg) {
+	return deg * (PI / 180);
+}

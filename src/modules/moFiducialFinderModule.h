@@ -20,6 +20,7 @@
 #define MO_FIDUCIAL_FINDER_MODULE_H
 
 #include "../moDataGenericContainer.h"
+#include "../moUtils.h"
 #include "moImageFilterModule.h"
 
 #define MAX_FIDUCIALS 512

@@ -18,6 +18,7 @@
 
 #include "moAbstractBlobTrackerModule.h"
 #include "../moLog.h"
+#include "../moUtils.h"
 
 MODULE_DECLARE(AbstractBlobTracker, "native", "Abstract blob tracking module that makes adding new trackers easy.");
 
@@ -39,6 +40,9 @@ moAbstractBlobTrackerModule::moAbstractBlobTrackerModule() : moModule(MO_MODULE_
 
 	this->properties["max_age"] = new moProperty(10);
 	this->properties["min_age"] = new moProperty(3);
+	// The maximum amount of degrees a blob may be rotated before we consider
+	// the rotation having gone to the next quadrant.
+	this->properties["max_rotation_speed"] = new moProperty(46);
 
 	this->new_blobs = new moDataGenericList();
 	this->old_blobs = new moDataGenericList();
@@ -53,6 +57,64 @@ void moAbstractBlobTrackerModule::trackBlobs() {
 	// For every blob in this->new_blobs, find the corresponding blob
 	// from the last frame in this->old_blobs and assign it the same
 	// ID. If no such blob exists, make it a new blob and give it a new ID.
+}
+
+void moAbstractBlobTrackerModule::trackAngles() {
+	// For every blob in this->new_blobs, if that blob has a volatile angle,
+	// we need to keep track of the rotation on the tracking level.
+	// A blob has a volatile angle if we only get the blob's bounding box'
+	// angle, which is always [0..90) and when you get to 90, it restarts at 0.
+	// We reconstruct the real angle [0..360) from that by counting how often
+	// the bounding box has "fallen over", i.e. how often there were severe jumps
+	// with respect to the angle that were > max_rotation_speed, which we consider
+	// as 'rotating from one quadrant to the next'. Camera FPS isn't unlimited...
+	moDataGenericList::iterator it, oit;
+	std::string implements;
+	int angle, last_angle, diff, trackedangle, fallen_over, oid, id;
+	int max_diff = this->property("max_rotation_speed").asDouble();
+	bool in;
+
+	for (it = this->new_blobs->begin(); it != this->new_blobs->end(); it++) {
+		implements.clear();
+		implements = (*it)->properties["implements"]->asString();
+		if (!moUtils::inList("volatileangle", implements))
+			continue;
+
+		angle = moUtils::radToDeg((*it)->properties["angle"]->asDouble());
+
+		id = (*it)->properties["blob_id"]->asInteger();
+		in = false;
+		for (oit = this->old_blobs->begin(); oit != this->old_blobs->end(); oit++) {
+			oid = (*oit)->properties["blob_id"]->asInteger();
+			if (oid == id) {
+				in = true;
+				break;
+			}
+		}
+		//if (!(*it)->hasProperty("last_angle")) {
+		if (!in) {
+			// First time we want to track this blob's angle.
+			(*it)->properties["last_angle"] = new moProperty(angle);
+			(*it)->properties["fallen_over"] = new moProperty(0);
+			continue;
+		}
+		fallen_over = (*oit)->properties["fallen_over"]->asInteger();
+		last_angle = (*oit)->properties["last_angle"]->asInteger();
+
+		diff = last_angle - angle;
+		if (fabs(diff) > max_diff) {
+			if (last_angle > angle)
+				fallen_over++;
+			else
+				fallen_over--;
+		}
+		// %360+360 because otherwise it will not work for negative numbers,
+		// different from e.g. python: >>> -23 % 360 == 337, but in cpp: -23
+		trackedangle = ((angle + 90 * fallen_over) % 360 + 360) % 360;
+		(*it)->properties["fallen_over"] = new moProperty(fallen_over);
+		(*it)->properties["last_angle"] = new moProperty(angle);
+		(*it)->properties["angle"]->set(moUtils::degToRad(trackedangle));
+	}
 }
 
 void moAbstractBlobTrackerModule::update() {
@@ -89,6 +151,10 @@ void moAbstractBlobTrackerModule::update() {
 	// Try to find the blobs from the last $max_age frames in the new
 	// frame and assign IDs accordingly.
 	this->trackBlobs();
+
+	// In case there are blobs with the flag 'volatileangle', the finder wants us
+	// to track the angle of the blob.
+	this->trackAngles();
 
 	bool in;
 	int oid, id;

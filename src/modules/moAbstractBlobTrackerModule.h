@@ -44,6 +44,7 @@ protected:
 	moDataStream *output;
 
 	virtual void trackBlobs();
+	void trackAngles();
 
 	MODULE_INTERNALS();
 };
