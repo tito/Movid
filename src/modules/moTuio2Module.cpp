@@ -143,7 +143,7 @@ void moTuio2Module::notifyData(moDataStream *input) {
 		if ( moUtils::inList("node", implements) ) {
 			map_node_blob[(*it)->properties["node_id"]->asInteger()] = id_blob;
 			// since parent_node_id is not mandatory, check first.
-			if ( (*it)->exist("parent_node_id") ) {
+			if ( (*it)->hasProperty("parent_node_id") ) {
 				have_relation = true;
 				ids_blob.push_back(id_blob);
 				ids_parent.push_back((*it)->properties["parent_node_id"]->asInteger());
@@ -189,7 +189,7 @@ void moTuio2Module::notifyData(moDataStream *input) {
 				implements = (*it)->properties["implements"]->asString();
 				if ( !moUtils::inList("node", implements) )
 					continue;
-				if ( !(*it)->exist("parent_node_id") )
+				if ( !(*it)->hasProperty("parent_node_id") )
 					continue;
 				id_parent = (*it)->properties["parent_node_id"]->asInteger();
 				if ( id_parent != *it_parent )

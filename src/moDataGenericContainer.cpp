@@ -38,7 +38,7 @@ moDataGenericContainer* moDataGenericContainer::clone(){
     return clone;
 }
 
-bool moDataGenericContainer::exist(const std::string &name) {
+bool moDataGenericContainer::hasProperty(const std::string &name) {
 	std::map<std::string, moProperty*>::iterator it;
 	it = this->properties.find(name);
 	return it == this->properties.end() ? false : true;

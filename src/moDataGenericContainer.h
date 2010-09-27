@@ -30,7 +30,7 @@ public:
 	moDataGenericContainer();
 	virtual ~moDataGenericContainer();
 
-	bool exist(const std::string &name);
+	bool hasProperty(const std::string &name);
 
 	std::map<std::string, moProperty*> properties;
 
