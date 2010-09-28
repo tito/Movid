@@ -23,9 +23,6 @@ MODULE_DECLARE(HuObjectFinder, "native", "Find objects based on Hu moments");
 static void draw_box(IplImage *image, CvBox2D box) {
   CvPoint2D32f boxPoints[4];
 
-  /* CamShift seems to get this backwards */
-  //box.angle = -box.angle;
-
   double color = 255.;
   cvBoxPoints(box, boxPoints);
   cvLineAA(image,
@@ -83,6 +80,7 @@ moHuObjectFinderModule::moHuObjectFinderModule() : moImageFilterModule() {
 	this->properties["register"]->addCallback(mohuobjectfindermodule_register_object, this);
 	this->properties["consider_holes"] = new moProperty(false);
 	this->properties["consider_shape"] = new moProperty(true);
+	this->properties["draw_bounding_box"] = new moProperty(true);
 	this->contours_restored = false;
 }
 
@@ -290,7 +288,8 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 				obj->properties["y"] = new moProperty(mar.center.y / h);
 
 				// Compute the angle as the angle of the vector from center of gravity to BB center.
-				draw_box(this->output_buffer, mar);
+				if (this->property("draw_bounding_box").asBool())
+					draw_box(this->output_buffer, mar);
 				//std::cout << "BB Angle: " << mar.angle << std::endl;
 				//cvContourMoments(cur_cont, &moments);
 				//m00 = cvGetSpatialMoment(&moments, 0, 0);
