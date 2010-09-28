@@ -54,6 +54,7 @@
 
 // Movid
 #include "moLog.h"
+#include "moUtils.h"
 #include "moDaemon.h"
 #include "moPipeline.h"
 #include "moModule.h"
@@ -64,6 +65,13 @@
 // libevent
 #include "event.h"
 #include "evhttp.h"
+
+// webm/vp8
+#define VPX_CODEC_DISABLE_COMPAT 1
+#include "vpx/vpx_encoder.h"
+#include "vpx/vpx_image.h"
+#include "vpx/vp8cx.h"
+
 
 #define MO_DAEMON	"movid"
 #define MO_GUIDIR	"gui/html"
@@ -167,15 +175,29 @@ public:
 
 struct chunk_req_state {
 	struct evhttp_request *req;
-	otStreamModule *stream;
-	int i;
-	bool closed;
-	int delay;
+	otStreamModule		*stream;
+	int					i;
+	bool				closed;
+	int					delay;
+	bool				is_init;
+
+	// webm specific
+	double				 vp_time;
+	int                  vp_frame_cnt;
+	vpx_codec_ctx_t      vp_codec;
+	vpx_codec_enc_cfg_t  vp_cfg;
+	vpx_image_t          vp_raw;
 };
 
 
 static void signal_term(int signal) {
+	if ( want_quit ) {
+		std::cout << "Fatal catch, exit() the app." << std::endl;
+		exit(1);
+		return;
+	}
 	want_quit = true;
+	std::cout << "Catch, cleanup the app. Do it again to really stop." << std::endl;
 }
 
 //
@@ -191,7 +213,7 @@ void web_json(struct evhttp_request *req, cJSON *root) {
 
 	evbuffer_add(evb, out, strlen(out));
 	evhttp_add_header(req->output_headers, "Content-Type", "application/json");
-	evhttp_send_reply(req, HTTP_OK, "Everything is fine", evb);
+	evhttp_send_reply(req, HTTP_OK, "OK", evb);
 	evbuffer_free(evb);
 
 	free(out);
@@ -217,8 +239,98 @@ static void web_pipeline_stream_close(struct evhttp_connection *conn, void *arg)
 	state->closed = true;
 }
 
+static void die_codec(vpx_codec_ctx_t *ctx, const char *s) {
+    const char *detail = vpx_codec_error_detail(ctx);
+    printf("%s: %s\n", s, vpx_codec_error(ctx));
+    if ( detail )
+        printf("    %s\n",detail);
+    exit(EXIT_FAILURE);
+}
+
+#define Y_FROM_RGB(r,g,b)	((9798 * (r) + 19235 * (g) + 3736 * (b)) >> 15)
+#define U_FROM_BY(b,y)		((16122 * ((b) - (y))) >> 15) + 128;
+#define V_FROM_RY(r,y)		((25203 * ((r) - (y))) >> 15) + 128;
+
+/* taken from gstreamer, and converted to work with rgb image
+ */
+static void rgb_to_yv12 (unsigned char *src, unsigned char *ydst, unsigned char *udst,
+	unsigned char *vdst, unsigned int width, unsigned int height)
+{
+	int y;
+	const int chrom_width = width >> 1;
+	int Y;
+	int b, g, r;
+
+	for ( y = height; y; y -= 2 ) {
+		int i;
+
+		for ( i = chrom_width; i; i-- ) {
+			b = *src++;
+			g = *src++;
+			r = *src++;
+
+			Y = Y_FROM_RGB(r,g,b);
+
+			*ydst++ = Y;
+			*udst++ = U_FROM_BY(b,Y);
+			*vdst++ = V_FROM_RY(r,Y);
+
+			b = *src++;
+			g = *src++;
+			r = *src++;
+
+			*ydst++ = Y_FROM_RGB(r,g,b);
+		}
+
+		for (i = width; i; i--) {
+			b = *src++;
+			g = *src++;
+			r = *src++;
+			*ydst++ = Y_FROM_RGB(r,g,b);
+		}
+	}
+}
+
+void evbuffer_add_uint(evbuffer *evb, unsigned int value) {
+	char buf[5];
+	buf[0] = '\x84';
+	buf[1] = (value >> 24) & 0xff;
+	buf[2] = (value >> 16) & 0xff;
+	buf[3] = (value >> 8) & 0xff;
+	buf[4] = value & 0xff;
+	evbuffer_add(evb, buf, 5);
+}
+
+void evbuffer_append_buffer(evbuffer *evb, evbuffer *data) {
+	char buf[5];
+	int value = data->off;
+	if ( data->off < 0xffff ) {
+		buf[0] = '\x20';
+		buf[1] = (value >> 8) & 0xff;
+		buf[2] = value & 0xff;
+		evbuffer_add(evb, buf, 3);
+	} else if ( data->off < 0xffffff ) {
+		buf[0] = '\x10';
+		buf[1] = (value >> 16) & 0xff;
+		buf[2] = (value >> 8) & 0xff;
+		buf[3] = value & 0xff;
+		evbuffer_add(evb, buf, 4);
+	} else {
+		buf[0] = '\x08';
+		buf[1] = (value >> 24) & 0xff;
+		buf[2] = (value >> 16) & 0xff;
+		buf[3] = (value >> 8) & 0xff;
+		buf[4] = value & 0xff;
+		evbuffer_add(evb, buf, 5);
+	}
+	evbuffer_add(evb, data->buffer, value);
+}
+
 static void web_pipeline_stream_trickle(int fd, short events, void *arg) {
-	struct evbuffer *evb = NULL;
+	struct evbuffer *evb = NULL,
+					*evb_track = NULL,
+					*evb_cluster = NULL,
+					*evb_block = NULL;
 	struct chunk_req_state *state = static_cast<chunk_req_state*>(arg);
 	struct timeval when = { 0, 0 };
 	long unsigned int outlen;
@@ -226,6 +338,9 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg) {
 	std::vector<int> params;
 	IplImage* img;
 	bool convert = false;
+	int got_data = 1;
+	const vpx_codec_cx_pkt_t *pkt;
+	vpx_codec_iter_t iter = NULL;
 
 	when.tv_usec = state->delay * 1000;
 
@@ -247,6 +362,159 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg) {
 		LOG(MO_ERROR, "stream: output_buffer is null !");
 		goto stream_trickle_end;
 	}
+
+	// create and send the buffer
+	evb = evbuffer_new();
+	if ( evb == NULL ) {
+		LOG(MO_ERROR, "stream: unable to create a libevent buffer");
+		goto stream_trickle_end;
+	}
+
+	if ( state->is_init == false ) {
+		std::cout << "CREATE WEBM" << std::endl;
+
+		// write ebml header (http://www.matroska.org/technical/specs/index.html#EBMLBasics)
+		evbuffer_add(evb, "\x1a\x45\xdf\xa3\x9f", 5); // ebml id + 9f
+		evbuffer_add(evb, "\x42\x86\x81\x01", 4); // ebml version
+		evbuffer_add(evb, "\x42\xf7\x81\x01", 4); // ebml read version
+		evbuffer_add(evb, "\x42\xf2\x81\x04", 4); // ebml max length id
+		evbuffer_add(evb, "\x42\xf3\x81\x08", 4); // ebml max size length
+		evbuffer_add(evb, "\x42\x82\x84webm", 7); // ebml doctype
+		evbuffer_add(evb, "\x42\x87\x81\x01", 4); // ebml dottype version
+		evbuffer_add(evb, "\x42\x85\x81\x02", 4); // ebml doctype min version (2)
+		// write segment
+		evbuffer_add(evb, "\x18\x53\x80\x67\x1f\xff\xff\xff", 8); // write segment + unknown size
+
+		// segment info
+		evbuffer *evb_info = evbuffer_new();
+		evbuffer_add(evb_info, "\x4d\x80\x85movid", 8);
+		evbuffer_add(evb_info, "\x57\x41\x85movid", 8);
+		evbuffer_add(evb, "\x15\x49\xa9\x66", 4); // segment info
+		evbuffer_append_buffer(evb, evb_info);
+		evbuffer_free(evb_info);
+
+		// prepare track + video
+		evbuffer *evb_track_entry = evbuffer_new();
+		evbuffer_add(evb_track_entry, "\xd7\x81\x01", 3); // track number + uint 1
+		evbuffer_add(evb_track_entry, "\x83\x81\x01", 3); // track type + uint 1 (=video)
+		evbuffer_add(evb_track_entry, "\x86\x85V_VP8", 7); // codec id + V_VP8 string
+		evbuffer_add(evb_track_entry, "\x25\x86\x88\x84VP8\x00", 8); // codec name + VP8\0
+		evbuffer_add(evb_track_entry, "\x73\xc5", 2); // track uid
+		evbuffer_add_uint(evb_track_entry, 1);
+
+		// write video
+		evbuffer *evb_video = evbuffer_new();
+		evbuffer_add(evb_video, "\xb0", 1); // pixel width
+		evbuffer_add_uint(evb_video, img->width);
+		evbuffer_add(evb_video, "\xba", 1); // pixel height
+		evbuffer_add_uint(evb_video, img->height);
+		evbuffer_add(evb_video, "\x54\xb0", 2); // display width
+		evbuffer_add_uint(evb_video, img->width);
+		evbuffer_add(evb_video, "\x54\xba", 2); // display height
+		evbuffer_add_uint(evb_video, img->height);
+		evbuffer_add(evb_video, "\x23\x83\xe3\x84\x00\x00\x80\x3f", 8);
+
+		// add video to track_entry
+		evbuffer_add(evb_track_entry, "\xe0", 1);
+		evbuffer_append_buffer(evb_track_entry, evb_video);
+		evbuffer_free(evb_video);
+
+		// add track entry to track
+		evbuffer *evb_track = evbuffer_new();
+		evbuffer_add(evb_track, "\xae", 1); // track entry
+		evbuffer_append_buffer(evb_track, evb_track_entry);
+		evbuffer_free(evb_track_entry);
+
+		// add track/video onto track parent
+		evbuffer_add(evb, "\x16\x54\xae\x6b", 4); // track
+		evbuffer_append_buffer(evb, evb_track);
+		evbuffer_free(evb_track);
+
+
+		std::cout << "CREATE VP width=" << img->width
+			<< ", height=" << img->height << std::endl;
+		std::cout << "VPX Using " << vpx_codec_iface_name(&vpx_codec_vp8_cx_algo) << std::endl;
+
+		if (vpx_img_alloc(&state->vp_raw, VPX_IMG_FMT_YV12, img->width, img->height, 1) == NULL)
+			assert(0);
+		if (vpx_codec_enc_config_default(&vpx_codec_vp8_cx_algo, &state->vp_cfg, 0))
+			assert(0);
+		std::cout << "VPX bitrate=" << state->vp_cfg.rc_target_bitrate << std::endl;
+		std::cout << "VPX kf mode=" << state->vp_cfg.kf_mode << std::endl;
+		std::cout << "VPX lag=" << state->vp_cfg.g_lag_in_frames << std::endl;
+		state->vp_cfg.rc_target_bitrate = 1024;
+		state->vp_cfg.kf_mode = VPX_KF_AUTO;
+		state->vp_cfg.g_w = img->width;
+		state->vp_cfg.g_h = img->height;
+
+		if(vpx_codec_enc_init(&state->vp_codec, &vpx_codec_vp8_cx_algo, &state->vp_cfg, 0))
+			assert(0);
+		std::cout << "VPX Created" << std::endl;
+		state->is_init = true;
+	}
+
+	assert(img->nChannels == 3);
+
+	// write cluster
+	rgb_to_yv12((unsigned char *)img->imageData,
+			(unsigned char *)state->vp_raw.planes[0],
+			(unsigned char *)state->vp_raw.planes[1],
+			(unsigned char *)state->vp_raw.planes[2],
+			img->width, img->height);
+	if (vpx_codec_encode(&state->vp_codec, &state->vp_raw, state->vp_frame_cnt, 1, 0, 1))
+		die_codec(&state->vp_codec, "Failed to encode frame");
+
+	while ( got_data ) {
+		got_data = 0;
+		while( (pkt = vpx_codec_get_cx_data(&state->vp_codec, &iter)) ) {
+			got_data = 1;
+			switch(pkt->kind) {
+				case VPX_CODEC_CX_FRAME_PKT:
+					if ( evb_cluster == NULL ) {
+						double cur_time = moUtils::time();
+						if ( state->vp_time == -1 )
+							state->vp_time = cur_time;
+						evb_cluster = evbuffer_new();
+						evbuffer_add(evb_cluster, "\xe7", 1); // timecode
+						evbuffer_add_uint(evb_cluster, (unsigned int)((cur_time - state->vp_time) * 1000));
+					}
+
+					evb_block = evbuffer_new();
+					char simpleblock_header[8];
+					simpleblock_header[0] = '\x81';
+					// timecode
+					simpleblock_header[1] = '\x00'; //(value >> 8) & 0xff;
+					simpleblock_header[2] = '\x00'; //value & 0xff;
+					simpleblock_header[3] = '\x00';
+					if (pkt->data.frame.flags & VPX_FRAME_IS_KEY) {
+						std::cout << "##key" << std::endl;
+						simpleblock_header[3] |= 0x80;
+					}
+					evbuffer_add(evb_block, simpleblock_header, 4); // simple block header
+
+					// write frame data
+					evbuffer_add(evb_block, pkt->data.frame.buf, pkt->data.frame.sz);
+
+					// simple block
+					evbuffer_add(evb_cluster, "\xa3", 1); // block id
+					evbuffer_append_buffer(evb_cluster, evb_block);
+					evbuffer_free(evb_block);
+					break;
+				default:
+					break;
+			}
+		}
+		state->vp_frame_cnt++;
+	}
+
+	if ( evb_cluster != NULL ) {
+		evbuffer_add(evb, "\x1f\x43\xb6\x75", 4); // cluster
+		evbuffer_append_buffer(evb, evb_cluster);
+		evbuffer_free(evb_cluster);
+	}
+
+
+#if 0
 
 	if ( img->nChannels == 3 )
 		cvCvtColor(img, img, CV_BGR2RGB);
@@ -282,6 +550,7 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg) {
 	evbuffer_add_printf(evb, "Content-Type: image/jpeg\r\n");
 	evbuffer_add_printf(evb, "Content-Length: %lu\r\n\r\n", outlen);
 	evbuffer_add(evb, &outbuf[0], outlen);
+#endif
 	evhttp_send_reply_chunk(state->req, evb);
 	evbuffer_free(evb);
 
@@ -334,10 +603,13 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 	}
 
 	memset(state, 0, sizeof(struct chunk_req_state));
+	state->is_init	= false;
 	state->req		= req;
 	state->closed	= false;
 	state->delay	= 100;
 	state->stream	= new otStreamModule();
+	// init webm part
+	state->vp_time	= -1;
 	if ( state->stream == NULL ) {
 		evhttp_clear_headers(&headers);
 		free(state);
@@ -353,8 +625,12 @@ void web_pipeline_stream(struct evhttp_request *req, void *arg) {
 	state->stream->setInput(module->getOutput(idx));
 
 	// prepare connection
-	evhttp_add_header(req->output_headers, "Content-Type", "multipart/x-mixed-replace; boundary=mjpegstream");
-	evhttp_send_reply_start(req, HTTP_OK, "Everything is fine");
+	req->major = 1;
+	req->minor = 0;
+	evhttp_add_header(req->output_headers, "Cache-control", "private");
+	evhttp_add_header(req->output_headers, "Content-type", "video/webm");
+	evhttp_add_header(req->output_headers, "Connection", "close");
+	evhttp_send_reply_start(req, HTTP_OK, "OK");
 	evhttp_connection_set_closecb(req->evcon, web_pipeline_stream_close, state);
 
 	// reschedule a future event for next call
@@ -844,7 +1120,7 @@ void web_pipeline_gui(struct evhttp_request *req, void *arg) {
 	for ( it = gui.begin(); it != gui.end(); it++ )
 		evbuffer_add_printf(evb, "%s\n", (*it).c_str());
 	evhttp_add_header(req->output_headers, "Content-Type", "text/plain");
-	evhttp_send_reply(req, HTTP_OK, "Everything is fine", evb);
+	evhttp_send_reply(req, HTTP_OK, "OK", evb);
 	evbuffer_free(evb);
 }
 
@@ -893,7 +1169,7 @@ void web_pipeline_quit(struct evhttp_request *req, void *arg) {
 
 void web_index(struct evhttp_request *req, void *arg) {
 	evhttp_add_header(req->output_headers, "Location", "/gui/index.html");
-	evhttp_send_reply(req, HTTP_MOVETEMP, "Everything is fine", NULL);
+	evhttp_send_reply(req, HTTP_MOVETEMP, "OK", NULL);
 }
 
 void web_file(struct evhttp_request *req, void *arg) {
@@ -972,7 +1248,7 @@ void web_file(struct evhttp_request *req, void *arg) {
 	evb = evbuffer_new();
 	evbuffer_add(evb, buf, filesize);
 
-	evhttp_send_reply(req, HTTP_OK, "Everything is fine", evb);
+	evhttp_send_reply(req, HTTP_OK, "OK", evb);
 	evbuffer_free(evb);
 	free(buf);
 }
