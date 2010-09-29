@@ -32,6 +32,7 @@ libmovid_src = [
   'src/moUtils.cpp',
   'src/modules/moAmplifyModule.cpp',
   'src/modules/moBackgroundSubtractModule.cpp',
+  'src/modules/moBinaryMaskModule.cpp',
   'src/modules/moBlobFinderModule.cpp',
   'src/modules/moCalibrationModule.cpp',
   'src/modules/moCameraModule.cpp',
