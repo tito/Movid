@@ -246,12 +246,15 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 		this->contours_restored = true;
 	}
 
-	if (this->mask == NULL)
-		this->mask = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
 
 	cvCopy(src, this->output_buffer);
 
 	bool draw_mask = this->output_mask->getObserverCount() > 0;
+	if (draw_mask) {
+		if (this->mask == NULL)
+			this->mask = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
+		cvSet(this->mask, cvScalar(255));
+	}
 
 	CvSeq *contours, *cur_cont;
 	double area;
@@ -296,7 +299,6 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 				if (this->property("draw_bounding_box").asBool() && this->output->getObserverCount())
 					draw_box(this->output_buffer, mar);
 				if (draw_mask) {
-					cvSet(this->mask, cvScalar(255));
 					draw_box(this->mask, mar, true);
 					this->output_mask->push(this->mask);
 				}
