@@ -34,6 +34,8 @@ var mo_uniqidx = 0;
 var mo_data = null;
 var mo_host = null;
 var mo_port = '7500';
+var mo_slot_dialog = null;
+var mo_slot_action = 'load';
 var pjs = null;
 
 function moModule(name) {
@@ -73,76 +75,70 @@ function mo_bootstrap() {
 		mo_port = hostport[1];
 	}
 
+	// prepare selection
 	$('#container-preview').hide();
 	$('#btn-module').addClass('ui-state-active');
 	$('#btn-properties').addClass('ui-state-active');
 	$('#btn-create').addClass('ui-state-active');
 	$('#pipeline-content-text').hide();
+	$('#menu-pipeline').menu({
+		content: $('#menu-pipeline-content').html(),
+		flyOut: true,
+		showSpeed: 0,
+		crossSpeed: 0,
+	})
+
+	$('#menu-windows').menu({
+		content: $('#menu-windows-content').html(),
+		flyOut: true,
+		showSpeed: 0,
+		crossSpeed: 0,
+	})
 
 	$(window).resize(mo_resize);
 
 	// prepare buttons (hover + actions)
-	$(function(){
-		//all hover and click logic for buttons
-		$('.fg-button:not(.ui-state-disabled,.ui-fake)')
-		.hover(
-			function(){
-				$(this).addClass('ui-state-hover');
-			},
-			function(){
-				$(this).removeClass('ui-state-hover');
-			}
-		)
-		.mousedown(function(){
-			switch ($(this).attr('id')) {
-				case 'btn-start':
-					if ( $(this).hasClass('ui-state-active') )
-						mo_stop();
-					else
-						mo_start();
-					break;
-				case 'btn-autolayout':
-					mo_layout();
-					break;
-				case 'pipeline-text':
-					if ( $(this).hasClass('ui-state-active') ) {
-						$(this).removeClass('ui-state-active');
-						$('#pipeline-content-text').hide();
-						$('#pipeline-content-canvas').show();
-					} else {
-						$(this).addClass('ui-state-active');
-						$('#pipeline-content-textarea').width($('#pipeline-content-canvas').width());
-						$('#pipeline-content-textarea').height($('#pipeline-content-canvas').height());
-						$('#pipeline-content-canvas').hide();
-						$('#pipeline-content-text').show();
-						$.get(mo_baseurl + '/pipeline/dump', function(data) {
-								$('#pipeline-content-textarea').html(data);
-								});
-					}
-					break;
-				case 'pipeline-download':
-					window.location = mo_baseurl + '/pipeline/dump?download=1';
-					break;
-				case 'btn-module':
-				case 'btn-create':
-				case 'btn-properties':
-				case 'btn-preview':
-					var container = '#container-' + $(this).attr('id').split('-')[1];
-					if ( $(this).hasClass('ui-state-active') ) {
-						$(container).hide();
-						$(this).removeClass('ui-state-active');
-					} else {
-						$(container).show();
-						$(this).addClass('ui-state-active');
-					}
-					mo_resize();
-					break;
+	$('.mo-action')
+	.hover(
+		function(){
+			$(this).addClass('ui-state-hover');
+		},
+		function(){
+			$(this).removeClass('ui-state-hover');
+		}
+	)
+	.mousedown(function(){
+		switch ($(this).attr('id')) {
+			case 'btn-start':
+				mo_start();
+				break;
+			case 'btn-stop':
+				mo_stop();
+				break;
+			case 'btn-autolayout':
+				mo_layout();
+				break;
+			case 'slot-1':
+			case 'slot-2':
+			case 'slot-3':
+			case 'slot-4':
+			case 'slot-5':
+			case 'slot-6':
+			case 'slot-7':
+			case 'slot-8':
+			case 'slot-9':
+			case 'slot-10':
+				var slotidx = $(this).attr('id').split('-')[1];
+				mo_slot_dialog.dialog('close');
+				if ( mo_slot_action == 'load' )
+					mo_slot_load(slotidx);
+				else
+					mo_slot_save(slotidx);
+				break;
 
-				default:
-					break;
-			}
-		});
-
+			default:
+				break;
+		}
 	});
 
 	pjs = Processing($('#movidcanvas')[0], $('#movidpjs')[0].text);
@@ -152,6 +148,61 @@ function mo_bootstrap() {
 	mo_modules();
 	mo_status();
 	mo_stats();
+}
+
+function mo_menu_select(item, itemid) {
+	switch (itemid) {
+		case 'pipeline-text':
+			$(this).addClass('ui-state-active');
+			$('#pipeline-content-textarea').width($('#pipeline-content-canvas').width());
+			$('#pipeline-content-textarea').height($('#pipeline-content-canvas').height());
+			$.get(mo_baseurl + '/pipeline/dump', function(data) {
+				$('#pipeline-content-textarea').html(data);
+				$('#pipeline-content-text').dialog({
+					title: 'Pipeline text',
+					modal: true,
+					width: $('#pipeline-content-canvas').width() + 40,
+					height: $('#pipeline-content-canvas').height() + 40,
+				});
+			});
+			break;
+		case 'pipeline-download':
+			window.location = mo_baseurl + '/pipeline/dump?download=1';
+			break;
+		case 'pipeline-slot-load':
+			mo_slot_refresh(function() {
+				mo_slot_action = 'load';
+				mo_slot_dialog = $('#pipeline-slot-content').dialog({
+					title: 'Load pipeline from a slot',
+					modal: true
+				});
+			});
+			break;
+		case 'pipeline-slot-save':
+			mo_slot_refresh(function() {
+				mo_slot_action = 'save';
+				mo_slot_dialog = $('#pipeline-slot-content').dialog({
+					title: 'Save pipeline to slot',
+					modal: true
+				});
+			});
+			break;
+		case 'btn-module':
+		case 'btn-create':
+		case 'btn-properties':
+		case 'btn-preview':
+			var container = '#container-' + itemid.split('-')[1];
+			if ( $(item).hasClass('ui-state-active') ) {
+				$(container).hide();
+				$(item).removeClass('ui-state-active');
+			} else {
+				$(container).show();
+				$(item).addClass('ui-state-active');
+			}
+			mo_resize();
+			break;
+
+	}
 }
 
 function mo_modules() {
@@ -177,7 +228,18 @@ function mo_modules() {
 			});
 			mo_available_modules[name] = module;
 		});
+		mo_resize();
 	});
+}
+
+function mo_menu_set_running(running) {
+	if ( running ) {
+		$('#btn-stop').removeClass('ui-state-active');
+		$('#btn-start').addClass('ui-state-active');
+	} else {
+		$('#btn-stop').addClass('ui-state-active');
+		$('#btn-start').removeClass('ui-state-active');
+	}
 }
 
 function mo_status() {
@@ -186,9 +248,7 @@ function mo_status() {
 		mo_available_outputs = [];
 
 		mo_status_text = data['status']['running'] == '0' ? 'stopped' : 'running'
-		$('#btn-start').removeClass('ui-state-active');
-		if ( data['status']['running'] != '0' )
-			$('#btn-start').addClass('ui-state-active');
+		mo_menu_set_running(data['status']['running'] != '0');
 		$('#version').html(data['status']['version']);
 
 		widgetClearConnectivity();
@@ -542,6 +602,45 @@ function mo_stats() {
 			report = 'FPS: ' + (average_fps / count).toFixed(2);
 		$('#toolbareport').html(report);
 		setTimeout(mo_stats, 2000);
+	});
+}
+
+function mo_refresh() {
+	mo_pjs_reset();
+	mo_properties('');
+	mo_status();
+}
+
+function mo_slot_load(idx) {
+	// do the real load
+	$.get(mo_baseurl + '/pipeline/slot/load?idx=' + idx, function(data) {
+		mo_refresh();
+	});
+}
+
+function mo_slot_save(idx) {
+	$.get(mo_baseurl + '/pipeline/slot/save?idx=' + idx, function(data) {
+	});
+}
+
+function mo_slot_refresh(callback) {
+	$.get(mo_baseurl + '/pipeline/slot/refresh', function(data) {
+		// refresh data
+		for ( slotidx in data['slots'] ) {
+			var slot = data['slots'][slotidx];
+			var slotinfo = 'Never used';
+			var lastmod = parseInt(slot['lastmod']);
+			if ( lastmod > 0 ) {
+				var date = new Date(lastmod * 1000);
+				slotinfo = date.toDateString() + ' ' +
+						   date.getHours() + ':' +
+						   date.getMinutes() + ':' +
+						   date.getSeconds();
+			}
+			$('#slot-' + (parseInt(slotidx)+1) + ' .details').html(slotinfo);
+		}
+		if (callback)
+			callback();
 	});
 }
 

@@ -68,6 +68,9 @@
 #define MO_DAEMON	"movid"
 #define MO_GUIDIR	"gui/html"
 #define MO_VERSION	"0.2"
+#define MO_SLOTMAX	10
+#define MO_SLOTDIR	"presets/slots/slot-"
+#define MO_SLOTEXT	".txt"
 
 LOG_DECLARE("App");
 
@@ -858,6 +861,107 @@ void web_pipeline_stop(struct evhttp_request *req, void *arg) {
 	web_message(req, "ok");
 }
 
+void web_pipeline_slot_refresh(struct evhttp_request *req, void *arg) {
+	std::ostringstream oss;
+	cJSON *root, *slots, *slot;
+	struct stat st;
+
+	root = cJSON_CreateObject();
+	cJSON_AddNumberToObject(root, "success", 1);
+	cJSON_AddStringToObject(root, "message", "ok");
+	cJSON_AddItemToObject(root, "slots", slots=cJSON_CreateArray());
+
+	for ( int i = 1; i <= MO_SLOTMAX; i++ ) {
+		oss.str("");
+		oss << MO_SLOTDIR << i << MO_SLOTEXT;
+		cJSON_AddItemToArray(slots, slot=cJSON_CreateObject());
+		if ( stat(oss.str().c_str(), &st) == 0 ) {
+			cJSON_AddNumberToObject(slot, "lastmod", st.st_mtime);
+		} else {
+			cJSON_AddNumberToObject(slot, "lastmod", 0);
+		}
+	}
+
+	web_json(req, root);
+}
+
+void web_pipeline_slot_load(struct evhttp_request *req, void *arg) {
+	std::ostringstream oss;
+	struct evkeyvalq headers;
+	const char *uri, *s_idx;
+	int slotidx;
+
+	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
+	evhttp_parse_query(uri, &headers);
+
+	if ( evhttp_find_header(&headers, "idx") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing idx");
+	}
+
+	s_idx = evhttp_find_header(&headers, "idx");
+	slotidx = atoi(s_idx);
+	evhttp_clear_headers(&headers);
+
+	if ( slotidx < 1 || slotidx > MO_SLOTMAX )
+		return web_error(req, "invalid idx");
+
+	oss << MO_SLOTDIR << slotidx << MO_SLOTEXT;
+
+	pipeline->clear();
+	if ( pipeline->parse(oss.str()) == false )
+		return web_error(req, "unable to parse slot");
+
+	evhttp_clear_headers(&headers);
+	web_message(req, "ok");
+}
+
+void web_pipeline_slot_save(struct evhttp_request *req, void *arg) {
+	std::string sout = pipeline->serializeCreation();
+	std::ostringstream oss;
+	struct evkeyvalq headers;
+	const char *uri, *s_idx;
+	int slotidx;
+	struct stat st;
+	FILE *fd;
+
+	uri = evhttp_request_uri(req);
+	if ( uri == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "unable to retreive uri");
+	}
+
+	evhttp_parse_query(uri, &headers);
+
+	if ( evhttp_find_header(&headers, "idx") == NULL ) {
+		evhttp_clear_headers(&headers);
+		return web_error(req, "missing idx");
+	}
+
+	s_idx = evhttp_find_header(&headers, "idx");
+	slotidx = atoi(s_idx);
+	evhttp_clear_headers(&headers);
+
+	if ( slotidx < 1 || slotidx > MO_SLOTMAX )
+		return web_error(req, "invalid idx");
+
+	oss << MO_SLOTDIR << slotidx << MO_SLOTEXT;
+
+	fd = fopen(oss.str().c_str(), "w");
+	if ( fd == NULL )
+		return web_error(req, "unable to open slot for writing");
+
+	fwrite(sout.c_str(), sout.length(), 1, fd);
+	fclose(fd);
+
+	web_message(req, "ok");
+}
+
 void web_pipeline_dump(struct evhttp_request *req, void *arg) {
 	struct evbuffer *evb = evbuffer_new();
 	std::string sout = pipeline->serializeCreation();
@@ -1163,6 +1267,9 @@ int main(int argc, char **argv) {
 		evhttp_set_cb(server, "/pipeline/quit", web_pipeline_quit, NULL);
 		evhttp_set_cb(server, "/pipeline/dump", web_pipeline_dump, NULL);
 		evhttp_set_cb(server, "/pipeline/stats", web_pipeline_stats, NULL);
+		evhttp_set_cb(server, "/pipeline/slot/refresh", web_pipeline_slot_refresh, NULL);
+		evhttp_set_cb(server, "/pipeline/slot/load", web_pipeline_slot_load, NULL);
+		evhttp_set_cb(server, "/pipeline/slot/save", web_pipeline_slot_save, NULL);
 
 		evhttp_set_gencb(server, web_file, NULL);
 	}

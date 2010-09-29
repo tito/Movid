@@ -23,8 +23,13 @@ html, body {
 	background: #eeeeee;
 }
 
+.hidden {
+	display: none;
+}
+
 /* toolbar top
  */
+
 .fg-button {
 	outline: 0;
 	margin:0 4px 0 0;
@@ -34,6 +39,10 @@ html, body {
 	position: relative;
 	text-align: center;
 	zoom: 1;
+}
+
+.fg-nomargin {
+	margin: 0;
 }
 
 .fg-button .ui-icon {
@@ -265,3 +274,34 @@ button.fg-button {
 	float: none;
 }
 
+/* selectable
+ */
+.feedback {
+	font-size: 1.4em;
+}
+
+.mo-list {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.mo-list li {
+	margin: 3px;
+	padding: 0.4em;
+	cursor: pointer;
+}
+
+.mo-list li.ui-state-hover {
+	border-color: transparent;
+	background: #f39814;
+	color: white;
+}
+
+.mo-list .title {
+}
+
+.mo-list .details {
+	font-weight: normal;
+	color: #888888;
+}

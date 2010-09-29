@@ -46,7 +46,12 @@ moPipeline::moPipeline() : moModule(MO_MODULE_NONE) {
 }
 
 moPipeline::~moPipeline() {
+	this->clear();
+}
+
+void moPipeline::clear() {
 	std::vector<moModule *>::iterator it = this->modules.begin();
+	this->stop();
 	while ( it != this->modules.end() ) {
 		delete *it;
 		this->modules.erase(it);

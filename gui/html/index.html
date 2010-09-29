@@ -26,8 +26,10 @@
 	<script type="text/javascript" src="js/jquery.class.js"></script>
 	<script type="text/javascript" src="js/movid.js"></script>
 	<script type="text/javascript" src="js/movid-draw.js"></script>
+	<script type="text/javascript" src="js/fg.menu.js"></script>
 	<link rel="stylesheet" type="text/css" href="css/ui-darkness/jquery-ui-1.8rc3.custom.css"/>
 	<link rel="stylesheet" type="text/css" href="css/gui.css"/>
+	<link rel="stylesheet" type="text/css" href="css/fg.menu.css"/>
 </head>
 <body>
 
@@ -36,17 +38,83 @@
 		<div class="fg-button ui-fake">Movid <span id="version">??</span></div>
 	</div>
 	<div class="fg-buttonset">
-		<a class="fg-button ui-state-default ui-corner-all" id="btn-start">Start</a>
+		<a class="fg-button ui-state-default ui-corner-all mo-action" id="btn-stop">
+			<span class="ui-icon ui-icon-stop">&nbsp;</span>&nbsp;
+		</a>
+		<a class="fg-button ui-state-default ui-corner-all mo-action" id="btn-start">
+			<span class="ui-icon ui-icon-play">&nbsp;</span>&nbsp;
+		</a>
 	</div>
 	<div class="fg-buttonset">
-		<a class="fg-button ui-state-default ui-corner-all" id="btn-preview">Preview</a>
-		<a class="fg-button ui-state-default ui-corner-all" id="btn-create">Create</a>
-		<a class="fg-button ui-state-default ui-corner-all" id="btn-module">Module</a>
-		<a class="fg-button ui-state-default ui-corner-all" id="btn-properties">Properties</a>
+		<a class="fg-button ui-state-default ui-corner-left fg-nomargin mo-menu" id="menu-pipeline">Pipeline</a>
+		<a class="fg-button ui-state-default ui-corner-right fg-nomargin mo-menu" id="menu-windows">Windows</a>
 	</div>
 	<div class="fg-buttonset">
 		<div class="fg-button ui-fake" id="toolbareport"></div>
 	</div>
+</div>
+
+<div class="hidden" id="menu-pipeline-content">
+	<ul>
+		<li><a href="#" class="mo-action" id="pipeline-download">Download</a></li>
+		<li><a href="#" class="mo-action" id="pipeline-text">Show as text</a></li>
+		<li class="horizontal-divider"><hr/></li>
+		<li><a href="#" class="mo-action" id="pipeline-slot-load">Load from slot</a></li>
+		<li><a href="#" class="mo-action" id="pipeline-slot-save">Save to slot</a></li>
+	</ul>
+</div>
+<div class="hidden" id="menu-windows-content">
+	<ul>
+		<li><a href="#" class="mo-action" id="btn-create">Create</a></li>
+		<li><a href="#" class="mo-action" id="btn-module">Module</a></li>
+		<li><a href="#" class="mo-action" id="btn-preview">Preview</a></li>
+		<li><a href="#" class="mo-action" id="btn-properties">Properties</a></li>
+	</ul>
+</div>
+
+<div class="hidden" id="pipeline-slot-content">
+	<ul class="ui-widget ui-state-default ui-corner-top mo-list" id="pipeline-slot-select">
+		<li class="ui-widget-content mo-action" id="slot-1">
+			<span class="title">Slot 1</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-2">
+			<span class="title">Slot 2</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-3">
+			<span class="title">Slot 3</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-4">
+			<span class="title">Slot 4</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-5">
+			<span class="title">Slot 5</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-6">
+			<span class="title">Slot 6</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-7">
+			<span class="title">Slot 7</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-8">
+			<span class="title">Slot 8</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-9">
+			<span class="title">Slot 9</span>
+			<span class="details">Never used.</span>
+		</li>
+		<li class="ui-widget-content mo-action" id="slot-10">
+			<span class="title">Slot 10</span>
+			<span class="details">Never used.</span>
+		</li>
+	</ul>
 </div>
 
 <div id="wrapper">
@@ -64,16 +132,13 @@
 
 <div class="ui-widget-header ui-state-default ui-corner-top">
 	<a href="#">Playground</a> &nbsp; &nbsp;
-	<a href="#" id="pipeline-text" class="fg-button ui-state-default ui-corner-all" title="Show text">
-		<span class="ui-icon ui-icon-script">&nbsp;</span>
-	</a>
-	<a href="#" id="pipeline-download" class="fg-button ui-state-default ui-corner-all" title="Download pipeline">
-		<span class="ui-icon ui-icon-circle-arrow-s">&nbsp;</span>
-	</a>
-	<a href="#" id="btn-autolayout" class="fg-button ui-state-default ui-corner-all" title="Auto layout">
+	<a href="#" id="btn-autolayout" class="fg-button ui-state-default ui-corner-all mo-action" title="Auto layout">
 		<span class="ui-icon ui-icon-refresh">&nbsp;</span>
 	</a>
 
+</div>
+<div id="pipeline-content-text">
+	<textarea id="pipeline-content-textarea" readonly="true"></textarea>
 </div>
 <div class="ui-widget-content">
 	<div id="pipeline-content-canvas">
@@ -99,9 +164,6 @@
 	}
 	</script><canvas id="movidcanvas" width="100" height="100">You need HTML5 canvas support.</canvas>
 	</div>
-	</div>
-	<div id="pipeline-content-text">
-		<textarea id="pipeline-content-textarea" readonly="true"></textarea>
 	</div>
 </div>
 
