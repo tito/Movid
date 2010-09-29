@@ -20,27 +20,36 @@
 MODULE_DECLARE(HuObjectFinder, "native", "Find objects based on Hu moments");
 
 
-static void draw_box(IplImage *image, CvBox2D box) {
-  CvPoint2D32f boxPoints[4];
+static void draw_box(IplImage *image, CvBox2D box, bool filled=false) {
+	CvPoint2D32f boxPoints[4];
+	cvBoxPoints(box, boxPoints);
 
-  double color = 255.;
-  cvBoxPoints(box, boxPoints);
-  cvLineAA(image,
-	   cvPoint((int)boxPoints[0].x, (int)boxPoints[0].y),
-	   cvPoint((int)boxPoints[1].x, (int)boxPoints[1].y),
-	   color);
-  cvLineAA(image,
-	   cvPoint((int)boxPoints[1].x, (int)boxPoints[1].y),
-	   cvPoint((int)boxPoints[2].x, (int)boxPoints[2].y),
-	   color);
-  cvLineAA(image,
-	   cvPoint((int)boxPoints[2].x, (int)boxPoints[2].y),
-	   cvPoint((int)boxPoints[3].x, (int)boxPoints[3].y),
-	   color);
-  cvLineAA(image,
-	   cvPoint((int)boxPoints[3].x, (int)boxPoints[3].y),
-	   cvPoint((int)boxPoints[0].x, (int)boxPoints[0].y),
-	   color);
+	if (filled) {
+		const CvPoint points[4] = {cvPointFrom32f(boxPoints[0]),
+								   cvPointFrom32f(boxPoints[1]),
+								   cvPointFrom32f(boxPoints[2]),
+								   cvPointFrom32f(boxPoints[3])};
+		cvFillConvexPoly(image, points, 4, cvScalar(0.));
+	}
+	else {
+		double color = 255.;
+		cvLineAA(image,
+				cvPoint((int)boxPoints[0].x, (int)boxPoints[0].y),
+				cvPoint((int)boxPoints[1].x, (int)boxPoints[1].y),
+				color);
+		cvLineAA(image,
+				cvPoint((int)boxPoints[1].x, (int)boxPoints[1].y),
+				cvPoint((int)boxPoints[2].x, (int)boxPoints[2].y),
+				color);
+		cvLineAA(image,
+				cvPoint((int)boxPoints[2].x, (int)boxPoints[2].y),
+				cvPoint((int)boxPoints[3].x, (int)boxPoints[3].y),
+				color);
+		cvLineAA(image,
+				cvPoint((int)boxPoints[3].x, (int)boxPoints[3].y),
+				cvPoint((int)boxPoints[0].x, (int)boxPoints[0].y),
+				color);
+	}
 }
 
 
@@ -288,7 +297,7 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 					draw_box(this->output_buffer, mar);
 				if (draw_mask) {
 					cvSet(this->mask, cvScalar(255));
-					cvDrawContours(this->mask, cur_cont, cvScalarAll(0), cvScalarAll(0), 100, CV_FILLED);
+					draw_box(this->mask, mar, true);
 					this->output_mask->push(this->mask);
 				}
 
