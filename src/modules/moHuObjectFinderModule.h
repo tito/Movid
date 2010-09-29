@@ -42,6 +42,8 @@ public:
 	bool contours_restored;
 	
 protected:
+	IplImage* mask;
+	moDataStream* output_mask;
 	void applyFilter(IplImage *);
 	void clearRecognizedObjects();
 	void serializeContour(CvSeq*);

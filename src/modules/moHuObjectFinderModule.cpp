@@ -63,9 +63,13 @@ moHuObjectFinderModule::moHuObjectFinderModule() : moImageFilterModule() {
 	this->declareOutput(1, &this->output_data, new moDataStreamInfo(
 			"data", "blob", "Data stream with blobs"));
 
+	this->mask = NULL;
+	this->output_mask = new moDataStream("IplImage8");
+	this->declareOutput(2, &this->output_mask, new moDataStreamInfo(
+			"data", "IplImage8", "Binary image mask. Found objects are black, else white."));
+
 	this->setInputType(0, "IplImage8");
 	this->setOutputType(0, "IplImage8");
-
 
 	// In order to prevent a clash with FiducialFinder's IDs, you can ask
 	// HuObjectFinder to start counting objects at a certain ID.
@@ -85,6 +89,7 @@ moHuObjectFinderModule::moHuObjectFinderModule() : moImageFilterModule() {
 }
 
 moHuObjectFinderModule::~moHuObjectFinderModule() {
+	// TODO
 }
 
 void moHuObjectFinderModule::serializeContour(CvSeq *cont) {
@@ -232,7 +237,12 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 		this->contours_restored = true;
 	}
 
+	if (this->mask == NULL)
+		this->mask = cvCreateImage(cvGetSize(src), src->depth, src->nChannels);
+
 	cvCopy(src, this->output_buffer);
+
+	bool draw_mask = this->output_mask->getObserverCount() > 0;
 
 	CvSeq *contours, *cur_cont;
 	double area;
@@ -274,6 +284,14 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 			min_id = this->property("min_id").asInteger();
 			possible = m.second;
 			if ((m.first >= 0) || possible) {
+				if (this->property("draw_bounding_box").asBool() && this->output->getObserverCount())
+					draw_box(this->output_buffer, mar);
+				if (draw_mask) {
+					cvSet(this->mask, cvScalar(255));
+					cvDrawContours(this->mask, cur_cont, cvScalarAll(0), cvScalarAll(0), 100, CV_FILLED);
+					this->output_mask->push(this->mask);
+				}
+
 				obj = new moDataGenericContainer();
 				obj->properties["type"] = new moProperty("blob");
 				implements.clear();
@@ -288,8 +306,6 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 				obj->properties["y"] = new moProperty(mar.center.y / h);
 
 				// Compute the angle as the angle of the vector from center of gravity to BB center.
-				if (this->property("draw_bounding_box").asBool())
-					draw_box(this->output_buffer, mar);
 				//std::cout << "BB Angle: " << mar.angle << std::endl;
 				//cvContourMoments(cur_cont, &moments);
 				//m00 = cvGetSpatialMoment(&moments, 0, 0);
