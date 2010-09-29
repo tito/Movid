@@ -884,3 +884,8 @@ function mo_pjs() {
 	//setTimeout('update()', 500);
 }
 
+function mo_pjs_reset() {
+	widgets = new pjs.ArrayList();
+	widgets_hover = new pjs.ArrayList();
+}
+
