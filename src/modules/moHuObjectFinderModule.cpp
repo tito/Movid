@@ -213,7 +213,8 @@ inline match moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar
 	index = consider_shape || consider_holes ? min_index : min_diff_index;
 
 
-	if (this->property("draw_bounding_box").asBool() && this->output->getObserverCount()) {
+	if (this->property("draw_bounding_box").asBool() && this->output->getObserverCount()
+		&& (possible || index >= 0)) {
 		std::ostringstream idtext;
 		CvFont font;
 		cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 1.0, 1.0, 1.0, 1);
