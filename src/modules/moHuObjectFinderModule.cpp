@@ -246,7 +246,6 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 		this->contours_restored = true;
 	}
 
-
 	cvCopy(src, this->output_buffer);
 
 	bool draw_mask = this->output_mask->getObserverCount() > 0;
@@ -277,6 +276,10 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 	match m;
 	std::string implements;
 
+	std::ostringstream idtext;
+	CvFont font;
+	cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 1.0, 1.0, 1.0, 1);
+
 	// XXX Do we want to be able to use the same object more than once? Currently the code allows that...
 	// Consider all the contours that are in the current frame...
 	while (cur_cont != NULL) {
@@ -296,8 +299,16 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 			min_id = this->property("min_id").asInteger();
 			possible = m.second;
 			if ((m.first >= 0) || possible) {
-				if (this->property("draw_bounding_box").asBool() && this->output->getObserverCount())
+				if (this->property("draw_bounding_box").asBool() && this->output->getObserverCount()) {
 					draw_box(this->output_buffer, mar);
+					idtext.str("");
+					if (possible)
+						idtext << "p";
+					else
+						idtext << m.first + min_id;
+					cvPutText(this->output_buffer, idtext.str().c_str(),
+						cvPoint(mar.center.x, mar.center.y), &font, cvScalarAll(255));
+				}
 				if (draw_mask) {
 					draw_box(this->mask, mar, true);
 					this->output_mask->push(this->mask);
