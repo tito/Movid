@@ -44,6 +44,7 @@ void moFactory::init() {
 	REGISTER_MODULE(DistanceTransform);
 	REGISTER_MODULE(Dump);
 	REGISTER_MODULE(Erode);
+	REGISTER_MODULE(EqualizeHist);
 	REGISTER_MODULE(FiducialFinder);
 	REGISTER_MODULE(FingerTipFinder);
 	REGISTER_MODULE(GrayScale);

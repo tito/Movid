@@ -42,6 +42,7 @@ libmovid_src = [
   'src/modules/moDistanceTransformModule.cpp',
   'src/modules/moDumpModule.cpp',
   'src/modules/moErodeModule.cpp',
+  'src/modules/moEqualizeHistModule.cpp',
   'src/modules/moFiducialFinderModule.cpp',
   'src/modules/moFingerTipFinderModule.cpp',
   'src/modules/moGreedyBlobTrackerModule.cpp',
