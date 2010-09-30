@@ -67,7 +67,17 @@ libmovid_src = [
   'src/modules/moTuio2Module.cpp',
   'src/modules/moVideoModule.cpp',
   'src/modules/moYCrCbThresholdModule.cpp',
-  'contrib/bitmap_munkres/match.c'
+  'contrib/bitmap_munkres/match.c',
+
+  # FIXME this should be done in a seperate library
+  'contrib/BGS/AdaptiveMedianBGS.cpp',
+  'contrib/BGS/Eigenbackground.cpp',
+  'contrib/BGS/GrimsonGMM.cpp',
+  'contrib/BGS/Image.cpp',
+  'contrib/BGS/MeanBGS.cpp',
+  'contrib/BGS/PratiMediodBGS.cpp',
+  'contrib/BGS/WrenGA.cpp',
+  'contrib/BGS/ZivkovicAGMM.cpp',
 ]
 
 #################################################################
