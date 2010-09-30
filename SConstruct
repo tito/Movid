@@ -30,6 +30,7 @@ libmovid_src = [
   'src/moProperty.cpp',
   'src/moThread.cpp',
   'src/moUtils.cpp',
+  'src/modules/moAdvancedBGSubModule.cpp',
   'src/modules/moAmplifyModule.cpp',
   'src/modules/moBackgroundSubtractModule.cpp',
   'src/modules/moBinaryMaskModule.cpp',

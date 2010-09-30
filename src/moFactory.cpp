@@ -32,9 +32,9 @@ static moFactory *instance = NULL;
 
 void moFactory::init() {
 	// Keep the alphabetical order when adding new modules!
+	REGISTER_MODULE(AdvancedBGSub);
 	REGISTER_MODULE(Amplify);
 	REGISTER_MODULE(BackgroundSubtract);
-	REGISTER_MODULE(BinaryMask);
 	REGISTER_MODULE(BlobFinder)
 	REGISTER_MODULE(Calibration);
 	REGISTER_MODULE(Camera);
@@ -55,8 +55,8 @@ void moFactory::init() {
 	REGISTER_MODULE(ImageDisplay);
 	REGISTER_MODULE(Invert);
 	REGISTER_MODULE(Justify);
-	REGISTER_MODULE(Mask);
 	REGISTER_MODULE(MirrorImage);
+	REGISTER_MODULE(Mask);
 	REGISTER_MODULE(MunkresBlobTracker);
 	REGISTER_MODULE(PeakFinder);
 	REGISTER_MODULE(Roi);

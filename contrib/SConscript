@@ -20,7 +20,8 @@ env.Append(
 		        'contrib/WOscLib-00.09',
 		        'contrib/ptypes-2.1.1/include',
               'contrib/XgetOpt',
-              'contrib/bitmap_munkres'],
+              'contrib/bitmap_munkres',
+	      'contrib/BGS'],
 
    LIBS = ['event', 'ptypes', 'wosclib', 'fidtrack'],
 
