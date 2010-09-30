@@ -217,11 +217,11 @@ inline match moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar
 		&& (possible || index >= 0)) {
 		std::ostringstream idtext;
 		CvFont font;
-		cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 1.0, 1.0, 1.0, 1);
+		cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 0.3, 0.3, 1.0, 1);
 		int min_id = this->property("min_id").asInteger();
 		int x = mar.center.x;
 		int y = mar.center.y;
-		int margin = 23;
+		int margin = 13;
 		draw_box(this->output_buffer, mar);
 		idtext.str("");
 		if (possible)
