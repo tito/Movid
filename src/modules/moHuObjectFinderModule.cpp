@@ -164,7 +164,8 @@ inline match moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar
 	int min_diff_index = -1;
 
 	double matchscore, diff;
-	double min_score = this->property("max_match_score").asDouble();
+	double max_score = this->property("max_match_score").asDouble();
+	double min_score = max_score;
 	const double max_diff = this->property("max_size_difference").asDouble();
 	double min_diff = max_diff;
 	bool consider_holes = this->properties["consider_holes"]->asBool();
@@ -210,6 +211,40 @@ inline match moHuObjectFinderModule::findMatchingShape(CvSeq *cont, CvBox2D &mar
 	// If neither shape nor holes were considered, don't just return the first matching BB's
 	// index, but at least the index of the BB with the smallest difference. All we can do.
 	index = consider_shape || consider_holes ? min_index : min_diff_index;
+
+
+	if (this->property("draw_bounding_box").asBool() && this->output->getObserverCount()) {
+		std::ostringstream idtext;
+		CvFont font;
+		cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 1.0, 1.0, 1.0, 1);
+		int min_id = this->property("min_id").asInteger();
+		int x = mar.center.x;
+		int y = mar.center.y;
+		int margin = 23;
+		draw_box(this->output_buffer, mar);
+		idtext.str("");
+		if (possible)
+			idtext << "p";
+		else
+			idtext << "ID: " << min_index + min_id;
+		cvPutText(this->output_buffer, idtext.str().c_str(),
+			cvPoint(x, y-margin), &font, cvScalarAll(255));
+
+		idtext.str("");
+		idtext << "MinDiff: " << min_diff << " / " << max_diff;
+		cvPutText(this->output_buffer, idtext.str().c_str(),
+			cvPoint(x, y), &font, cvScalarAll(255));
+
+		idtext.str("");
+		idtext << "Holes: " << countHolesInContour(cont);
+		cvPutText(this->output_buffer, idtext.str().c_str(),
+			cvPoint(x, y+margin), &font, cvScalarAll(255));
+
+		idtext.str("");
+		idtext << "MinScore: " << min_score << " / " << max_score;
+		cvPutText(this->output_buffer, idtext.str().c_str(),
+			cvPoint(x, y+2*margin), &font, cvScalarAll(255));
+	}
 
 	match m;
 	m.first = index;
@@ -276,10 +311,6 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 	match m;
 	std::string implements;
 
-	std::ostringstream idtext;
-	CvFont font;
-	cvInitFont(&font, CV_FONT_HERSHEY_DUPLEX, 1.0, 1.0, 1.0, 1);
-
 	// XXX Do we want to be able to use the same object more than once? Currently the code allows that...
 	// Consider all the contours that are in the current frame...
 	while (cur_cont != NULL) {
@@ -299,16 +330,6 @@ void moHuObjectFinderModule::applyFilter(IplImage *src) {
 			min_id = this->property("min_id").asInteger();
 			possible = m.second;
 			if ((m.first >= 0) || possible) {
-				if (this->property("draw_bounding_box").asBool() && this->output->getObserverCount()) {
-					draw_box(this->output_buffer, mar);
-					idtext.str("");
-					if (possible)
-						idtext << "p";
-					else
-						idtext << m.first + min_id;
-					cvPutText(this->output_buffer, idtext.str().c_str(),
-						cvPoint(mar.center.x, mar.center.y), &font, cvScalarAll(255));
-				}
 				if (draw_mask) {
 					draw_box(this->mask, mar, true);
 					this->output_mask->push(this->mask);
