@@ -57,6 +57,7 @@ void moFactory::init() {
 	REGISTER_MODULE(MirrorImage);
 	REGISTER_MODULE(MunkresBlobTracker);
 	REGISTER_MODULE(PeakFinder);
+	REGISTER_MODULE(PgrCamera);
 	REGISTER_MODULE(Roi);
 	REGISTER_MODULE(Smooth);
 	REGISTER_MODULE(Threshold);
