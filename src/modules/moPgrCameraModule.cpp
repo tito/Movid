@@ -25,7 +25,7 @@
 
 using namespace FlyCapture2;
 
-MODULE_DECLARE(Pgr, "not native", "Fetch PGR camera stream");
+MODULE_DECLARE(PgrCamera, "not native", "Fetch PGR camera stream");
 
 moPgrCameraModule::moPgrCameraModule() : moModule(MO_MODULE_OUTPUT)
 {
