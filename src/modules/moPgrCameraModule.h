@@ -27,9 +27,10 @@ using namespace FlyCapture2;
 
 class moDataStream;
 
-class moPgrCameraModule : public moModule {
+class moPgrCameraModule : public moModule
+{
 public:
-	moPgrCameraModule(); 
+	moPgrCameraModule();
 	virtual ~moPgrCameraModule();
 
 	virtual void start();
@@ -39,10 +40,10 @@ public:
 
 private:
 	Camera camera;
-        PGRGuid pgrGuid;	
+	PGRGuid pgrGuid;
 	moDataStream *stream;
 	moDataStream *monochrome;
-        IplImage* ConvertImageToOpenCV(Image* pImage);
+	IplImage* ConvertImageToOpenCV(Image* pImage);
 
 	MODULE_INTERNALS();
 };
