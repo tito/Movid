@@ -1,0 +1,5 @@
+pipeline create KinectNetwork kinect
+pipeline create ImageDisplay window
+pipeline create ImageDisplay window2
+pipeline connect kinect 0 window 0
+pipeline connect kinect 1 window2 0

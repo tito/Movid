@@ -64,6 +64,7 @@ void moFactory::init() {
 	REGISTER_MODULE(Tuio2);
 	REGISTER_MODULE(Video);
 	REGISTER_MODULE(YCrCbThreshold);
+	REGISTER_MODULE(KinectNetwork);
     //DoNotRemoveThisComment
 	LOG(MO_INFO, "registered " << moFactory::getInstance()->list().size() << " modules");
 }

@@ -1,0 +1,18 @@
+pipeline create KinectNetwork kinect
+pipeline create GrayScale grayscale
+pipeline create Threshold threshold
+pipeline create BlobFinder blobfinder
+pipeline create GreedyBlobTracker tracker
+pipeline create Tuio tuio
+pipeline create ImageDisplay d1
+pipeline create ImageDisplay d2
+
+#pipeline connect kinect 0 grayscale 0
+#pipeline connect grayscale 0 threshold 0
+pipeline connect kinect 1 threshold 0
+pipeline connect threshold 0 blobfinder 0
+pipeline connect threshold 0 d1 0
+pipeline connect blobfinder 0 d2 0
+pipeline connect blobfinder 1 tracker 0
+pipeline connect tracker 0 tuio 0
+

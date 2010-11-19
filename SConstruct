@@ -64,6 +64,7 @@ libmovid_src = [
   'src/modules/moTuio2Module.cpp',
   'src/modules/moVideoModule.cpp',
   'src/modules/moYCrCbThresholdModule.cpp',
+  'src/modules/moKinectNetworkModule.cpp',
   'contrib/bitmap_munkres/match.c'
 ]
 
