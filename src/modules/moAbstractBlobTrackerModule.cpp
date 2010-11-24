@@ -102,8 +102,11 @@ void moAbstractBlobTrackerModule::update() {
 			if (oid == id)
 				in = true;
 		}
-		if (!in && ((*oit)->properties["age"]->asInteger() <= max_age))
+		if (!in && ((*oit)->properties["age"]->asInteger() <= max_age)) {
 			this->new_blobs->push_back(*oit);
+		} else {
+		        delete (*oit);
+		}
 	}
 
 	// Send the new blobs (possibly empty) down the pipeline
