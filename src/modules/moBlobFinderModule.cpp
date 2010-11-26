@@ -56,12 +56,13 @@ void moBlobFinderModule::clearBlobs() {
 void moBlobFinderModule::applyFilter(IplImage *src) {
 
 	this->clearBlobs();
+	this->storage = cvCreateMemStorage(0);
 	cvCopy(src, this->output_buffer);
 	
-    CvSeq *contours = 0;
+        CvSeq *contours = 0;
 	cvFindContours(this->output_buffer, this->storage, &contours, sizeof(CvContour), CV_RETR_CCOMP);
 
-    cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
+        cvDrawContours(this->output_buffer, contours, cvScalarAll(255), cvScalarAll(255), 100);
 
 	// Consider each contour a blob and extract the blob infos from it.
 	int size;
@@ -82,7 +83,7 @@ void moBlobFinderModule::applyFilter(IplImage *src) {
 		}
 		cur_cont = cur_cont->h_next;
 	}
-	
-    this->output_data->push(this->blobs);
+	cvReleaseMemStorage(&this->storage);
+        this->output_data->push(this->blobs);
 }
 
