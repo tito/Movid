@@ -1,5 +1,5 @@
 /***********************************************************************
- ** Copyright (C) 2010 Movid Authors.and Aras (arasbm@gmail.com)  All rights reserved.
+ ** Copyright (C) 2010 Aras Balali Moghaddam (arasbm@gmail.com)  All rights reserved.
  **
  ** This file is part of the Movid Software.
  **
@@ -41,9 +41,10 @@ public:
 private:
 	Camera camera;
 	PGRGuid pgrGuid;
+	BusManager busMgr;
 	moDataStream *stream;
 	moDataStream *monochrome;
-	IplImage* ConvertImageToOpenCV(Image* pImage);
+	IplImage *ConvertImageToOpenCV(Image* pImage);
 
 	MODULE_INTERNALS();
 };

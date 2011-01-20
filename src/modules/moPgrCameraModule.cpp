@@ -1,5 +1,5 @@
 /***********************************************************************
- ** Copyright (C) 2010 Movid Authors.and Aras (arasbm@gmail.com) All rights reserved.
+ ** Copyright (C) 2010 Aras Balali Moghaddam (arasbm@gmail.com) All rights reserved.
  **
  ** This file is part of the Movid Software.
  **
@@ -27,6 +27,9 @@ using namespace FlyCapture2;
 
 MODULE_DECLARE(PgrCamera, "not native", "Fetch PGR camera stream");
 
+const Mode k_fmt7Mode = MODE_0;
+const PixelFormat k_fmt7PixFmt = PIXEL_FORMAT_MONO8;
+
 moPgrCameraModule::moPgrCameraModule() : moModule(MO_MODULE_OUTPUT)
 {
 
@@ -37,14 +40,21 @@ moPgrCameraModule::moPgrCameraModule() : moModule(MO_MODULE_OUTPUT)
 	this->monochrome = new moDataStream("IplImage8");
 
 	// declare outputs
+	//TODO: check the number of channels and declare color output only if it exist
 	this->declareOutput(0, &this->stream, new moDataStreamInfo("camera", "IplImage", "Image stream of the camera"));
 	this->declareOutput(1, &this->monochrome, new moDataStreamInfo("camera", "IplImage8", "Image stream of the camera"));
 
-	// declare properties
+	// camera index in case multiple are present
 	this->properties["index"] = new moProperty(0);
-	BusManager busMgr;
+
+	// ROI settings
+	this->properties["x_offset"] = new moProperty(0);
+	this->properties["y_offset"] = new moProperty(0);
+	this->properties["width"] = new moProperty(0);
+	this->properties["height"] = new moProperty(0);
+
 	unsigned int numCam;
-	Error pgrErr = busMgr.GetNumOfCameras(&numCam);
+	Error pgrErr = this->busMgr.GetNumOfCameras(&numCam);
 	if (pgrErr != PGRERROR_OK)
 	{
 		LOGM(MO_ERROR, "Could not get number of PGR cameras");
@@ -55,13 +65,7 @@ moPgrCameraModule::moPgrCameraModule() : moModule(MO_MODULE_OUTPUT)
 	}
 	else
 	{
-		//Grab the first camera for now (TODO: make it possible to choose which camera to run)
-		//use this->property("index").asInteger() to store the index
-		pgrErr = busMgr.GetCameraFromIndex(0, &this->pgrGuid);
-		if (pgrErr != PGRERROR_OK)
-		{
-			LOGM(MO_ERROR, "ERORR in initializing the camera");
-		}
+		LOGM(MO_INFO, "There are " << numCam << " PGR cameras attached");
 	}
 }
 
@@ -71,41 +75,101 @@ moPgrCameraModule::~moPgrCameraModule()
 
 void moPgrCameraModule::start()
 {
-	//assert( this->camera == NULL );
+	Error pgrErr = this->busMgr.GetCameraFromIndex(this->property("index").asInteger(), &this->pgrGuid);
+	if (pgrErr != PGRERROR_OK)
+	{
+		LOGM(MO_ERROR, "ERORR in initializing the camera");
+	}
+
 	LOGM(MO_TRACE, "starting a PGR camera");
-	Error pgrErr = this->camera.Connect(&this->pgrGuid);
+	pgrErr = this->camera.Connect(&this->pgrGuid);
+
 	if (pgrErr != PGRERROR_OK)
 	{
 		LOGM(MO_ERROR, "could not load camera: " << this->property("index").asInteger());
 		this->setError("Unable to open camera");
 	}
 
-	//Now start the cam
+	//TODO: finish format 7 settings
+    // Check for Format 7 modes
+    Format7Info format7inf;
+    bool supported;
+    format7inf.mode = k_fmt7Mode;
+    pgrErr = this->camera.GetFormat7Info( &format7inf, &supported );
+    if (pgrErr != PGRERROR_OK)
+    {
+        LOGM(MO_ERROR, "This camera does not support format7");
+    } else {
+		//TODO: PrintFormat7Capabilities( format7inf );
+
+		if ( (k_fmt7PixFmt & format7inf.pixelFormatBitField) == 0 )
+		{
+			// Pixel format not supported!
+			LOGM(MO_ERROR, "Pixel format is not supported");
+		}
+
+		Format7ImageSettings fmt7ImageSettings;
+		fmt7ImageSettings.mode = k_fmt7Mode;
+		fmt7ImageSettings.offsetX = this->property("x_offset").asInteger();
+		fmt7ImageSettings.offsetY = this->property("y_offset").asInteger();
+		fmt7ImageSettings.width = this->property("width").asInteger();
+		fmt7ImageSettings.height = this->property("height").asInteger();
+		fmt7ImageSettings.pixelFormat = k_fmt7PixFmt;
+
+		bool valid;
+		Format7PacketInfo fmt7PacketInfo;
+
+		// Validate the settings to make sure that they are valid
+		pgrErr= this->camera.ValidateFormat7Settings(
+			&fmt7ImageSettings,
+			&valid,
+			&fmt7PacketInfo );
+		if (pgrErr != PGRERROR_OK)
+		{
+			LOGM(MO_ERROR, "Error in validating format7 settings");
+		}
+
+		if ( !valid )
+		{
+			LOGM(MO_ERROR, "Format7 settings are incorrect");
+		} else {
+			// load the settings to the camera
+			pgrErr = this->camera.SetFormat7Configuration(
+					&fmt7ImageSettings,
+					fmt7PacketInfo.recommendedBytesPerPacket );
+			if (pgrErr != PGRERROR_OK)
+			{
+				LOGM(MO_ERROR, "Error in loading format7 settings into the camera");
+			}
+		}
+    }
+
+	//Now start the camera
 	pgrErr = this->camera.StartCapture();
 	if (pgrErr != PGRERROR_OK)
 	{
 		LOGM(MO_ERROR, "Error in starting the camera");
+	} else {
+		LOGM(MO_TRACE, "successfully started PGR camera : " << this->property("index").asInteger());
+		moModule::start();
 	}
-
-	LOGM(MO_TRACE, "successfully started a PGR camera");
-	moModule::start();
 }
 
 void moPgrCameraModule::stop()
 {
 	moModule::stop();
-	//if ( this->camera != NULL ) {
-	Error pgrErr = this->camera.StopCapture();
-	if (pgrErr != PGRERROR_OK)
-	{
-		LOGM(MO_ERROR, "ERORR in stopping the PGR camera");
+	if ( this->camera.IsConnected()) {
+		Error pgrErr = this->camera.StopCapture();
+		if (pgrErr != PGRERROR_OK)
+		{
+			LOGM(MO_ERROR, "ERORR in stopping the PGR camera");
+		}
+		else
+		{
+			LOGM(MO_TRACE, "Successfully released the camera");
+			this->camera.Disconnect();
+		}
 	}
-	else
-	{
-		LOGM(MO_TRACE, "successfully releaseed the camera");
-		//this->camera = NULL;
-	}
-	//}
 }
 
 void moPgrCameraModule::update()
@@ -240,18 +304,18 @@ IplImage* moPgrCameraModule::ConvertImageToOpenCV(Image* pImage)
 		cvImage->widthStep = colorImage.GetStride();
 		cvImage->origin = 0; //interleaved color channels
 		cvImage->imageDataOrigin = (char*)colorImage.GetData(); //DataOrigin and Data same pointer, no ROI
-		cvImage->imageData         = (char*)(colorImage.GetData());
-		cvImage->widthStep              = colorImage.GetStride();
+		cvImage->imageData = (char*)(colorImage.GetData());
+		cvImage->widthStep = colorImage.GetStride();
 		cvImage->nSize = sizeof (IplImage);
 		cvImage->imageSize = cvImage->height * cvImage->widthStep;
 	}
 	else
 	{
 		cvImage->imageDataOrigin = (char*)(pImage->GetData());
-		cvImage->imageData         = (char*)(pImage->GetData());
-		cvImage->widthStep         = pImage->GetStride();
-		cvImage->nSize             = sizeof (IplImage);
-		cvImage->imageSize         = cvImage->height * cvImage->widthStep;
+		cvImage->imageData = (char*)(pImage->GetData());
+		cvImage->widthStep = pImage->GetStride();
+		cvImage->nSize = sizeof (IplImage);
+		cvImage->imageSize = cvImage->height * cvImage->widthStep;
 		//at this point cvImage contains a valid IplImage
 	}
 	return cvImage;

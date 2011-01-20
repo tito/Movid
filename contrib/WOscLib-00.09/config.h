@@ -62,10 +62,10 @@
 #define OS_IS_CYGWIN 0
 
 /* Set to 1 if compiling for linux */
-#define OS_IS_LINUX 0
+#define OS_IS_LINUX 1
 
 /* Set to 1 if compiling for MacOSX */
-#define OS_IS_MACOSX 1
+#define OS_IS_MACOSX 0
 
 /* Set to 1 if compiling for Win32 */
 #define OS_IS_WIN32 0
