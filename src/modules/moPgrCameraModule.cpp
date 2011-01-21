@@ -48,10 +48,10 @@ moPgrCameraModule::moPgrCameraModule() : moModule(MO_MODULE_OUTPUT)
 	this->properties["index"] = new moProperty(0);
 
 	// ROI settings
-	this->properties["x_offset"] = new moProperty(0);
-	this->properties["y_offset"] = new moProperty(0);
-	this->properties["width"] = new moProperty(0);
-	this->properties["height"] = new moProperty(0);
+	this->properties["offset_left"] = new moProperty(0);
+	this->properties["offset_top"] = new moProperty(0);
+	this->properties["image_width"] = new moProperty(0);
+	this->properties["image_height"] = new moProperty(0);
 
 	unsigned int numCam;
 	Error pgrErr = this->busMgr.GetNumOfCameras(&numCam);
@@ -110,10 +110,10 @@ void moPgrCameraModule::start()
 
 		Format7ImageSettings fmt7ImageSettings;
 		fmt7ImageSettings.mode = k_fmt7Mode;
-		fmt7ImageSettings.offsetX = this->property("x_offset").asInteger();
-		fmt7ImageSettings.offsetY = this->property("y_offset").asInteger();
-		fmt7ImageSettings.width = this->property("width").asInteger();
-		fmt7ImageSettings.height = this->property("height").asInteger();
+		fmt7ImageSettings.offsetX = this->property("offset_left").asInteger();
+		fmt7ImageSettings.offsetY = this->property("offset_top").asInteger();
+		fmt7ImageSettings.width = this->property("image_width").asInteger();
+		fmt7ImageSettings.height = this->property("image_height").asInteger();
 		fmt7ImageSettings.pixelFormat = k_fmt7PixFmt;
 
 		bool valid;
