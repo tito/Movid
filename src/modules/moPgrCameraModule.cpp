@@ -187,8 +187,15 @@ void moPgrCameraModule::update()
 
 	//Convert the PGR image to OpenCV IplImage
 	IplImage *img = this->ConvertImageToOpenCV(&rawImage);
-	// TODO: support color image: this->stream->push(img);
-	this->monochrome->push(img);
+
+	// TODO: it does not make sense to have both streams if we only use one
+	// either convert and feed the other stream, or register only one output
+	if(img->nChannels == 1) {
+		this->monochrome->push(img);
+	} else if(img->nChannels == 3) {
+		this->stream->push(img);
+	}
+
 	this->notifyUpdate();
 	//}
 }
