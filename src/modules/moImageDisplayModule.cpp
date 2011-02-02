@@ -28,7 +28,7 @@
 
 MODULE_DECLARE(ImageDisplay, "native", "Display image on a window");
 
-static unsigned int count = 0;
+static unsigned int _count = 0;
 
 moImageDisplayModule::moImageDisplayModule() : moModule(MO_MODULE_INPUT) {
 
@@ -43,7 +43,7 @@ moImageDisplayModule::moImageDisplayModule() : moModule(MO_MODULE_INPUT) {
 
 	// declare properties
 	std::ostringstream oss;
-	oss << "Movid" << (count++);
+	oss << "Movid" << (_count++);
 	this->properties["name"] = new moProperty(oss.str());
 }
 
