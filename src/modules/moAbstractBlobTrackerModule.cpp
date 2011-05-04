@@ -102,7 +102,7 @@ void moAbstractBlobTrackerModule::trackAngles() {
 		last_angle = (*oit)->properties["last_angle"]->asInteger();
 
 		diff = last_angle - angle;
-		if (fabs(diff) > max_diff) {
+		if (fabs((float)diff) > max_diff) {
 			if (last_angle > angle)
 				fallen_over++;
 			else

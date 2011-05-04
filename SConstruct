@@ -95,11 +95,11 @@ if sys.platform == 'win32':
   daemon_src.append('contrib/XgetOpt/XgetOpt.cxx')
 
   #OpenCV, must config manually on windowze :/
-  opencv_dir = ARGUMENTS.get('OPENCV_DIR', 'C:\OpenCV2.1')
+  opencv_dir = ARGUMENTS.get('OPENCV_DIR', 'C:\OpenCV2.2')
   env.Append(
-    LIBS = ['cv210', 'cxcore210', 'highgui210', 'cvaux210'],
+    LIBS = ['opencv_legacy220', 'opencv_imgproc220', 'opencv_core220', 'opencv_highgui220'],
     LIBPATH = [opencv_dir+'\lib'],
-    CPPPATH = [opencv_dir+'\include\opencv'])
+    CPPPATH = [opencv_dir+'\include\opencv', opencv_dir+'\include'])
 
   #gotta set up msvc compiler and linker for list of options see:
   #see http://msdn.microsoft.com/en-us/library/fwkeyyhe(v=VS.71).aspx

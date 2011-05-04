@@ -118,7 +118,7 @@ You will need OpenCV, Visual C++ 2010, and scons (which also requires python)
 
 1. Install OpenCV-2.1
 download and run the following file:
-http://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.1/OpenCV-2.1.0-win32-vs2008.exe/download
+http://sourceforge.net/projects/opencvlibrary/files/opencv-win/2.2/OpenCV-2.2.0-win32-vs2010.exe/download
 
 2. install Visual C++ Express 2010 (not needed if you have Visual Studio 2010)
 not: must be 2010 version!  you can download a free version here (select language to start download):
@@ -135,11 +135,22 @@ scons
 If you installed OpenCV to a non standard location:
 scons OPENCV_DIR=C:\Somewhere\Else\OpenCV
 
+If scons command is not found, try:
+
+C:\Python2.7\Scripts\scons
+
 
 Note:  movid will build, with references to teh OpenCV dll's.
 If they are not on your path, you must copy them to the directory where you are trying to run movid.
-By default, tehy are in C:\OpenCV2.1\bin just copy the follwoing files into the movid directory:
-cv210.dll cvaux210.dll cxcore210.dll highgui210.dll
+By default, tehy are in C:\OpenCV2.2\bin just copy the follwoing files into the movid directory:
+- opencv_calib3d220.dll
+- opencv_core220.dll
+- opencv_features2d220.dll
+- opencv_flann220.dll
+- opencv_highgui220.dll
+- opencv_imgproc220.dll
+- opencv_legacy220.dll
+- opencv_video220.dll
 
 
 Now you should be able to use movid already. just double click movid.exe or run it from teh command line to use a preset:

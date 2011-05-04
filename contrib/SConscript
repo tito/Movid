@@ -23,8 +23,6 @@ env.Append(
               'contrib/bitmap_munkres'],
 
    LIBS = ['event', 'ptypes', 'wosclib', 'fidtrack'],
-
-   LIBPATH = ['contrib/lib']
 )
 
 
@@ -33,7 +31,11 @@ if sys.platform == 'win32':
    env.Append( CPPPATH = [
       'contrib/libevent-1.4.13-stable/compat',
       'contrib/libevent-1.4.13-stable/WIN32-Code'
-   ])
+   ],
+   LIBPATH = ['contrib/.msvc/lib']
+   )
+else:
+	env.Append(LIBPATH = ['contrib/lib'])
 
 
 
