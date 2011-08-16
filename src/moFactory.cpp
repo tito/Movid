@@ -67,6 +67,9 @@ void moFactory::init() {
 	REGISTER_MODULE(Tuio2);
 	REGISTER_MODULE(Video);
 	REGISTER_MODULE(YCrCbThreshold);
+	// GPU modules
+	REGISTER_MODULE(GPUAmplify)
+
     //DoNotRemoveThisComment
 	LOG(MO_INFO, "registered " << moFactory::getInstance()->list().size() << " modules");
 }

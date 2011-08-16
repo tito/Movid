@@ -67,7 +67,10 @@ libmovid_src = [
   'src/modules/moTuio2Module.cpp',
   'src/modules/moVideoModule.cpp',
   'src/modules/moYCrCbThresholdModule.cpp',
-  'contrib/bitmap_munkres/match.c'
+  'contrib/bitmap_munkres/match.c',
+
+  # GPU MODE
+  'src/modules/gpu/moGPUAmplifyModule.cpp',
 ]
 
 #################################################################
