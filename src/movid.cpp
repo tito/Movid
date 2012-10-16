@@ -228,6 +228,7 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg) {
 	std::vector<uchar>outbuf;
 	std::vector<int> params;
 	IplImage* img;
+        std::vector<IplImage*> imgs;
 	bool convert = false;
 
 	when.tv_usec = state->delay * 1000;
@@ -268,7 +269,8 @@ static void web_pipeline_stream_trickle(int fd, short events, void *arg) {
 	// convert the image to JPEG
 	params.push_back(CV_IMWRITE_JPEG_QUALITY);
 	params.push_back(100);
-	cv::imencode(".jpg", img, outbuf, params);
+	imgs.push_back(img);
+	cv::imencode(".jpg", imgs, outbuf, params);
 	outlen = outbuf.size();
 
 	// release temporary image if created
