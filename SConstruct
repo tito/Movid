@@ -60,6 +60,7 @@ libmovid_src = [
   'src/modules/moMaskModule.cpp',
   'src/modules/moMirrorImageModule.cpp',
   'src/modules/moPeakFinderModule.cpp',
+  'src/modules/moPgrCameraModule.cpp',
   'src/modules/moRoiModule.cpp',
   'src/modules/moSmoothModule.cpp',
   'src/modules/moThresholdModule.cpp',
